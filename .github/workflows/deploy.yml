@@ -117,16 +117,24 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
+          echo "Preparing remote directory..."
           ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          echo "Remote directory ready."
+
+          echo "Copying compose file..."
           scp -i ~/.ssh/deploy_key docker/docker-compose.prod.yml "$DEPLOY_USER@$DEPLOY_HOST:/tmp/eq13-docker-compose.yml"
+          echo "Compose file copied."
 
           remote_env="$(
             printf 'GHCR_TOKEN=%q GHCR_USER=%q IMAGE_FULL=%q DEPLOY_PATH=%q DATABASE_URL=%q DATABASE_USERNAME=%q DATABASE_PASSWORD=%q SERVER_PORT=%q ' \
               "$GHCR_TOKEN" "$GHCR_USER" "$IMAGE_FULL" "$DEPLOY_PATH" "$DATABASE_URL" "$DATABASE_USERNAME" "$DATABASE_PASSWORD" "$SERVER_PORT"
           )"
 
+          echo "Starting remote deploy script..."
           ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "${remote_env}bash -s" <<'REMOTE'
           set -euo pipefail
+
+          echo "Remote deploy script started."
 
           COMPOSE_FILE="/tmp/eq13-docker-compose.yml"
           DEPLOY_ENV_FILE="$DEPLOY_PATH/deploy.env"
@@ -139,8 +147,10 @@ jobs:
           DATABASE_PASSWORD=$DATABASE_PASSWORD
           SERVER_PORT=$SERVER_PORT
           EOF
+          echo "Deploy env written."
 
-          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          echo "GHCR login completed."
 
           compose() {
             env \
