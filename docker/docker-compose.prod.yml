@@ -1,7 +1,7 @@
 # Docker Compose - producao
 #
 # A imagem da aplicacao e publicada pelo GitHub Actions no GHCR.
-# No servidor, mantenha um arquivo .env em /home/ghactions/eq13/.env com:
+# No servidor, o GitHub Actions gera /opt/eq13/deploy.env com:
 #
 #   APP_IMAGE=ghcr.io/usuario/repositorio:latest
 #   DATABASE_URL=jdbc:postgresql://postgres:5432/eq13

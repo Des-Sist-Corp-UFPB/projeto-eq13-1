@@ -12,7 +12,7 @@ permissions:
 env:
   DEPLOY_HOST: dsc.rodrigor.com
   DEPLOY_USER: ghactions
-  DEPLOY_PATH: /home/ghactions/eq13
+  DEPLOY_PATH: /opt/eq13
   DATABASE_URL: jdbc:postgresql://postgres:5432/eq13
   DATABASE_USERNAME: eq13
   SERVER_PORT: "8113"
@@ -95,123 +95,89 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare remote directory
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ secrets.SSH_DEPLOY_KEY }}
-          script_stop: true
-          script: |
-            set -e
-            mkdir -p "${{ env.DEPLOY_PATH }}/docker"
-
-      - name: Copy production compose
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ secrets.SSH_DEPLOY_KEY }}
-          source: docker/docker-compose.prod.yml
-          target: ${{ env.DEPLOY_PATH }}
-
       - name: Deploy image through SSH
-        uses: appleboy/ssh-action@v1.0.3
+        shell: bash
         env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
           IMAGE_FULL: ${{ needs.build-and-push.outputs.image }}:latest
+          DEPLOY_HOST: ${{ env.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ env.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
           DATABASE_URL: ${{ env.DATABASE_URL }}
           DATABASE_USERNAME: ${{ env.DATABASE_USERNAME }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           SERVER_PORT: ${{ env.SERVER_PORT }}
-        with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ secrets.SSH_DEPLOY_KEY }}
-          envs: GHCR_TOKEN,GHCR_USER,IMAGE_FULL,DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD,SERVER_PORT
-          script_stop: true
-          script: |
-            set -euo pipefail
+        run: |
+          set -euo pipefail
 
-            DEPLOY_DIR="${{ env.DEPLOY_PATH }}"
-            COMPOSE_FILE="$DEPLOY_DIR/docker/docker-compose.prod.yml"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
-            cd "$DEPLOY_DIR"
-            umask 077
-            touch .env
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH'"
+          scp -i ~/.ssh/deploy_key docker/docker-compose.prod.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/docker-compose.yml"
 
-            set_env() {
-              key="$1"
-              value="$2"
-              tmp="$(mktemp)"
-              grep -v "^${key}=" .env > "$tmp" || true
-              printf "%s=%s\n" "$key" "$value" >> "$tmp"
-              mv "$tmp" .env
-            }
+          remote_env="$(
+            printf 'GHCR_TOKEN=%q GHCR_USER=%q IMAGE_FULL=%q DEPLOY_PATH=%q DATABASE_URL=%q DATABASE_USERNAME=%q DATABASE_PASSWORD=%q SERVER_PORT=%q ' \
+              "$GHCR_TOKEN" "$GHCR_USER" "$IMAGE_FULL" "$DEPLOY_PATH" "$DATABASE_URL" "$DATABASE_USERNAME" "$DATABASE_PASSWORD" "$SERVER_PORT"
+          )"
 
-            require_env() {
-              key="$1"
-              if ! grep -Eq "^${key}=.+$" .env; then
-                echo "Missing required value in $DEPLOY_DIR/.env: $key"
-                exit 1
-              fi
-            }
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "${remote_env}bash -s" <<'REMOTE'
+          set -euo pipefail
 
-            set_env APP_IMAGE "$IMAGE_FULL"
-            set_env DATABASE_URL "$DATABASE_URL"
-            set_env SERVER_PORT "$SERVER_PORT"
+          COMPOSE_FILE="$DEPLOY_PATH/docker-compose.yml"
+          DEPLOY_ENV_FILE="$DEPLOY_PATH/deploy.env"
 
-            if [ -n "${DATABASE_USERNAME:-}" ]; then
-              set_env DATABASE_USERNAME "$DATABASE_USERNAME"
+          umask 077
+          cat > "$DEPLOY_ENV_FILE" <<EOF
+          APP_IMAGE=$IMAGE_FULL
+          DATABASE_URL=$DATABASE_URL
+          DATABASE_USERNAME=$DATABASE_USERNAME
+          DATABASE_PASSWORD=$DATABASE_PASSWORD
+          SERVER_PORT=$SERVER_PORT
+          EOF
+
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+          cd /tmp
+          docker compose --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" pull app
+          docker compose --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" up -d postgres
+
+          echo "Waiting for database healthcheck..."
+          for attempt in $(seq 1 30); do
+            status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' mercado-postgres-prod 2>/dev/null || true)"
+            if [ "$status" = "healthy" ]; then
+              break
             fi
 
-            if [ -n "${DATABASE_PASSWORD:-}" ]; then
-              set_env DATABASE_PASSWORD "$DATABASE_PASSWORD"
+            if [ "$attempt" -eq 30 ]; then
+              echo "Database did not become healthy in time."
+              docker logs mercado-postgres-prod --tail 120
+              exit 1
             fi
 
-            require_env DATABASE_USERNAME
-            require_env DATABASE_PASSWORD
+            echo "Database is not ready yet ($attempt/30)."
+            sleep 5
+          done
 
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          docker compose --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" up -d --no-deps --force-recreate app
 
-            docker compose --env-file "$DEPLOY_DIR/.env" -f "$COMPOSE_FILE" pull app
-            docker compose --env-file "$DEPLOY_DIR/.env" -f "$COMPOSE_FILE" up -d postgres
+          echo "Waiting for application healthcheck on port $SERVER_PORT..."
+          for attempt in $(seq 1 30); do
+            if curl -fsS "http://localhost:${SERVER_PORT}/actuator/health" >/dev/null; then
+              echo "Deploy finished successfully."
+              docker image prune -f >/dev/null
+              exit 0
+            fi
 
-            echo "Waiting for database healthcheck..."
-            for attempt in $(seq 1 30); do
-              status="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' mercado-postgres-prod 2>/dev/null || true)"
-              if [ "$status" = "healthy" ]; then
-                break
-              fi
+            echo "Application is not ready yet ($attempt/30)."
+            sleep 5
+          done
 
-              if [ "$attempt" -eq 30 ]; then
-                echo "Database did not become healthy in time."
-                docker logs mercado-postgres-prod --tail 120
-                exit 1
-              fi
-
-              echo "Database is not ready yet ($attempt/30)."
-              sleep 5
-            done
-
-            docker compose --env-file "$DEPLOY_DIR/.env" -f "$COMPOSE_FILE" up -d --no-deps --force-recreate app
-
-            APP_PORT="$(grep -E '^SERVER_PORT=' .env | tail -n 1 | cut -d= -f2- || true)"
-            APP_PORT="${APP_PORT:-8080}"
-
-            echo "Waiting for application healthcheck on port $APP_PORT..."
-            for attempt in $(seq 1 30); do
-              if curl -fsS "http://localhost:${APP_PORT}/actuator/health" >/dev/null; then
-                echo "Deploy finished successfully."
-                docker image prune -f >/dev/null
-                exit 0
-              fi
-
-              echo "Application is not ready yet ($attempt/30)."
-              sleep 5
-            done
-
-            echo "Application did not become healthy in time."
-            docker logs mercado-app-prod --tail 120
-            exit 1
+          echo "Application did not become healthy in time."
+          docker logs mercado-app-prod --tail 120
+          exit 1
+          REMOTE
