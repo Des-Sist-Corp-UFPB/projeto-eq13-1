@@ -31,7 +31,10 @@ FROM eclipse-temurin:21-jre-jammy AS runtime
 
 # Criar usuário não-root por segurança
 # Executar aplicações como root em container é má prática de segurança
-RUN groupadd --gid 1001 mercado && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd --gid 1001 mercado && \
     useradd --uid 1001 --gid mercado --shell /bin/false mercado
 
 WORKDIR /app
@@ -49,7 +52,7 @@ EXPOSE 8080
 
 # Health check: o Actuator expõe /actuator/health
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+    CMD curl -fsS http://localhost:8080/actuator/health >/dev/null || exit 1
 
 # Opções JVM para produção:
 #   -XX:+UseContainerSupport: respeita limites de memória do container
