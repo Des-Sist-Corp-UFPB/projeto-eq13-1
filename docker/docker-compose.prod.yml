@@ -1,13 +1,13 @@
 # Docker Compose - producao
 #
 # A imagem da aplicacao e publicada pelo GitHub Actions no GHCR.
-# No servidor, mantenha um arquivo .env em /home/ghactions/mercado/.env com:
+# No servidor, mantenha um arquivo .env em /home/ghactions/eq13/.env com:
 #
 #   APP_IMAGE=ghcr.io/usuario/repositorio:latest
 #   DATABASE_URL=jdbc:postgresql://postgres:5432/eq13
-#   DATABASE_USERNAME=<usuario-do-banco>
+#   DATABASE_USERNAME=eq13
 #   DATABASE_PASSWORD=<senha-do-banco>
-#   SERVER_PORT=8080
+#   SERVER_PORT=8113
 
 services:
   postgres:
@@ -40,7 +40,7 @@ services:
       DATABASE_USERNAME: ${DATABASE_USERNAME:?DATABASE_USERNAME is required}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
     ports:
-      - "${SERVER_PORT:-8080}:8080"
+      - "127.0.0.1:${SERVER_PORT:-8113}:8080"
     depends_on:
       postgres:
         condition: service_healthy

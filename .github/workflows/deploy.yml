@@ -12,8 +12,10 @@ permissions:
 env:
   DEPLOY_HOST: dsc.rodrigor.com
   DEPLOY_USER: ghactions
-  DEPLOY_PATH: /home/ghactions/mercado
+  DEPLOY_PATH: /home/ghactions/eq13
   DATABASE_URL: jdbc:postgresql://postgres:5432/eq13
+  DATABASE_USERNAME: eq13
+  SERVER_PORT: "8113"
 
 jobs:
   test:
@@ -120,13 +122,14 @@ jobs:
           GHCR_USER: ${{ github.actor }}
           IMAGE_FULL: ${{ needs.build-and-push.outputs.image }}:latest
           DATABASE_URL: ${{ env.DATABASE_URL }}
-          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+          DATABASE_USERNAME: ${{ env.DATABASE_USERNAME }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          SERVER_PORT: ${{ env.SERVER_PORT }}
         with:
           host: ${{ env.DEPLOY_HOST }}
           username: ${{ env.DEPLOY_USER }}
           key: ${{ secrets.SSH_DEPLOY_KEY }}
-          envs: GHCR_TOKEN,GHCR_USER,IMAGE_FULL,DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD
+          envs: GHCR_TOKEN,GHCR_USER,IMAGE_FULL,DATABASE_URL,DATABASE_USERNAME,DATABASE_PASSWORD,SERVER_PORT
           script_stop: true
           script: |
             set -euo pipefail
@@ -157,6 +160,7 @@ jobs:
 
             set_env APP_IMAGE "$IMAGE_FULL"
             set_env DATABASE_URL "$DATABASE_URL"
+            set_env SERVER_PORT "$SERVER_PORT"
 
             if [ -n "${DATABASE_USERNAME:-}" ]; then
               set_env DATABASE_USERNAME "$DATABASE_USERNAME"
