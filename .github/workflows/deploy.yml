@@ -11,7 +11,7 @@ permissions:
 
 env:
   DEPLOY_HOST: dsc.rodrigor.com
-  DEPLOY_USER: eq13
+  DEPLOY_USER: ghactions
   DEPLOY_PATH: /opt/eq13
   DATABASE_URL: jdbc:postgresql://postgres:5432/eq13
   DATABASE_USERNAME: eq13
