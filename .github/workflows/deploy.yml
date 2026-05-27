@@ -142,10 +142,23 @@ jobs:
 
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 
-          export COMPOSE_DISABLE_ENV_FILE=1
+          compose() {
+            env \
+              -u COMPOSE_ENV_FILES \
+              -u COMPOSE_FILE \
+              -u COMPOSE_PROJECT_NAME \
+              COMPOSE_DISABLE_ENV_FILE=true \
+              docker compose \
+                --project-directory /tmp \
+                --project-name eq13 \
+                --env-file "$DEPLOY_ENV_FILE" \
+                -f "$COMPOSE_FILE" \
+                "$@"
+          }
+
           cd /tmp
-          docker compose --project-name eq13 --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" pull app
-          docker compose --project-name eq13 --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" up -d postgres
+          compose pull app
+          compose up -d postgres
 
           echo "Waiting for database healthcheck..."
           for attempt in $(seq 1 30); do
@@ -164,7 +177,7 @@ jobs:
             sleep 5
           done
 
-          docker compose --project-name eq13 --env-file "$DEPLOY_ENV_FILE" -f "$COMPOSE_FILE" up -d --no-deps --force-recreate app
+          compose up -d --no-deps --force-recreate app
 
           echo "Waiting for application healthcheck on port $SERVER_PORT..."
           for attempt in $(seq 1 30); do
