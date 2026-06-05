@@ -50,9 +50,9 @@ USER mercado
 
 EXPOSE 8080
 
-# Health check: o Actuator expõe /actuator/health
+# Health check: o portal DSC consulta /ping
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -fsS http://localhost:8080/actuator/health >/dev/null || exit 1
+    CMD curl -fsS http://localhost:8080/ping >/dev/null || exit 1
 
 # Opções JVM para produção:
 #   -XX:+UseContainerSupport: respeita limites de memória do container

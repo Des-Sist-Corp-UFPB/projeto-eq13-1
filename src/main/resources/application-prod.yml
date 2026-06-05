@@ -1,16 +1,26 @@
 spring:
   datasource:
-    # Em produção, as credenciais vêm de variáveis de ambiente — NUNCA hardcode!
-    # Configure no sistema operacional, Docker, Kubernetes secrets, etc.
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://postgres:5432/eq13}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USERNAME:eq13}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:}}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
+    hikari:
+      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:5}
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
   flyway:
     enabled: true
+
+aws:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
+    public-endpoint: ${AWS_S3_PUBLIC_ENDPOINT:https://s3.dsc.rodrigor.com}
+    region: ${AWS_S3_REGION:us-east-1}
+    bucket: ${AWS_S3_BUCKET:eq13}
+    access-key: ${AWS_S3_ACCESS_KEY:eq13}
+    secret-key: ${AWS_S3_SECRET_KEY:${MINIO_SECRET:}}
 
 logging:
   level:
