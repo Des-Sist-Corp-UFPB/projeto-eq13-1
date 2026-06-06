@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR" th:fragment="shell(title, content)" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' | JobHub PB'">JobHub PB</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" th:href="@{/}">
+        <span class="brand-mark">J</span>
+        <span>
+            <strong>JobHub PB</strong>
+            <small>Tech remoto e Paraiba</small>
+        </span>
+    </a>
+    <nav class="nav-links" aria-label="Navegacao principal">
+        <a th:href="@{/vagas}">Vagas</a>
+        <a th:href="@{/divulgar}">Divulgar vaga</a>
+        <a th:href="@{/admin}">Admin</a>
+    </nav>
+</header>
+<th:block th:replace="${content}"></th:block>
+<footer class="footer">
+    <span>JobHub PB</span>
+    <span>Vagas remotas de tecnologia e presenciais apenas na Paraiba.</span>
+</footer>
+</body>
+</html>

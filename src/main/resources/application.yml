@@ -1,18 +1,14 @@
 spring:
   application:
-    name: mercado
+    name: jobhub-pb
   profiles:
     active: dev
 
-# Actuator - monitoramento da aplicação
-# Acesse: http://localhost:8080/actuator/health
 management:
   endpoints:
     web:
       exposure:
-        # Expõe apenas os endpoints necessários (não exponha todos em produção!)
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      # Detalhes do health só são exibidos para usuários autenticados
       show-details: when-authorized

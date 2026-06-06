@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Inicio', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main>
+    <section class="hero container">
+        <div class="hero-grid">
+            <div class="panel">
+                <span class="badge blue">Tecnologia</span>
+                <h1>Vagas remotas e oportunidades presenciais na Paraiba.</h1>
+                <p>Um hub simples para conectar talentos de tecnologia a empresas com vagas remotas ou presenciais em Joao Pessoa, Campina Grande e outras cidades paraibanas.</p>
+                <div class="actions">
+                    <a class="btn primary" th:href="@{/vagas}">Ver vagas</a>
+                    <a class="btn" th:href="@{/divulgar}">Divulgar vaga</a>
+                </div>
+            </div>
+            <div class="panel">
+                <h2>Foco do portal</h2>
+                <div class="grid">
+                    <div><span class="badge green">Remoto</span><p class="muted">Vagas tech remotas de qualquer empresa.</p></div>
+                    <div><span class="badge orange">Paraiba</span><p class="muted">Presencial somente dentro da Paraiba.</p></div>
+                    <div><span class="badge blue">Curadoria</span><p class="muted">Novas vagas entram como pendentes para moderacao.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section container">
+        <div class="actions" style="justify-content: space-between; margin-bottom: 14px;">
+            <h2 style="margin:0;">Vagas recentes</h2>
+            <a class="btn small" th:href="@{/vagas}">Todas as vagas</a>
+        </div>
+        <div class="grid three">
+            <article class="job-card" th:each="job : ${featuredJobs}">
+                <div class="meta">
+                    <span class="badge" th:text="${job.locationType.label}">Remota</span>
+                    <span class="badge gray" th:text="${job.seniority.label}">Pleno</span>
+                </div>
+                <h3 th:text="${job.title}">Titulo da vaga</h3>
+                <p class="muted" th:text="${job.company}">Empresa</p>
+                <a class="btn small primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
+            </article>
+        </div>
+    </section>
+</main>
+</html>

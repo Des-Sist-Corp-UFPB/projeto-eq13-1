@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Divulgar vaga', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <div class="grid two" style="align-items: start;">
+        <section class="panel">
+            <span class="badge green">Para empresas</span>
+            <h1>Divulgue uma vaga de tecnologia</h1>
+            <p class="muted">Vagas remotas podem ser de qualquer lugar. Vagas presenciais sao aceitas apenas para cidades da Paraiba. Toda nova vaga entra como pendente para moderacao.</p>
+            <div class="alert success" th:if="${success}">Vaga enviada para revisao. O admin pode publicar pelo painel.</div>
+        </section>
+
+        <section class="panel">
+            <form th:action="@{/divulgar}" th:object="${form}" method="post" class="grid">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="grid two">
+                    <label>Cargo
+                        <input class="input" th:field="*{title}" placeholder="Ex: Backend Java Pleno">
+                        <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                    </label>
+                    <label>Empresa
+                        <input class="input" th:field="*{company}" placeholder="Nome da empresa">
+                        <span class="error" th:if="${#fields.hasErrors('company')}" th:errors="*{company}"></span>
+                    </label>
+                </div>
+                <label>Email da empresa
+                    <input class="input" th:field="*{companyEmail}" placeholder="rh@empresa.com">
+                    <span class="error" th:if="${#fields.hasErrors('companyEmail')}" th:errors="*{companyEmail}"></span>
+                </label>
+                <div class="grid two">
+                    <label>Modelo
+                        <select class="select" th:field="*{locationType}">
+                            <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:text="${type.label}"></option>
+                        </select>
+                    </label>
+                    <label>Cidade na Paraiba
+                        <input class="input" th:field="*{city}" placeholder="Obrigatoria se presencial">
+                    </label>
+                </div>
+                <div class="grid two">
+                    <label>Senioridade
+                        <select class="select" th:field="*{seniority}">
+                            <option th:each="item : ${seniorities}" th:value="${item.name()}" th:text="${item.label}"></option>
+                        </select>
+                    </label>
+                    <label>Contrato
+                        <select class="select" th:field="*{contractType}">
+                            <option th:each="item : ${contractTypes}" th:value="${item.name()}" th:text="${item.label}"></option>
+                        </select>
+                    </label>
+                </div>
+                <label>Faixa salarial
+                    <input class="input" th:field="*{salaryRange}" placeholder="Ex: R$ 6.000 - R$ 9.000">
+                </label>
+                <label>Descricao
+                    <textarea class="textarea" th:field="*{description}" placeholder="Rotina, stack, responsabilidades e contexto da vaga"></textarea>
+                    <span class="hint">Minimo de 40 caracteres.</span>
+                    <span class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+                </label>
+                <label>Requisitos
+                    <textarea class="textarea" th:field="*{requirements}" placeholder="Tecnologias, experiencia, diferenciais"></textarea>
+                </label>
+                <label>Link externo da vaga
+                    <input class="input" th:field="*{applyUrl}" placeholder="https://...">
+                </label>
+                <button class="btn primary" type="submit">Enviar para revisao</button>
+            </form>
+        </section>
+    </div>
+</main>
+</html>

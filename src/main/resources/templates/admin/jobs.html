@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Gestao de vagas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <div class="actions" style="justify-content: space-between;">
+        <div><h1>Gestao de vagas</h1><p class="muted">Publique, arquive ou remova vagas enviadas.</p></div>
+        <a class="btn" th:href="@{/admin}">Dashboard</a>
+    </div>
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr><th>Vaga</th><th>Empresa</th><th>Modelo</th><th>Status</th><th>Acoes</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="job : ${jobs}">
+                <td><strong th:text="${job.title}">Titulo</strong><br><span class="muted" th:text="|${job.seniority.label} / ${job.contractType.label}|">Nivel</span></td>
+                <td th:text="${job.company}">Empresa</td>
+                <td><span class="badge blue" th:text="${job.locationType.label}">Modelo</span><br><span class="muted" th:text="${job.city}">Cidade</span></td>
+                <td><span class="badge" th:text="${job.status.label}">Status</span></td>
+                <td>
+                    <div class="inline-actions">
+                        <form th:action="@{/admin/vagas/{id}/publicar(id=${job.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn small success" type="submit">Publicar</button></form>
+                        <form th:action="@{/admin/vagas/{id}/pendente(id=${job.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn small" type="submit">Pendente</button></form>
+                        <form th:action="@{/admin/vagas/{id}/arquivar(id=${job.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn small" type="submit">Arquivar</button></form>
+                        <form th:action="@{/admin/vagas/{id}/remover(id=${job.id})}" method="post"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="btn small danger" type="submit">Remover</button></form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>
+

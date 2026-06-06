@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Candidaturas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <div class="actions" style="justify-content: space-between;">
+        <div><h1>Candidaturas</h1><p class="muted">Pessoas interessadas nas vagas publicadas.</p></div>
+        <a class="btn" th:href="@{/admin}">Dashboard</a>
+    </div>
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr><th>Candidato</th><th>Vaga</th><th>Contato</th><th>Mensagem</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="application : ${applications}">
+                <td><strong th:text="${application.applicantName}">Nome</strong><br><span class="muted" th:text="${#temporals.format(application.createdAt, 'dd/MM/yyyy HH:mm')}">Data</span></td>
+                <td th:text="${application.job.title}">Vaga</td>
+                <td><a th:href="|mailto:${application.applicantEmail}|" th:text="${application.applicantEmail}">email</a><br><a th:if="${application.linkedinUrl != null && !application.linkedinUrl.isBlank()}" th:href="${application.linkedinUrl}" target="_blank" rel="noopener">Perfil</a></td>
+                <td th:text="${application.message}">Mensagem</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>
+
