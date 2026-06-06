@@ -7,7 +7,6 @@ on:
 
 env:
   DEPLOY_HOST: dsc.rodrigor.com
-  DEPLOY_USER: ${{ secrets.SSH_USERNAME || 'eq13' }}
 
 jobs:
   build-and-deploy:
@@ -53,7 +52,10 @@ jobs:
           tags: ${{ steps.image.outputs.image }}
 
       - name: Deploy no servidor
+        env:
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
+          DEPLOY_USER="${SSH_USERNAME:-eq13}"
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.SSH_DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
