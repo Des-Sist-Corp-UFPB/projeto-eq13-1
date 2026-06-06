@@ -139,7 +139,7 @@ Configure em `Settings -> Secrets and variables -> Actions`:
 Configure as variaveis reais no `.env` do servidor ou pelo painel da disciplina. Nao versione senhas reais no GitHub.
 
 ```env
-APP_IMAGE=ghcr.io/des-sist-corp-ufpb/projeto-eq13-1:latest
+APP_IMAGE=ghcr.io/des-sist-corp-ufpb/projeto-eq13:latest
 SERVER_PORT=8113
 
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eq13
