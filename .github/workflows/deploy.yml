@@ -7,7 +7,7 @@ on:
 
 env:
   DEPLOY_HOST: dsc.rodrigor.com
-  DEPLOY_USER: eq13
+  DEPLOY_USER: ${{ secrets.SSH_USERNAME || 'eq13' }}
 
 jobs:
   build-and-deploy:

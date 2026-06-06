@@ -131,6 +131,7 @@ Configure em `Settings -> Secrets and variables -> Actions`:
 
 | Secret | Valor |
 | --- | --- |
+| `SSH_USERNAME` | `eq13` |
 | `SSH_DEPLOY_KEY` | chave privada SSH fornecida pela disciplina |
 
 ### Variaveis no servidor
