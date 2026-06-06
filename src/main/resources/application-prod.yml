@@ -13,6 +13,15 @@ spring:
   flyway:
     enabled: true
 
+aws:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
+    public-endpoint: ${AWS_S3_PUBLIC_ENDPOINT:https://s3.dsc.rodrigor.com}
+    region: ${AWS_S3_REGION:us-east-1}
+    bucket: ${AWS_S3_BUCKET:eq13}
+    access-key: ${AWS_S3_ACCESS_KEY:eq13}
+    secret-key: ${AWS_S3_SECRET_KEY:}
+
 app:
   admin:
     username: ${ADMIN_USERNAME:admin}

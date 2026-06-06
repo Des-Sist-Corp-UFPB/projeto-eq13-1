@@ -116,6 +116,48 @@ O projeto inclui um arquivo `.env.example` com valores de exemplo. Nao faca comm
 
 ## Deploy
 
-O workflow em `.github/workflows/deploy.yml` publica a imagem Docker no GitHub Container Registry e executa o deploy no servidor da disciplina usando o secret `SSH_DEPLOY_KEY`.
+O workflow em `.github/workflows/deploy.yml` executa o pipeline de producao:
+
+1. roda os testes com Java 21 e Maven;
+2. constrói a imagem Docker com `docker/Dockerfile`;
+3. publica a imagem no GitHub Container Registry (GHCR);
+4. aciona o deploy no servidor `dsc.rodrigor.com` usando o secret `SSH_DEPLOY_KEY`.
+
+O deploy usa o usuario SSH da equipe `eq13` e publica a aplicacao na porta `8113`.
+
+### Secrets no GitHub
+
+Configure em `Settings -> Secrets and variables -> Actions`:
+
+| Secret | Valor |
+| --- | --- |
+| `SSH_DEPLOY_KEY` | chave privada SSH fornecida pela disciplina |
+
+### Variaveis no servidor
+
+Configure as variaveis reais no `.env` do servidor ou pelo painel da disciplina. Nao versione senhas reais no GitHub.
+
+```env
+APP_IMAGE=ghcr.io/des-sist-corp-ufpb/projeto-eq13-1:latest
+SERVER_PORT=8113
+
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eq13
+SPRING_DATASOURCE_USERNAME=eq13
+SPRING_DATASOURCE_PASSWORD=<senha-real-do-banco>
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5
+
+AWS_S3_ENDPOINT=http://minio:9000
+AWS_S3_PUBLIC_ENDPOINT=https://s3.dsc.rodrigor.com
+AWS_S3_REGION=us-east-1
+AWS_S3_BUCKET=eq13
+AWS_S3_ACCESS_KEY=eq13
+AWS_S3_SECRET_KEY=<secret-real-do-minio>
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<senha-admin>
+```
 
 Depois do primeiro push, confirme se o pacote no GHCR esta publico para que o servidor consiga baixar a imagem.
+
+O portal da disciplina verifica `GET /ping`. Essa rota e publica e retorna JSON com `status: "ok"` e `service: "eq13"`.
