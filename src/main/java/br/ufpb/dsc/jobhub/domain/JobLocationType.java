@@ -2,8 +2,8 @@ package br.ufpb.dsc.jobhub.domain;
 
 public enum JobLocationType {
     REMOTE("Remota"),
-    HYBRID_PB("Hibrida na Paraiba"),
-    PRESENTIAL_PB("Presencial na Paraiba");
+    HYBRID_PB("Híbrida na Paraíba"),
+    PRESENTIAL_PB("Presencial na Paraíba");
 
     private final String label;
 

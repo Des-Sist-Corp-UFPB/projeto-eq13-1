@@ -1,12 +1,12 @@
 # RadarTech PB - Sistema de Vagas de TI
 
-Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O RadarTech PB e um portal para curadoria, busca e gerenciamento de vagas de tecnologia, com foco em estudantes, estagiarios e profissionais junior.
+Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O RadarTech PB é um portal para curadoria, busca e gerenciamento de vagas de tecnologia, com foco em estudantes, estagiários e profissionais júnior.
 
-## Visao geral
+## Visão geral
 
-O sistema permite que visitantes consultem vagas reais de TI, filtrem oportunidades por modelo de trabalho e abram o link publico da vaga original. Tambem existe uma area administrativa para moderacao das vagas, acompanhamento das candidaturas internas e visualizacao de indicadores do portal.
+O sistema permite que visitantes consultem vagas reais de TI, filtrem oportunidades por modelo de trabalho e abram o link público da vaga original. Também existe uma área administrativa para moderação das vagas, acompanhamento das candidaturas internas e visualização de indicadores do portal.
 
-As vagas remotas podem ser de qualquer lugar do Brasil. Vagas hibridas e presenciais sao focadas apenas na Paraiba.
+As vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas e presenciais são focadas apenas na Paraíba.
 
 ## Tecnologias
 
@@ -14,27 +14,27 @@ As vagas remotas podem ser de qualquer lugar do Brasil. Vagas hibridas e presenc
 | --- | --- |
 | Backend | Java 21 + Spring Boot 3.5 |
 | Web | Spring MVC + Thymeleaf |
-| Seguranca | Spring Security |
+| Segurança | Spring Security |
 | Banco de dados | PostgreSQL |
-| Migracoes | Flyway |
+| Migrações | Flyway |
 | Build | Maven |
 | Infraestrutura | Docker + Docker Compose |
 | CI/CD | GitHub Actions + GHCR |
 
 ## Funcionalidades
 
-- Pagina inicial com destaques do portal.
-- Listagem publica de vagas.
+- Página inicial com destaques do portal.
+- Listagem pública de vagas.
 - Filtro por termo de busca e modelo de trabalho.
-- Pagina de detalhes da vaga.
+- Página de detalhes da vaga.
 - Link externo para candidatura em plataformas como Gupy, LinkedIn e Indeed.
-- Formulario publico de candidatura.
-- Pagina publica para divulgar novas vagas.
+- Formulário público de candidatura.
+- Página pública para divulgar novas vagas.
 - Login administrativo.
 - Painel administrativo com indicadores.
-- Moderacao e gerenciamento de vagas.
-- Visualizacao de candidaturas recebidas.
-- Health check publico em `GET /ping`.
+- Moderação e gerenciamento de vagas.
+- Visualização de candidaturas recebidas.
+- Health check público em `GET /ping`.
 
 ## Requisitos
 
@@ -45,19 +45,19 @@ As vagas remotas podem ser de qualquer lugar do Brasil. Vagas hibridas e presenc
 
 ## Como rodar localmente
 
-Antes de iniciar a aplicacao, suba o PostgreSQL:
+Antes de iniciar a aplicação, suba o PostgreSQL:
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml up -d
 ```
 
-Depois rode a aplicacao Spring Boot:
+Depois rode a aplicação Spring Boot:
 
 ```bash
 mvn spring-boot:run
 ```
 
-A aplicacao ficara disponivel em:
+A aplicação ficará disponível em:
 
 ```text
 http://localhost:8080
@@ -66,7 +66,7 @@ http://localhost:8080
 ## Acesso administrativo local
 
 ```text
-Usuario: admin
+Usuário: admin
 Senha: admin123
 ```
 
@@ -79,10 +79,10 @@ O ambiente de desenvolvimento usa PostgreSQL no Docker.
 | Host | `localhost` |
 | Porta | `5432` |
 | Banco | `jobhub_dev` |
-| Usuario | `jobhub` |
+| Usuário | `jobhub` |
 | Senha | `jobhub123` |
 
-As tabelas sao criadas automaticamente pelas migrations Flyway em `src/main/resources/db/migration`.
+As tabelas são criadas automaticamente pelas migrations Flyway em `src/main/resources/db/migration`.
 
 ## Testes
 
@@ -99,34 +99,34 @@ mvn test
 |-- .github/workflows/        # Workflow de deploy
 |-- docker/                   # Dockerfile e arquivos Docker Compose
 |-- src/main/java/br/ufpb/dsc/jobhub/
-|   |-- config/               # Configuracoes da aplicacao
+|   |-- config/               # Configurações da aplicação
 |   |-- controller/           # Controllers HTTP
 |   |-- domain/               # Entidades JPA
 |   |-- dto/                  # Objetos de transferencia/formularios
-|   |-- repository/           # Repositorios Spring Data JPA
+|   |-- repository/           # Repositórios Spring Data JPA
 |   `-- service/              # Regras de negocio
 |-- src/main/resources/
 |   |-- db/migration/         # Migrations Flyway
 |   |-- static/               # Arquivos estaticos
-|   `-- templates/            # Paginas Thymeleaf
+|   `-- templates/            # Páginas Thymeleaf
 |-- src/test/                 # Testes automatizados
 `-- pom.xml                   # Configuracao Maven
 ```
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
-O projeto inclui um arquivo `.env.example` com valores de exemplo. Nao faca commit de arquivos `.env` reais com senhas ou tokens.
+O projeto inclui um arquivo `.env.example` com valores de exemplo. Não faça commit de arquivos `.env` reais com senhas ou tokens.
 
 ## Deploy
 
-O workflow em `.github/workflows/deploy.yml` executa o pipeline de producao:
+O workflow em `.github/workflows/deploy.yml` executa o pipeline de produção:
 
 1. roda os testes com Java 21 e Maven;
 2. constrói a imagem Docker com `docker/Dockerfile`;
 3. publica a imagem no GitHub Container Registry (GHCR);
 4. aciona o deploy no servidor `dsc.rodrigor.com` usando o secret `SSH_DEPLOY_KEY`.
 
-O deploy usa o usuario SSH da equipe `eq13` e publica a aplicacao na porta `8113`.
+O deploy usa o usuário SSH da equipe `eq13` e publica a aplicação na porta `8113`.
 
 ### Secrets no GitHub
 
@@ -137,9 +137,9 @@ Configure em `Settings -> Secrets and variables -> Actions`:
 | `SSH_USERNAME` | `eq13` |
 | `SSH_DEPLOY_KEY` | chave privada SSH fornecida pela disciplina |
 
-### Variaveis no servidor
+### Variáveis no servidor
 
-Configure as variaveis reais no `.env` do servidor ou pelo painel da disciplina. Nao versione senhas reais no GitHub.
+Configure as variáveis reais no `.env` do servidor ou pelo painel da disciplina. Não versione senhas reais no GitHub.
 
 ```env
 APP_IMAGE=ghcr.io/des-sist-corp-ufpb/projeto-eq13:latest
@@ -162,6 +162,6 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=<senha-admin>
 ```
 
-Depois do primeiro push, confirme se o pacote no GHCR esta publico para que o servidor consiga baixar a imagem.
+Depois do primeiro push, confirme se o pacote no GHCR está público para que o servidor consiga baixar a imagem.
 
-O portal da disciplina verifica `GET /ping`. Essa rota e publica e retorna JSON com `status: "ok"` e `service: "eq13"`.
+O portal da disciplina verifica `GET /ping`. Essa rota é pública e retorna JSON com `status: "ok"` e `service: "eq13"`.

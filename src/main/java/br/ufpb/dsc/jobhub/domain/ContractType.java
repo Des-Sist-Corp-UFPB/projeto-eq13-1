@@ -3,7 +3,7 @@ package br.ufpb.dsc.jobhub.domain;
 public enum ContractType {
     CLT("CLT"),
     PJ("PJ"),
-    INTERNSHIP("Estagio"),
+    INTERNSHIP("Estágio"),
     FREELANCE("Freelance"),
     OTHER("Outro");
 

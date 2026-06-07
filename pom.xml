@@ -15,7 +15,7 @@
     <artifactId>jobhub-pb</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>jobhub-pb</name>
-    <description>Portal de vagas de tecnologia remotas e presenciais na Paraiba</description>
+    <description>Portal de vagas de tecnologia remotas e presenciais na Paraíba</description>
 
     <properties>
         <java.version>21</java.version>

@@ -9,21 +9,21 @@
                 <span class="badge gray" th:text="${job.seniority.label}">Pleno</span>
                 <span class="badge green" th:text="${job.contractType.label}">CLT</span>
             </div>
-            <h1 th:text="${job.title}">Titulo</h1>
+            <h1 th:text="${job.title}">Título</h1>
             <p><strong th:text="${job.company}">Empresa</strong></p>
             <p class="muted" th:if="${job.city != null && !job.city.isBlank()}" th:text="${job.city}">Cidade</p>
             <p class="muted" th:if="${job.salaryRange != null && !job.salaryRange.isBlank()}" th:text="${job.salaryRange}">Faixa</p>
-            <h2>Descricao</h2>
-            <p th:text="${job.description}">Descricao</p>
+            <h2>Descrição</h2>
+            <p th:text="${job.description}">Descrição</p>
             <h2 th:if="${job.requirements != null && !job.requirements.isBlank()}">Requisitos</h2>
             <p th:if="${job.requirements != null && !job.requirements.isBlank()}" th:text="${job.requirements}">Requisitos</p>
             <a class="btn primary" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se no site original</a>
         </article>
 
         <aside class="panel" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}">
-            <span class="badge green">Link publico</span>
+            <span class="badge green">Link público</span>
             <h2>Candidatura externa</h2>
-            <p class="muted">Esta vaga foi curada a partir de uma fonte publica. A candidatura oficial acontece no site da empresa ou plataforma parceira.</p>
+            <p class="muted">Esta vaga foi curada a partir de uma fonte pública. A candidatura oficial acontece no site da empresa ou plataforma parceira.</p>
             <a class="btn success" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga original</a>
         </aside>
 
@@ -37,14 +37,14 @@
                     <span class="error" th:if="${#fields.hasErrors('applicantName')}" th:errors="*{applicantName}"></span>
                 </label>
                 <label>Email
-                    <input class="input" th:field="*{applicantEmail}" placeholder="voce@email.com">
+                    <input class="input" th:field="*{applicantEmail}" placeholder="seu.email@exemplo.com">
                     <span class="error" th:if="${#fields.hasErrors('applicantEmail')}" th:errors="*{applicantEmail}"></span>
                 </label>
-                <label>LinkedIn ou portfolio
+                <label>LinkedIn ou portfólio
                     <input class="input" th:field="*{linkedinUrl}" placeholder="https://linkedin.com/in/...">
                 </label>
                 <label>Mensagem
-                    <textarea class="textarea" th:field="*{message}" placeholder="Conte rapidamente por que voce combina com a vaga"></textarea>
+                    <textarea class="textarea" th:field="*{message}" placeholder="Conte rapidamente por que você combina com a vaga"></textarea>
                 </label>
                 <button class="btn success" type="submit">Enviar candidatura</button>
             </form>

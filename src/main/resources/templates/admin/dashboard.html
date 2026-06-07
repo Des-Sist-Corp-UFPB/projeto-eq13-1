@@ -4,7 +4,7 @@
     <div class="actions" style="justify-content: space-between;">
         <div>
             <h1>Dashboard</h1>
-            <p class="muted">Visao geral do produto, vagas e candidaturas.</p>
+            <p class="muted">Visão geral do produto, vagas e candidaturas.</p>
         </div>
         <form th:action="@{/admin/logout}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -20,12 +20,12 @@
     </section>
     <section class="grid four" style="margin-bottom: 20px;">
         <div class="stat-card"><span>Remotas</span><strong th:text="${stats.remoteJobs}">0</strong></div>
-        <div class="stat-card"><span>Hibridas PB</span><strong th:text="${stats.hybridPbJobs}">0</strong></div>
+        <div class="stat-card"><span>Híbridas PB</span><strong th:text="${stats.hybridPbJobs}">0</strong></div>
         <div class="stat-card"><span>Presenciais PB</span><strong th:text="${stats.presencialPbJobs}">0</strong></div>
         <div class="stat-card"><span>Vagas em 7 dias</span><strong th:text="${stats.jobsLast7Days}">0</strong></div>
     </section>
     <section class="grid four" style="margin-bottom: 20px;">
-        <div class="stat-card"><span>Visualizacoes</span><strong th:text="${stats.totalViews}">0</strong></div>
+        <div class="stat-card"><span>Visualizações</span><strong th:text="${stats.totalViews}">0</strong></div>
     </section>
 
     <div class="grid two">

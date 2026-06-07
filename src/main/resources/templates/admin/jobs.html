@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: shell('Gestao de vagas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{fragments/layout :: shell('Gestão de vagas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
 <main class="section container">
     <div class="actions" style="justify-content: space-between;">
-        <div><h1>Gestao de vagas</h1><p class="muted">Publique, arquive ou remova vagas enviadas.</p></div>
+        <div><h1>Gestão de vagas</h1><p class="muted">Publique, arquive ou remova vagas enviadas.</p></div>
         <a class="btn" th:href="@{/admin}">Dashboard</a>
     </div>
     <section class="table-panel">
         <table>
             <thead>
-            <tr><th>Vaga</th><th>Empresa</th><th>Modelo</th><th>Link</th><th>Status</th><th>Acoes</th></tr>
+            <tr><th>Vaga</th><th>Empresa</th><th>Modelo</th><th>Link</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
             <tr th:each="job : ${jobs}">
-                <td><strong th:text="${job.title}">Titulo</strong><br><span class="muted" th:text="|${job.seniority.label} / ${job.contractType.label}|">Nivel</span></td>
+                <td><strong th:text="${job.title}">Título</strong><br><span class="muted" th:text="|${job.seniority.label} / ${job.contractType.label}|">Nível</span></td>
                 <td th:text="${job.company}">Empresa</td>
                 <td><span class="badge blue" th:text="${job.locationType.label}">Modelo</span><br><span class="muted" th:text="${job.city}">Cidade</span></td>
                 <td><a class="btn small" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir</a><span class="muted" th:if="${job.applyUrl == null || job.applyUrl.isBlank()}">Interna</span></td>

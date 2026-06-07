@@ -5,8 +5,8 @@
         <section class="panel">
             <span class="badge green">Para empresas</span>
             <h1>Divulgue uma vaga de tecnologia</h1>
-            <p class="muted">Vagas remotas podem ser de qualquer lugar. Vagas hibridas ou presenciais sao aceitas apenas para cidades da Paraiba. Toda nova vaga entra como pendente para moderacao.</p>
-            <div class="alert success" th:if="${success}">Vaga enviada para revisao. O admin pode publicar pelo painel.</div>
+            <p class="muted">Vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas ou presenciais são aceitas apenas para cidades da Paraíba. Toda nova vaga passa por moderação antes de ser publicada.</p>
+            <div class="alert success" th:if="${success}">Vaga enviada para revisão. O admin pode publicar pelo painel.</div>
         </section>
 
         <section class="panel">
@@ -14,7 +14,7 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="grid two">
                     <label>Cargo
-                        <input class="input" th:field="*{title}" placeholder="Ex: Backend Java Pleno">
+                        <input class="input" th:field="*{title}" placeholder="Ex: Pessoa Desenvolvedora Java Júnior">
                         <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
                     </label>
                     <label>Empresa
@@ -32,8 +32,8 @@
                             <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:text="${type.label}"></option>
                         </select>
                     </label>
-                    <label>Cidade na Paraiba
-                        <input class="input" th:field="*{city}" placeholder="Obrigatoria se presencial">
+                    <label>Cidade na Paraíba
+                        <input class="input" th:field="*{city}" placeholder="Obrigatória para vagas presenciais ou híbridas">
                     </label>
                 </div>
                 <div class="grid two">
@@ -51,18 +51,18 @@
                 <label>Faixa salarial
                     <input class="input" th:field="*{salaryRange}" placeholder="Ex: R$ 6.000 - R$ 9.000">
                 </label>
-                <label>Descricao
+                <label>Descrição
                     <textarea class="textarea" th:field="*{description}" placeholder="Rotina, stack, responsabilidades e contexto da vaga"></textarea>
-                    <span class="hint">Minimo de 40 caracteres.</span>
+                    <span class="hint">Mínimo de 40 caracteres.</span>
                     <span class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
                 </label>
                 <label>Requisitos
-                    <textarea class="textarea" th:field="*{requirements}" placeholder="Tecnologias, experiencia, diferenciais"></textarea>
+                    <textarea class="textarea" th:field="*{requirements}" placeholder="Tecnologias, experiência, diferenciais"></textarea>
                 </label>
                 <label>Link externo da vaga
                     <input class="input" th:field="*{applyUrl}" placeholder="https://gupy.io, linkedin.com/jobs, indeed.com...">
                 </label>
-                <button class="btn primary" type="submit">Enviar para revisao</button>
+                <button class="btn primary" type="submit">Enviar para revisão</button>
             </form>
         </section>
     </div>

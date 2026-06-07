@@ -38,7 +38,7 @@ public class JobService {
     @Transactional
     public JobPosting publicDetails(Long id) {
         JobPosting job = jobPostingRepository.findByIdAndStatus(id, JobStatus.PUBLISHED)
-                .orElseThrow(() -> new IllegalArgumentException("Vaga nao encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
         job.incrementViews();
         return job;
     }
@@ -56,7 +56,7 @@ public class JobService {
     @Transactional
     public CandidateApplication apply(Long jobId, CandidateApplicationForm form) {
         JobPosting job = jobPostingRepository.findByIdAndStatus(jobId, JobStatus.PUBLISHED)
-                .orElseThrow(() -> new IllegalArgumentException("Vaga nao encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
         CandidateApplication application = new CandidateApplication(
                 job, trim(form.applicantName()), trim(form.applicantEmail()),
                 trim(form.linkedinUrl()), trim(form.message())

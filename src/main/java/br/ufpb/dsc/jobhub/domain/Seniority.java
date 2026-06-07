@@ -1,10 +1,10 @@
 package br.ufpb.dsc.jobhub.domain;
 
 public enum Seniority {
-    INTERNSHIP("Estagio"),
-    JUNIOR("Junior"),
+    INTERNSHIP("Estágio"),
+    JUNIOR("Júnior"),
     MID_LEVEL("Pleno"),
-    SENIOR("Senior"),
+    SENIOR("Sênior"),
     LEAD("Lead");
 
     private final String label;
