@@ -1,6 +1,6 @@
 spring:
   application:
-    name: jobhub-pb
+    name: radartech-pb
   profiles:
     active: dev
 

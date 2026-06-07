@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} + ' | JobHub PB'">JobHub PB</title>
+    <title th:text="${title} + ' | RadarTech PB'">RadarTech PB</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 <header class="topbar">
     <a class="brand" th:href="@{/}">
-        <span class="brand-mark">J</span>
+        <span class="brand-mark" aria-hidden="true"><span>RT</span></span>
         <span>
-            <strong>JobHub PB</strong>
-            <small>Tech remoto e Paraiba</small>
+            <strong>RadarTech PB</strong>
+            <small>Vagas tech para comecar e crescer</small>
         </span>
     </a>
     <nav class="nav-links" aria-label="Navegacao principal">
@@ -23,8 +23,8 @@
 </header>
 <th:block th:replace="${content}"></th:block>
 <footer class="footer">
-    <span>JobHub PB</span>
-    <span>Vagas remotas de tecnologia e presenciais apenas na Paraiba.</span>
+    <span>RadarTech PB</span>
+    <span>Remotas no Brasil, hibridas e presenciais somente na Paraiba.</span>
 </footer>
 </body>
 </html>

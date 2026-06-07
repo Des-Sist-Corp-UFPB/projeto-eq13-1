@@ -5,7 +5,7 @@
         <section class="panel">
             <span class="badge green">Para empresas</span>
             <h1>Divulgue uma vaga de tecnologia</h1>
-            <p class="muted">Vagas remotas podem ser de qualquer lugar. Vagas presenciais sao aceitas apenas para cidades da Paraiba. Toda nova vaga entra como pendente para moderacao.</p>
+            <p class="muted">Vagas remotas podem ser de qualquer lugar. Vagas hibridas ou presenciais sao aceitas apenas para cidades da Paraiba. Toda nova vaga entra como pendente para moderacao.</p>
             <div class="alert success" th:if="${success}">Vaga enviada para revisao. O admin pode publicar pelo painel.</div>
         </section>
 
@@ -60,7 +60,7 @@
                     <textarea class="textarea" th:field="*{requirements}" placeholder="Tecnologias, experiencia, diferenciais"></textarea>
                 </label>
                 <label>Link externo da vaga
-                    <input class="input" th:field="*{applyUrl}" placeholder="https://...">
+                    <input class="input" th:field="*{applyUrl}" placeholder="https://gupy.io, linkedin.com/jobs, indeed.com...">
                 </label>
                 <button class="btn primary" type="submit">Enviar para revisao</button>
             </form>

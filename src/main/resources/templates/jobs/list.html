@@ -3,8 +3,9 @@
 <main class="section container">
     <div class="actions" style="justify-content: space-between;">
         <div>
-            <h1 style="margin-bottom: 6px;">Vagas de tecnologia</h1>
-            <p class="muted">Remotas para qualquer lugar e presenciais apenas pela Paraiba.</p>
+            <span class="eyebrow">RadarTech PB</span>
+            <h1 style="margin-bottom: 6px;">Vagas reais de TI</h1>
+            <p class="muted">Remotas para todo o Brasil. Hibridas e presenciais somente na Paraiba.</p>
         </div>
         <a class="btn primary" th:href="@{/divulgar}">Divulgar vaga</a>
     </div>
@@ -33,7 +34,8 @@
             <p><strong th:text="${job.company}">Empresa</strong> <span class="muted" th:if="${job.city != null && !job.city.isBlank()}" th:text="|em ${job.city}|"></span></p>
             <p class="muted" th:text="${#strings.abbreviate(job.description, 180)}">Descricao</p>
             <div class="actions">
-                <a class="btn primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver vaga</a>
+                <a class="btn primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
+                <a class="btn" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga</a>
                 <span class="muted" th:text="${job.views} + ' visualizacoes'">0 visualizacoes</span>
             </div>
         </article>

@@ -32,6 +32,7 @@ public class DashboardService {
                 jobPostingRepository.countByStatus(JobStatus.ARCHIVED),
                 applicationRepository.count(),
                 jobPostingRepository.countByLocationTypeAndStatus(JobLocationType.REMOTE, JobStatus.PUBLISHED),
+                jobPostingRepository.countByLocationTypeAndStatus(JobLocationType.HYBRID_PB, JobStatus.PUBLISHED),
                 jobPostingRepository.countByLocationTypeAndStatus(JobLocationType.PRESENTIAL_PB, JobStatus.PUBLISHED),
                 jobPostingRepository.countByCreatedAtAfter(lastWeek),
                 applicationRepository.countByCreatedAtAfter(lastWeek),

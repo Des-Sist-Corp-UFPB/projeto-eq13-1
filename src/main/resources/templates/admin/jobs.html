@@ -8,13 +8,14 @@
     <section class="table-panel">
         <table>
             <thead>
-            <tr><th>Vaga</th><th>Empresa</th><th>Modelo</th><th>Status</th><th>Acoes</th></tr>
+            <tr><th>Vaga</th><th>Empresa</th><th>Modelo</th><th>Link</th><th>Status</th><th>Acoes</th></tr>
             </thead>
             <tbody>
             <tr th:each="job : ${jobs}">
                 <td><strong th:text="${job.title}">Titulo</strong><br><span class="muted" th:text="|${job.seniority.label} / ${job.contractType.label}|">Nivel</span></td>
                 <td th:text="${job.company}">Empresa</td>
                 <td><span class="badge blue" th:text="${job.locationType.label}">Modelo</span><br><span class="muted" th:text="${job.city}">Cidade</span></td>
+                <td><a class="btn small" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir</a><span class="muted" th:if="${job.applyUrl == null || job.applyUrl.isBlank()}">Interna</span></td>
                 <td><span class="badge" th:text="${job.status.label}">Status</span></td>
                 <td>
                     <div class="inline-actions">

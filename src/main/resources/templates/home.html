@@ -3,29 +3,42 @@
 <main>
     <section class="hero container">
         <div class="hero-grid">
-            <div class="panel">
-                <span class="badge blue">Tecnologia</span>
-                <h1>Vagas remotas e oportunidades presenciais na Paraiba.</h1>
-                <p>Um hub simples para conectar talentos de tecnologia a empresas com vagas remotas ou presenciais em Joao Pessoa, Campina Grande e outras cidades paraibanas.</p>
+            <div class="hero-copy">
+                <span class="eyebrow">Radar de oportunidades tech</span>
+                <h1>Vagas de TI para estudantes, estagiarios e juniors.</h1>
+                <p>Curadoria de oportunidades reais em tecnologia: remotas para todo o Brasil, hibridas e presenciais apenas na Paraiba.</p>
                 <div class="actions">
                     <a class="btn primary" th:href="@{/vagas}">Ver vagas</a>
                     <a class="btn" th:href="@{/divulgar}">Divulgar vaga</a>
                 </div>
             </div>
-            <div class="panel">
-                <h2>Foco do portal</h2>
-                <div class="grid">
-                    <div><span class="badge green">Remoto</span><p class="muted">Vagas tech remotas de qualquer empresa.</p></div>
-                    <div><span class="badge orange">Paraiba</span><p class="muted">Presencial somente dentro da Paraiba.</p></div>
-                    <div><span class="badge blue">Curadoria</span><p class="muted">Novas vagas entram como pendentes para moderacao.</p></div>
+            <div class="hero-board" aria-label="Resumo do portal">
+                <div class="signal-card strong">
+                    <span>Foco</span>
+                    <strong>Estagio & Junior</strong>
+                </div>
+                <div class="signal-card">
+                    <span>Modalidades</span>
+                    <strong>Remoto, hibrido e PB</strong>
+                </div>
+                <div class="signal-card">
+                    <span>Links</span>
+                    <strong>Gupy, LinkedIn, Indeed</strong>
+                </div>
+                <div class="signal-card">
+                    <span>Saude</span>
+                    <strong>/ping eq13 ok</strong>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="section container">
-        <div class="actions" style="justify-content: space-between; margin-bottom: 14px;">
-            <h2 style="margin:0;">Vagas recentes</h2>
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">Curadoria recente</span>
+                <h2>Vagas para aplicar agora</h2>
+            </div>
             <a class="btn small" th:href="@{/vagas}">Todas as vagas</a>
         </div>
         <div class="grid three">
@@ -36,7 +49,10 @@
                 </div>
                 <h3 th:text="${job.title}">Titulo da vaga</h3>
                 <p class="muted" th:text="${job.company}">Empresa</p>
-                <a class="btn small primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
+                <div class="actions">
+                    <a class="btn small primary" th:href="@{/vagas/{id}(id=${job.id})}">Detalhes</a>
+                    <a class="btn small" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga</a>
+                </div>
             </article>
         </div>
     </section>

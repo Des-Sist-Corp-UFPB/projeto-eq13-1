@@ -1,10 +1,12 @@
-# JobHub PB - Sistema de Vagas
+# RadarTech PB - Sistema de Vagas de TI
 
-Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O JobHub PB e um portal para divulgacao, busca e gerenciamento de vagas de tecnologia, com foco em oportunidades remotas e presenciais na Paraiba.
+Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O RadarTech PB e um portal para curadoria, busca e gerenciamento de vagas de tecnologia, com foco em estudantes, estagiarios e profissionais junior.
 
 ## Visao geral
 
-O sistema permite que visitantes consultem vagas, filtrem oportunidades e enviem candidaturas. Tambem existe uma area administrativa para moderacao das vagas, acompanhamento das candidaturas e visualizacao de indicadores do portal.
+O sistema permite que visitantes consultem vagas reais de TI, filtrem oportunidades por modelo de trabalho e abram o link publico da vaga original. Tambem existe uma area administrativa para moderacao das vagas, acompanhamento das candidaturas internas e visualizacao de indicadores do portal.
+
+As vagas remotas podem ser de qualquer lugar do Brasil. Vagas hibridas e presenciais sao focadas apenas na Paraiba.
 
 ## Tecnologias
 
@@ -25,6 +27,7 @@ O sistema permite que visitantes consultem vagas, filtrem oportunidades e enviem
 - Listagem publica de vagas.
 - Filtro por termo de busca e modelo de trabalho.
 - Pagina de detalhes da vaga.
+- Link externo para candidatura em plataformas como Gupy, LinkedIn e Indeed.
 - Formulario publico de candidatura.
 - Pagina publica para divulgar novas vagas.
 - Login administrativo.

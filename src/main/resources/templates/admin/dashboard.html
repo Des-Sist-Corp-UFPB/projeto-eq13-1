@@ -20,8 +20,11 @@
     </section>
     <section class="grid four" style="margin-bottom: 20px;">
         <div class="stat-card"><span>Remotas</span><strong th:text="${stats.remoteJobs}">0</strong></div>
+        <div class="stat-card"><span>Hibridas PB</span><strong th:text="${stats.hybridPbJobs}">0</strong></div>
         <div class="stat-card"><span>Presenciais PB</span><strong th:text="${stats.presencialPbJobs}">0</strong></div>
         <div class="stat-card"><span>Vagas em 7 dias</span><strong th:text="${stats.jobsLast7Days}">0</strong></div>
+    </section>
+    <section class="grid four" style="margin-bottom: 20px;">
         <div class="stat-card"><span>Visualizacoes</span><strong th:text="${stats.totalViews}">0</strong></div>
     </section>
 

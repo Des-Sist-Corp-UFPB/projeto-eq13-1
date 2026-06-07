@@ -17,10 +17,17 @@
             <p th:text="${job.description}">Descricao</p>
             <h2 th:if="${job.requirements != null && !job.requirements.isBlank()}">Requisitos</h2>
             <p th:if="${job.requirements != null && !job.requirements.isBlank()}" th:text="${job.requirements}">Requisitos</p>
-            <a class="btn primary" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir link da vaga</a>
+            <a class="btn primary" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se no site original</a>
         </article>
 
-        <aside class="panel">
+        <aside class="panel" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}">
+            <span class="badge green">Link publico</span>
+            <h2>Candidatura externa</h2>
+            <p class="muted">Esta vaga foi curada a partir de uma fonte publica. A candidatura oficial acontece no site da empresa ou plataforma parceira.</p>
+            <a class="btn success" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga original</a>
+        </aside>
+
+        <aside class="panel" th:if="${job.applyUrl == null || job.applyUrl.isBlank()}">
             <h2>Candidatar-se</h2>
             <div class="alert success" th:if="${applied}">Candidatura registrada. Boa sorte.</div>
             <form th:action="@{/vagas/{id}/candidatar(id=${job.id})}" th:object="${applicationForm}" method="post" class="grid">
