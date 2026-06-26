@@ -4,7 +4,9 @@ import br.ufpb.dsc.jobhub.domain.JobLocationType;
 import br.ufpb.dsc.jobhub.domain.JobStatus;
 import br.ufpb.dsc.jobhub.domain.ContractType;
 import br.ufpb.dsc.jobhub.domain.Seniority;
+import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.dto.JobPostForm;
+import br.ufpb.dsc.jobhub.service.BillingService;
 import br.ufpb.dsc.jobhub.service.AuditLogService;
 import br.ufpb.dsc.jobhub.service.DashboardService;
 import br.ufpb.dsc.jobhub.service.JobService;
@@ -22,8 +24,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
@@ -31,12 +35,14 @@ public class AdminController {
 
     private final DashboardService dashboardService;
     private final JobService jobService;
+    private final BillingService billingService;
     private final UserService userService;
     private final AuditLogService auditLogService;
 
-    public AdminController(DashboardService dashboardService, JobService jobService, UserService userService, AuditLogService auditLogService) {
+    public AdminController(DashboardService dashboardService, JobService jobService, BillingService billingService, UserService userService, AuditLogService auditLogService) {
         this.dashboardService = dashboardService;
         this.jobService = jobService;
+        this.billingService = billingService;
         this.userService = userService;
         this.auditLogService = auditLogService;
     }
@@ -67,11 +73,39 @@ public class AdminController {
     }
 
     @GetMapping
-    public String dashboard(Model model) {
+    public String dashboard(Model model, Authentication authentication) {
         model.addAttribute("stats", dashboardService.stats());
         model.addAttribute("jobs", jobService.allJobs().stream().limit(6).toList());
         model.addAttribute("applications", jobService.allApplications().stream().limit(6).toList());
+        model.addAttribute("billingCompany", billingCompany(authentication));
+        model.addAttribute("billingCompanyEmail", billingCompanyEmail(authentication));
+        model.addAttribute("subscription", billingService.findByCompanyEmail(billingCompanyEmail(authentication)));
         return "admin/dashboard";
+    }
+
+    @PostMapping("/billing/checkout")
+    public String checkout(@RequestParam String company,
+                           @RequestParam String companyEmail,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            BillingService.CheckoutResult result = billingService.createCheckoutSession(company, companyEmail);
+            return "redirect:" + result.checkoutUrl();
+        } catch (IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("billingMessage", ex.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/billing/sucesso")
+    public String billingSuccess(Model model, @RequestParam(required = false) Long subscription) {
+        model.addAttribute("billingMessage", subscription == null ? "Assinatura iniciada." : "Assinatura iniciada com sucesso.");
+        return "admin/billing-success";
+    }
+
+    @GetMapping("/billing/cancelado")
+    public String billingCanceled(Model model) {
+        model.addAttribute("billingMessage", "Checkout cancelado.");
+        return "admin/billing-canceled";
     }
 
     @GetMapping("/vagas")
@@ -172,5 +206,42 @@ public class AdminController {
         var job = jobService.delete(id);
         auditLogService.log(request, authentication, "JOB_DELETED", "JOB_POSTING", job.getId(), "Vaga removida: " + job.getTitle());
         return "redirect:/admin/vagas";
+    }
+
+    private String billingCompany(Authentication authentication) {
+        return currentAppUser(authentication)
+                .map(AppUser::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .orElseGet(() -> defaultCompanyName(authentication));
+    }
+
+    private String billingCompanyEmail(Authentication authentication) {
+        return currentAppUser(authentication)
+                .map(AppUser::getEmail)
+                .filter(email -> email != null && !email.isBlank())
+                .orElseGet(() -> defaultCompanyEmail(authentication));
+    }
+
+    private Optional<AppUser> currentAppUser(Authentication authentication) {
+        return userService.currentUser(authentication);
+    }
+
+    private String defaultCompanyName(Authentication authentication) {
+        String login = authentication == null ? null : authentication.getName();
+        if (login == null || login.isBlank()) {
+            return "RadarTech PB";
+        }
+        return login;
+    }
+
+    private String defaultCompanyEmail(Authentication authentication) {
+        String login = authentication == null ? null : authentication.getName();
+        if (login == null || login.isBlank()) {
+            return "admin@radartech.local";
+        }
+        if (login.contains("@")) {
+            return login;
+        }
+        return login + "@radartech.local";
     }
 }

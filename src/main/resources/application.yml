@@ -15,6 +15,12 @@ spring:
               - profile
               - email
 
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:<stripe-secret-key>}
+  monthly-price-id: ${STRIPE_MONTHLY_PRICE_ID:<stripe-monthly-price-id>}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:8080/admin/billing/sucesso}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:8080/admin/billing/cancelado}
+
 management:
   endpoints:
     web:

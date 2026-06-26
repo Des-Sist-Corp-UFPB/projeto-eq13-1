@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Billing cancelado', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <section class="panel">
+        <span class="badge">Cancelado</span>
+        <h1>Checkout cancelado</h1>
+        <p class="muted" th:text="${billingMessage}">Checkout cancelado.</p>
+        <a class="btn primary" th:href="@{/admin}">Voltar ao dashboard</a>
+    </section>
+</main>
+</html>

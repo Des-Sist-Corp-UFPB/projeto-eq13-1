@@ -4,7 +4,6 @@ import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.AuditLog;
 import br.ufpb.dsc.jobhub.repository.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +68,10 @@ public class AuditLogService {
     public List<AuditLog> search(String action, String actor, String entityType, LocalDate from, LocalDate to) {
         Instant fromInstant = from == null ? null : from.atStartOfDay(DEFAULT_ZONE).toInstant();
         Instant toInstant = to == null ? null : to.plusDays(1).atStartOfDay(DEFAULT_ZONE).toInstant();
-        return auditLogRepository.search(action, actor, entityType, fromInstant, toInstant, PageRequest.of(0, 200));
+        return auditLogRepository.search(action, actor, entityType, fromInstant, toInstant)
+                .stream()
+                .limit(200)
+                .toList();
     }
 
     private AuditLog log(HttpServletRequest request, Long actorId, String actorEmail, String action,

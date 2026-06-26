@@ -1,7 +1,6 @@
 package br.ufpb.dsc.jobhub.repository;
 
 import br.ufpb.dsc.jobhub.domain.AuditLog;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +23,5 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
                           @Param("actor") String actor,
                           @Param("entityType") String entityType,
                           @Param("fromDate") Instant fromDate,
-                          @Param("toDate") Instant toDate,
-                          Pageable pageable);
+                          @Param("toDate") Instant toDate);
 }

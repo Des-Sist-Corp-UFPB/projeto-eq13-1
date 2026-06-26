@@ -153,7 +153,7 @@ class ServiceBehaviorIntegrationTest {
     void auditLogCanBePersistedAndFiltered() {
         auditLogService.logSystem("auditor@example.com", "TEST_ACTION", "TEST_ENTITY", 99L, "Evento de teste.");
 
-        assertThat(auditLogRepository.search("TEST", "auditor", "TEST_ENTITY", null, null, org.springframework.data.domain.PageRequest.of(0, 20)))
+        assertThat(auditLogRepository.search("TEST", "auditor", "TEST_ENTITY", null, null))
                 .hasSize(1);
         assertThat(auditLogService.search("TEST", "auditor", "TEST_ENTITY", LocalDate.now().minusDays(1), LocalDate.now().plusDays(1)))
                 .hasSize(1);
