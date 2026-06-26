@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html th:replace="~{fragments/layout :: shell('Gestão de vagas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
 <main class="section container">
-    <div class="actions" style="justify-content: space-between;">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+    <div class="page-header">
         <div><h1>Gestão de vagas</h1><p class="muted">Publique, arquive ou remova vagas enviadas.</p></div>
-        <a class="btn" th:href="@{/admin}">Dashboard</a>
+        <a class="btn primary" th:href="@{/admin/vagas/nova}">Nova vaga</a>
     </div>
+    <form class="filter-bar" th:action="@{/admin/vagas}" method="get">
+        <input class="input" type="search" name="q" placeholder="Cargo ou empresa" th:value="${q}">
+        <select class="select" name="status">
+            <option value="">Todos os status</option>
+            <option th:each="item : ${jobStatuses}" th:value="${item.name()}" th:selected="${selectedStatus == item.name()}" th:text="${item.label}"></option>
+        </select>
+        <select class="select" name="location">
+            <option value="">Todos os modelos</option>
+            <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:selected="${selectedLocation == type.name()}" th:text="${type.label}"></option>
+        </select>
+        <button class="btn primary" type="submit">Filtrar</button>
+        <a class="btn ghost" th:href="@{/admin/vagas}">Limpar</a>
+    </form>
     <section class="table-panel">
         <table>
             <thead>

@@ -25,6 +25,10 @@ public class CandidateApplication {
     @JoinColumn(name = "job_id", nullable = false)
     private JobPosting job;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "app_user_id")
+    private AppUser applicantUser;
+
     @NotBlank
     @Column(nullable = false, length = 140)
     private String applicantName;
@@ -47,7 +51,12 @@ public class CandidateApplication {
     }
 
     public CandidateApplication(JobPosting job, String applicantName, String applicantEmail, String linkedinUrl, String message) {
+        this(job, null, applicantName, applicantEmail, linkedinUrl, message);
+    }
+
+    public CandidateApplication(JobPosting job, AppUser applicantUser, String applicantName, String applicantEmail, String linkedinUrl, String message) {
         this.job = job;
+        this.applicantUser = applicantUser;
         this.applicantName = applicantName;
         this.applicantEmail = applicantEmail;
         this.linkedinUrl = linkedinUrl;
@@ -61,6 +70,7 @@ public class CandidateApplication {
 
     public Long getId() { return id; }
     public JobPosting getJob() { return job; }
+    public AppUser getApplicantUser() { return applicantUser; }
     public String getApplicantName() { return applicantName; }
     public String getApplicantEmail() { return applicantEmail; }
     public String getLinkedinUrl() { return linkedinUrl; }

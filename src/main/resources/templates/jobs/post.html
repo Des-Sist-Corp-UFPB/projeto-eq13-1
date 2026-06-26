@@ -12,6 +12,7 @@
         <section class="panel">
             <form th:action="@{/divulgar}" th:object="${form}" method="post" class="grid">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="alert" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Erro</div>
                 <div class="grid two">
                     <label>Cargo
                         <input class="input" th:field="*{title}" placeholder="Ex: Pessoa Desenvolvedora Java Júnior">

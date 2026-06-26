@@ -26,8 +26,8 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Executa testes
-        run: mvn test -B
+      - name: Executa testes e cobertura
+        run: mvn verify -B
 
       - name: Prepara nome da imagem (lowercase)
         id: image

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Minha conta', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Minha conta</span>
+            <h1 th:text="${user.name}">Usuário</h1>
+            <p class="muted">Dados básicos da sua conta no RadarTech PB.</p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn" type="submit">Sair</button>
+        </form>
+    </div>
+    <section class="panel">
+        <dl class="profile-list">
+            <div><dt>E-mail</dt><dd th:text="${user.email}">email</dd></div>
+            <div><dt>Usuário</dt><dd th:text="${user.username ?: 'Não informado'}">usuario</dd></div>
+            <div><dt>Perfil</dt><dd th:text="${user.role.label}">Perfil</dd></div>
+            <div><dt>Origem</dt><dd th:text="${user.provider}">LOCAL</dd></div>
+        </dl>
+    </section>
+</main>
+</html>

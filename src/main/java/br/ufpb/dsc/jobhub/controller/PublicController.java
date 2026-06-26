@@ -1,12 +1,17 @@
 package br.ufpb.dsc.jobhub.controller;
 
 import br.ufpb.dsc.jobhub.domain.ContractType;
+import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.JobLocationType;
 import br.ufpb.dsc.jobhub.domain.Seniority;
 import br.ufpb.dsc.jobhub.dto.CandidateApplicationForm;
 import br.ufpb.dsc.jobhub.dto.JobPostForm;
+import br.ufpb.dsc.jobhub.service.AuditLogService;
 import br.ufpb.dsc.jobhub.service.JobService;
+import br.ufpb.dsc.jobhub.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,9 +26,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PublicController {
 
     private final JobService jobService;
+    private final UserService userService;
+    private final AuditLogService auditLogService;
 
-    public PublicController(JobService jobService) {
+    public PublicController(JobService jobService, UserService userService, AuditLogService auditLogService) {
         this.jobService = jobService;
+        this.userService = userService;
+        this.auditLogService = auditLogService;
     }
 
     @ModelAttribute("locationTypes")
@@ -71,13 +80,17 @@ public class PublicController {
     public String apply(@PathVariable Long id,
                         @Valid @ModelAttribute("applicationForm") CandidateApplicationForm form,
                         BindingResult bindingResult,
-                        Model model) {
+                        Model model,
+                        Authentication authentication,
+                        HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("job", jobService.publicDetails(id));
             model.addAttribute("applied", false);
             return "jobs/detail";
         }
-        jobService.apply(id, form);
+        AppUser applicantUser = userService.currentUser(authentication).orElse(null);
+        var application = jobService.apply(id, form, applicantUser);
+        auditLogService.log(request, authentication, "APPLICATION_SUBMITTED", "CANDIDATE_APPLICATION", application.getId(), "Candidatura interna enviada.");
         return "redirect:/vagas/" + id + "?applied=true";
     }
 
@@ -92,11 +105,19 @@ public class PublicController {
     @PostMapping("/divulgar")
     public String createJob(@Valid @ModelAttribute("form") JobPostForm form,
                             BindingResult bindingResult,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication,
+                            HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             return "jobs/post";
         }
-        jobService.createPending(form);
+        try {
+            var job = jobService.createPending(form);
+            auditLogService.log(request, authentication, "PUBLIC_JOB_SUBMITTED", "JOB_POSTING", job.getId(), "Vaga enviada pela página pública.");
+        } catch (IllegalArgumentException ex) {
+            bindingResult.reject("job.location", ex.getMessage());
+            return "jobs/post";
+        }
         redirectAttributes.addFlashAttribute("success", true);
         return "redirect:/divulgar";
     }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html th:replace="~{fragments/layout :: shell('Dashboard', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
 <main class="section container">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
     <div class="actions" style="justify-content: space-between;">
         <div>
             <h1>Dashboard</h1>
@@ -16,15 +17,18 @@
         <div class="stat-card"><span>Vagas totais</span><strong th:text="${stats.totalJobs}">0</strong></div>
         <div class="stat-card"><span>Publicadas</span><strong th:text="${stats.publishedJobs}">0</strong></div>
         <div class="stat-card"><span>Pendentes</span><strong th:text="${stats.pendingJobs}">0</strong></div>
-        <div class="stat-card"><span>Candidaturas</span><strong th:text="${stats.totalApplications}">0</strong></div>
+        <div class="stat-card"><span>Arquivadas</span><strong th:text="${stats.archivedJobs}">0</strong></div>
     </section>
     <section class="grid four" style="margin-bottom: 20px;">
+        <div class="stat-card"><span>Candidaturas</span><strong th:text="${stats.totalApplications}">0</strong></div>
+        <div class="stat-card"><span>Usuários</span><strong th:text="${stats.totalUsers}">0</strong></div>
         <div class="stat-card"><span>Remotas</span><strong th:text="${stats.remoteJobs}">0</strong></div>
         <div class="stat-card"><span>Híbridas PB</span><strong th:text="${stats.hybridPbJobs}">0</strong></div>
-        <div class="stat-card"><span>Presenciais PB</span><strong th:text="${stats.presencialPbJobs}">0</strong></div>
-        <div class="stat-card"><span>Vagas em 7 dias</span><strong th:text="${stats.jobsLast7Days}">0</strong></div>
     </section>
     <section class="grid four" style="margin-bottom: 20px;">
+        <div class="stat-card"><span>Presenciais PB</span><strong th:text="${stats.presencialPbJobs}">0</strong></div>
+        <div class="stat-card"><span>Vagas em 7 dias</span><strong th:text="${stats.jobsLast7Days}">0</strong></div>
+        <div class="stat-card"><span>Candidaturas em 7 dias</span><strong th:text="${stats.applicationsLast7Days}">0</strong></div>
         <div class="stat-card"><span>Visualizações</span><strong th:text="${stats.totalViews}">0</strong></div>
     </section>
 
@@ -42,10 +46,10 @@
         <section>
             <div class="actions" style="justify-content: space-between;"><h2>Candidaturas recentes</h2><a class="btn small" th:href="@{/admin/candidaturas}">Ver todas</a></div>
             <div class="grid">
-                <article class="job-card" th:each="application : ${applications}">
-                    <h3 th:text="${application.applicantName}">Nome</h3>
-                    <p class="muted" th:text="${application.job.title}">Vaga</p>
-                    <p class="muted" th:text="${application.applicantEmail}">email</p>
+                <article class="job-card" th:each="candidateApplication : ${applications}">
+                    <h3 th:text="${candidateApplication.applicantName}">Nome</h3>
+                    <p class="muted" th:text="${candidateApplication.job.title}">Vaga</p>
+                    <p class="muted" th:text="${candidateApplication.applicantEmail}">email</p>
                 </article>
             </div>
         </section>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Entrar', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="login-shell">
+    <section class="panel login-card">
+        <span class="badge green">Acesso</span>
+        <h1>Entrar no RadarTech PB</h1>
+        <p class="muted">Use e-mail, usuário e senha ou entre com Google.</p>
+        <div class="alert" th:if="${param.error}">Não foi possível entrar. Confira seus dados.</div>
+        <div class="alert success" th:if="${registered}">Cadastro criado. Entre para continuar.</div>
+        <div class="auth-options">
+            <a class="btn google" th:href="@{/oauth2/authorization/google}" aria-label="Entrar com Google">
+                <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path fill="#4285F4" d="M23.49 12.27c0-.82-.07-1.6-.21-2.36H12v4.46h6.45a5.52 5.52 0 0 1-2.39 3.62v2.96h3.87c2.26-2.08 3.56-5.14 3.56-8.68z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.9l-3.87-2.96c-1.07.72-2.44 1.14-4.07 1.14-3.13 0-5.78-2.11-6.72-4.95H1.29v3.06A11.99 11.99 0 0 0 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.33a7.2 7.2 0 0 1 0-4.66V6.61H1.29a11.99 11.99 0 0 0 0 10.78l3.99-3.06z"/>
+                    <path fill="#EA4335" d="M12 4.72c1.76 0 3.34.6 4.58 1.79l3.44-3.44A11.52 11.52 0 0 0 12 0 11.99 11.99 0 0 0 1.29 6.61l3.99 3.06C6.22 6.83 8.87 4.72 12 4.72z"/>
+                </svg>
+                <span>Entrar com Google</span>
+            </a>
+        </div>
+        <form th:action="@{/login}" method="post" class="grid">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label>E-mail ou usuário
+                <input class="input" type="text" name="username" autocomplete="username" autofocus>
+            </label>
+            <label>Senha
+                <input class="input" type="password" name="password" autocomplete="current-password">
+            </label>
+            <button class="btn primary" type="submit">Entrar</button>
+        </form>
+        <p class="muted">Ainda não tem conta? <a th:href="@{/cadastro}"><strong>Cadastre-se</strong></a></p>
+    </section>
+</main>
+</html>

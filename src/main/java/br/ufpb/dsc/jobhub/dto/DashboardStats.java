@@ -6,6 +6,7 @@ public record DashboardStats(
         long pendingJobs,
         long archivedJobs,
         long totalApplications,
+        long totalUsers,
         long remoteJobs,
         long hybridPbJobs,
         long presencialPbJobs,

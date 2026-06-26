@@ -13,8 +13,10 @@ services:
       AWS_S3_PUBLIC_ENDPOINT: ${AWS_S3_PUBLIC_ENDPOINT:-https://s3.dsc.rodrigor.com}
       AWS_S3_REGION: ${AWS_S3_REGION:-us-east-1}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET:-eq13}
-      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY:-eq13}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY:-}
       AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY:?AWS_S3_SECRET_KEY is required}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-<google-client-id>}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-<google-client-secret>}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
     ports:

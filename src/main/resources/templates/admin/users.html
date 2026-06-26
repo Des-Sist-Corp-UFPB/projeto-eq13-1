@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Usuários', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+    <div class="page-header">
+        <div><h1>Usuários</h1><p class="muted">Contas cadastradas por formulário, Google ou inicialização administrativa.</p></div>
+    </div>
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr><th>Nome</th><th>E-mail</th><th>Usuário</th><th>Perfil</th><th>Origem</th><th>Criado em</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td><strong th:text="${user.name}">Nome</strong></td>
+                <td th:text="${user.email}">email</td>
+                <td th:text="${user.username ?: '-'}">usuario</td>
+                <td><span class="badge" th:text="${user.role.label}">Perfil</span></td>
+                <td th:text="${user.provider}">LOCAL</td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}">Data</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>

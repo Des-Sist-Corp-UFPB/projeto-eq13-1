@@ -1,6 +1,7 @@
 package br.ufpb.dsc.jobhub.service;
 
 import br.ufpb.dsc.jobhub.domain.CandidateApplication;
+import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.JobLocationType;
 import br.ufpb.dsc.jobhub.domain.JobPosting;
 import br.ufpb.dsc.jobhub.domain.JobStatus;
@@ -35,6 +36,11 @@ public class JobService {
         return jobPostingRepository.searchPublished(normalize(keyword), parseLocation(location));
     }
 
+    @Transactional(readOnly = true)
+    public List<JobPosting> searchAdmin(String keyword, String status, String location) {
+        return jobPostingRepository.searchAdmin(normalize(keyword), parseStatus(status), parseLocation(location));
+    }
+
     @Transactional
     public JobPosting publicDetails(Long id) {
         JobPosting job = jobPostingRepository.findByIdAndStatus(id, JobStatus.PUBLISHED)
@@ -45,20 +51,33 @@ public class JobService {
 
     @Transactional
     public JobPosting createPending(JobPostForm form) {
+        validateLocation(form.locationType(), form.city());
         JobPosting job = new JobPosting(
                 trim(form.title()), trim(form.company()), trim(form.companyEmail()), form.locationType(),
-                trim(form.city()), form.seniority(), form.contractType(), trim(form.salaryRange()),
+                normalizeCity(form.locationType(), form.city()), form.seniority(), form.contractType(), trim(form.salaryRange()),
                 trim(form.description()), trim(form.requirements()), trim(form.applyUrl())
         );
         return jobPostingRepository.save(job);
     }
 
     @Transactional
+    public JobPosting createByAdmin(JobPostForm form) {
+        JobPosting job = createPending(form);
+        job.publish();
+        return job;
+    }
+
+    @Transactional
     public CandidateApplication apply(Long jobId, CandidateApplicationForm form) {
+        return apply(jobId, form, null);
+    }
+
+    @Transactional
+    public CandidateApplication apply(Long jobId, CandidateApplicationForm form, AppUser applicantUser) {
         JobPosting job = jobPostingRepository.findByIdAndStatus(jobId, JobStatus.PUBLISHED)
                 .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
         CandidateApplication application = new CandidateApplication(
-                job, trim(form.applicantName()), trim(form.applicantEmail()),
+                job, applicantUser, trim(form.applicantName()), trim(form.applicantEmail()),
                 trim(form.linkedinUrl()), trim(form.message())
         );
         return applicationRepository.save(application);
@@ -74,24 +93,37 @@ public class JobService {
         return applicationRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    @Transactional
-    public void publish(Long id) {
-        jobPostingRepository.findById(id).orElseThrow().publish();
+    @Transactional(readOnly = true)
+    public JobPosting findAny(Long id) {
+        return jobPostingRepository.findById(id).orElseThrow();
     }
 
     @Transactional
-    public void archive(Long id) {
-        jobPostingRepository.findById(id).orElseThrow().archive();
+    public JobPosting publish(Long id) {
+        JobPosting job = jobPostingRepository.findById(id).orElseThrow();
+        job.publish();
+        return job;
     }
 
     @Transactional
-    public void sendToPending(Long id) {
-        jobPostingRepository.findById(id).orElseThrow().sendToPending();
+    public JobPosting archive(Long id) {
+        JobPosting job = jobPostingRepository.findById(id).orElseThrow();
+        job.archive();
+        return job;
     }
 
     @Transactional
-    public void delete(Long id) {
-        jobPostingRepository.deleteById(id);
+    public JobPosting sendToPending(Long id) {
+        JobPosting job = jobPostingRepository.findById(id).orElseThrow();
+        job.sendToPending();
+        return job;
+    }
+
+    @Transactional
+    public JobPosting delete(Long id) {
+        JobPosting job = jobPostingRepository.findById(id).orElseThrow();
+        jobPostingRepository.delete(job);
+        return job;
     }
 
     private JobLocationType parseLocation(String location) {
@@ -103,6 +135,30 @@ public class JobService {
         } catch (IllegalArgumentException ex) {
             return null;
         }
+    }
+
+    private JobStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        try {
+            return JobStatus.valueOf(status.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private void validateLocation(JobLocationType locationType, String city) {
+        if (locationType != JobLocationType.REMOTE && (city == null || city.isBlank())) {
+            throw new IllegalArgumentException("Informe a cidade para vagas híbridas ou presenciais na Paraíba.");
+        }
+    }
+
+    private String normalizeCity(JobLocationType locationType, String city) {
+        if (locationType == JobLocationType.REMOTE) {
+            return null;
+        }
+        return trim(city);
     }
 
     private String normalize(String value) {
