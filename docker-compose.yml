@@ -17,6 +17,10 @@ services:
       AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY:?AWS_S3_SECRET_KEY is required}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-<google-client-id>}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-<google-client-secret>}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_MONTHLY_PRICE_ID: ${STRIPE_MONTHLY_PRICE_ID:-}
+      STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://eq13.dsc.rodrigor.com/admin/billing/sucesso}
+      STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://eq13.dsc.rodrigor.com/admin/billing/cancelado}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
     ports:

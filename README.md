@@ -37,6 +37,7 @@ As vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas e presen
 - Login com Google OAuth2.
 - Página "Minha conta".
 - Login administrativo.
+- Checkout de assinatura com Stripe para recursos administrativos de cobranca.
 - Painel administrativo com indicadores.
 - Gestão de vagas com busca e filtros.
 - Gestão de usuários.
@@ -91,6 +92,19 @@ Ao logar com Google:
 - se o e-mail ainda não existir, o sistema cria um usuário com `ROLE_USER`;
 - se o e-mail já existir, o sistema reutiliza a conta existente;
 - usuários administradores existentes preservam o papel administrativo.
+
+## Cobranca com Stripe
+
+O painel administrativo possui um fluxo de checkout de assinatura usando Stripe Checkout. As credenciais e o identificador do preco mensal devem ser configurados apenas por variaveis de ambiente:
+
+```env
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/admin/billing/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/admin/billing/cancelado
+```
+
+Nunca versione chaves reais da Stripe. Sem `STRIPE_SECRET_KEY` e `STRIPE_MONTHLY_PRICE_ID`, o checkout fica indisponivel e o sistema informa a ausencia de configuracao.
 
 ## Auditoria
 
@@ -222,6 +236,8 @@ O projeto inclui um arquivo `.env.example` com valores de exemplo. Não faça co
 ```env
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=<senha-admin>
 ```
@@ -270,6 +286,11 @@ AWS_S3_SECRET_KEY=<secret-real-do-minio>
 
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
+
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/admin/billing/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/admin/billing/cancelado
 
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=<senha-admin>
