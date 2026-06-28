@@ -12,6 +12,12 @@ spring:
     show-sql: false
   flyway:
     enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: ${GOOGLE_REDIRECT_URI:https://eq13.dsc.rodrigor.com/login/oauth2/code/google}
 
 aws:
   s3:

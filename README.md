@@ -71,6 +71,7 @@ Configure as credenciais por variáveis de ambiente:
 ```env
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
 ```
 
 No console do Google Cloud, configure o redirect URI autorizado:
@@ -236,6 +237,7 @@ O projeto inclui um arquivo `.env.example` com valores de exemplo. Não faça co
 ```env
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
 STRIPE_SECRET_KEY=<stripe-secret-key>
 STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
 ADMIN_USERNAME=admin
@@ -286,6 +288,7 @@ AWS_S3_SECRET_KEY=<secret-real-do-minio>
 
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
 
 STRIPE_SECRET_KEY=<stripe-secret-key>
 STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
