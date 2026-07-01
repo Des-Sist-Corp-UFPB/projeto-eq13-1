@@ -18,8 +18,7 @@
 
 - ✅ **Stripe** — declarado no README e comprovado no código (11 ocorrência(s)).
   - Evidência: `docker-compose.yml:21:      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}`
-- ❌ **AWS S3** — **declarado no README, mas SEM evidência no código.**
-- ✅ **MinIO** — declarado no README e comprovado no código (3 ocorrência(s)).
+- ✅ **Object Storage (S3/MinIO)** — declarado no README e comprovado no código (3 ocorrência(s)).
   - Evidência: `docker-compose.yml:12:      AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT:-http://minio:9000}`
 
 ---
