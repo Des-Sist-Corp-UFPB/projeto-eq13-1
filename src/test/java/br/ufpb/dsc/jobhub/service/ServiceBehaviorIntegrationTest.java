@@ -240,6 +240,30 @@ class ServiceBehaviorIntegrationTest {
     }
 
     @Test
+    void registerLocalWithNullUsername() {
+        RegistrationForm form = new RegistrationForm("User No Username", "no_user@example.com", null, "senha1234");
+        AppUser user = userService.registerLocal(form);
+        assertThat(user.getUsername()).isNull();
+        assertThat(user.getEmail()).isEqualTo("no_user@example.com");
+    }
+
+    @Test
+    void searchAdminWithNullStatusAndLocation() {
+        var results = jobService.searchAdmin("Zenvia", null, null);
+        assertThat(results).isNotEmpty();
+    }
+
+    @Test
+    void auditLogWithBlankForwardedFor() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("X-Forwarded-For", " ");
+        request.setRemoteAddr("192.168.1.1");
+
+        AuditLog log = auditLogService.log(request, (AppUser) null, "ACTION", "ENTITY", 1L, "Description");
+        assertThat(log.getIpAddress()).isEqualTo("192.168.1.1");
+    }
+
+    @Test
     void repositoriesSearchByStatusLocationAndKeyword() {
         assertThat(jobPostingRepository.searchAdmin("Zenvia", JobStatus.PUBLISHED, JobLocationType.REMOTE)).isNotEmpty();
         assertThat(jobPostingRepository.searchPublished("Estagio", JobLocationType.REMOTE)).isNotEmpty();

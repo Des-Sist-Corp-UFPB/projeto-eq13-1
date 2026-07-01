@@ -137,6 +137,68 @@ class BillingServiceTest {
         }
     }
 
+    @Test
+    void startsMonthlySubscriptionCreatesNewSubscriptionWhenNotFound() {
+        BillingService service = serviceWithStripeConfig();
+
+        when(subscriptionRepository.findByCompanyEmailIgnoreCase("new_company@example.com"))
+                .thenReturn(Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Subscription subscription = service.startMonthlySubscription("Nova Empresa", "new_company@example.com");
+
+        assertThat(subscription.getCompany()).isEqualTo("Nova Empresa");
+        assertThat(subscription.getCompanyEmail()).isEqualTo("new_company@example.com");
+        assertThat(subscription.getPlanCode()).isEqualTo("monthly-basic");
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        verify(subscriptionRepository).save(subscription);
+    }
+
+    @Test
+    void createCheckoutSessionCreatesNewSubscriptionWhenNotFound() throws Exception {
+        Session stripeSession = mock(Session.class);
+        BillingService service = serviceWithStripeConfig();
+
+        when(subscriptionRepository.findByCompanyEmailIgnoreCase("new_checkout@example.com"))
+                .thenReturn(Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(stripeSession.getUrl()).thenReturn("https://checkout.stripe.test/session");
+        when(stripeSession.getId()).thenReturn("cs_test_new");
+
+        try (MockedStatic<Session> sessions = mockStatic(Session.class)) {
+            sessions.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(stripeSession);
+
+            BillingService.CheckoutResult result = service.createCheckoutSession("Nova Empresa 2", "new_checkout@example.com");
+
+            assertThat(result.checkoutUrl()).isEqualTo("https://checkout.stripe.test/session");
+            assertThat(result.subscription().getCompany()).isEqualTo("Nova Empresa 2");
+            assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(result.subscription().getExternalReference()).isEqualTo("cs_test_new");
+            sessions.verify(() -> Session.create(any(SessionCreateParams.class)));
+        }
+    }
+
+    @Test
+    void createCheckoutSessionPropagatesStripeExceptionAsIllegalStateException() throws Exception {
+        BillingService service = serviceWithStripeConfig();
+
+        when(subscriptionRepository.findByCompanyEmailIgnoreCase("error_checkout@example.com"))
+                .thenReturn(Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        try (MockedStatic<Session> sessions = mockStatic(Session.class)) {
+            sessions.when(() -> Session.create(any(SessionCreateParams.class)))
+                    .thenThrow(new com.stripe.exception.ApiConnectionException("Stripe error"));
+
+            assertThatThrownBy(() -> service.createCheckoutSession("Empresa Erro", "error_checkout@example.com"))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Não foi possível iniciar o checkout do Stripe");
+        }
+    }
+
     private BillingService serviceWithStripeConfig() {
         return new BillingService(
                 subscriptionRepository,
