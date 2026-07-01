@@ -198,16 +198,25 @@ As tabelas são criadas automaticamente pelas migrations Flyway em `src/main/res
 Para executar testes e cobertura:
 
 ```bash
-mvn verify
+mvn clean test jacoco:report
 ```
 
 O projeto usa JaCoCo e exige cobertura mínima de 85%. O build falha caso a cobertura fique abaixo do mínimo configurado.
 
-O relatório fica em:
+**Cobertura total de linhas: 93,01%** (639 de 687 linhas cobertas).
+
+O relatório de cobertura está commitado na pasta `cobertura/` na raiz do projeto:
+
+```text
+cobertura/index.html
+```
+
+O relatório também pode ser regenerado localmente em:
 
 ```text
 target/site/jacoco/index.html
 ```
+
 
 ## Estrutura do Projeto
 

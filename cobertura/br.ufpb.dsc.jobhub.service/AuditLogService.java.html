@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditLogService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">AuditLogService.java</span></div><h1>AuditLogService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
+
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.AuditLog;
+import br.ufpb.dsc.jobhub.repository.AuditLogRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class AuditLogService {
+
+<span class="fc" id="L20">    private static final ZoneId DEFAULT_ZONE = ZoneId.of(&quot;America/Sao_Paulo&quot;);</span>
+
+    private final AuditLogRepository auditLogRepository;
+    private final UserService userService;
+
+<span class="fc" id="L25">    public AuditLogService(AuditLogRepository auditLogRepository, UserService userService) {</span>
+<span class="fc" id="L26">        this.auditLogRepository = auditLogRepository;</span>
+<span class="fc" id="L27">        this.userService = userService;</span>
+<span class="fc" id="L28">    }</span>
+
+    @Transactional
+    public AuditLog log(HttpServletRequest request, Authentication authentication, String action,
+                        String entityType, Object entityId, String description) {
+<span class="fc" id="L33">        Optional&lt;AppUser&gt; currentUser = userService.currentUser(authentication);</span>
+<span class="fc" id="L34">        return log(request,</span>
+<span class="fc" id="L35">                currentUser.map(AppUser::getId).orElse(null),</span>
+<span class="fc" id="L36">                currentUser.map(AppUser::getEmail).orElse(null),</span>
+                action,
+                entityType,
+                entityId,
+                description);
+    }
+
+    @Transactional
+    public AuditLog log(HttpServletRequest request, AppUser actor, String action,
+                        String entityType, Object entityId, String description) {
+<span class="fc" id="L46">        return log(request,</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                actor == null ? null : actor.getId(),</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                actor == null ? null : actor.getEmail(),</span>
+                action,
+                entityType,
+                entityId,
+                description);
+    }
+
+    @Transactional
+    public AuditLog log(HttpServletRequest request, String actorEmail, String action,
+                        String entityType, Object entityId, String description) {
+<span class="fc" id="L58">        return log(request, null, actorEmail, action, entityType, entityId, description);</span>
+    }
+
+    @Transactional
+    public AuditLog logSystem(String actorEmail, String action, String entityType, Object entityId, String description) {
+<span class="fc" id="L63">        AuditLog auditLog = new AuditLog(null, actorEmail, action, entityType, stringify(entityId), description, null, null);</span>
+<span class="fc" id="L64">        return auditLogRepository.save(auditLog);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;AuditLog&gt; search(String action, String actor, String entityType, LocalDate from, LocalDate to) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        Instant fromInstant = from == null ? null : from.atStartOfDay(DEFAULT_ZONE).toInstant();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        Instant toInstant = to == null ? null : to.plusDays(1).atStartOfDay(DEFAULT_ZONE).toInstant();</span>
+<span class="fc" id="L71">        return auditLogRepository.search(action, actor, entityType, fromInstant, toInstant)</span>
+<span class="fc" id="L72">                .stream()</span>
+<span class="fc" id="L73">                .limit(200)</span>
+<span class="fc" id="L74">                .toList();</span>
+    }
+
+    private AuditLog log(HttpServletRequest request, Long actorId, String actorEmail, String action,
+                         String entityType, Object entityId, String description) {
+<span class="fc" id="L79">        AuditLog auditLog = new AuditLog(actorId, actorEmail, action, entityType, stringify(entityId),</span>
+<span class="fc" id="L80">                description, ipAddress(request), userAgent(request));</span>
+<span class="fc" id="L81">        return auditLogRepository.save(auditLog);</span>
+    }
+
+    private String stringify(Object entityId) {
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        return entityId == null ? null : entityId.toString();</span>
+    }
+
+    private String ipAddress(HttpServletRequest request) {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (request == null) {</span>
+<span class="fc" id="L90">            return null;</span>
+        }
+<span class="fc" id="L92">        String forwardedFor = request.getHeader(&quot;X-Forwarded-For&quot;);</span>
+<span class="fc bfc" id="L93" title="All 4 branches covered.">        if (forwardedFor != null &amp;&amp; !forwardedFor.isBlank()) {</span>
+<span class="fc" id="L94">            return forwardedFor.split(&quot;,&quot;)[0].trim();</span>
+        }
+<span class="fc" id="L96">        return request.getRemoteAddr();</span>
+    }
+
+    private String userAgent(HttpServletRequest request) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        return request == null ? null : request.getHeader(&quot;User-Agent&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

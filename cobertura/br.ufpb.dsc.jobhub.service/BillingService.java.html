@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BillingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">BillingService.java</span></div><h1>BillingService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
+
+import br.ufpb.dsc.jobhub.domain.Subscription;
+import br.ufpb.dsc.jobhub.domain.SubscriptionStatus;
+import br.ufpb.dsc.jobhub.repository.SubscriptionRepository;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.Objects;
+
+@Service
+public class BillingService {
+
+    private static final String MONTHLY_PLAN_CODE = &quot;monthly-basic&quot;;
+
+    private final SubscriptionRepository subscriptionRepository;
+    private final String secretKey;
+    private final String priceId;
+    private final String successUrl;
+    private final String cancelUrl;
+
+    public BillingService(SubscriptionRepository subscriptionRepository,
+                          @Value(&quot;${stripe.secret-key:}&quot;) String secretKey,
+                          @Value(&quot;${stripe.monthly-price-id:}&quot;) String priceId,
+                          @Value(&quot;${stripe.success-url:}&quot;) String successUrl,
+<span class="fc" id="L32">                          @Value(&quot;${stripe.cancel-url:}&quot;) String cancelUrl) {</span>
+<span class="fc" id="L33">        this.subscriptionRepository = subscriptionRepository;</span>
+<span class="fc" id="L34">        this.secretKey = secretKey;</span>
+<span class="fc" id="L35">        this.priceId = priceId;</span>
+<span class="fc" id="L36">        this.successUrl = successUrl;</span>
+<span class="fc" id="L37">        this.cancelUrl = cancelUrl;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Transactional(readOnly = true)
+    public boolean hasActiveSubscription(String companyEmail) {
+<span class="fc" id="L42">        return subscriptionRepository.findByCompanyEmailIgnoreCase(companyEmail)</span>
+<span class="fc" id="L43">                .filter(Subscription::isActive)</span>
+<span class="fc" id="L44">                .isPresent();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public Subscription findByCompanyEmail(String companyEmail) {
+<span class="fc" id="L49">        return subscriptionRepository.findByCompanyEmailIgnoreCase(companyEmail)</span>
+<span class="fc" id="L50">                .orElse(null);</span>
+    }
+
+    @Transactional
+    public Subscription startMonthlySubscription(String company, String companyEmail) {
+<span class="fc" id="L55">        Subscription subscription = subscriptionRepository.findByCompanyEmailIgnoreCase(companyEmail)</span>
+<span class="fc" id="L56">                .orElseGet(() -&gt; new Subscription(company, companyEmail, MONTHLY_PLAN_CODE));</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (!MONTHLY_PLAN_CODE.equals(subscription.getPlanCode())) {</span>
+<span class="fc" id="L58">            subscription = new Subscription(company, companyEmail, MONTHLY_PLAN_CODE);</span>
+        }
+<span class="fc" id="L60">        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), null);</span>
+<span class="fc" id="L61">        return subscriptionRepository.save(subscription);</span>
+    }
+
+    @Transactional
+    public Subscription markExpired(String companyEmail) {
+<span class="fc" id="L66">        Subscription subscription = subscriptionRepository.findByCompanyEmailIgnoreCase(companyEmail)</span>
+<span class="fc" id="L67">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Assinatura não encontrada&quot;));</span>
+<span class="fc" id="L68">        subscription.cancel();</span>
+<span class="fc" id="L69">        return subscriptionRepository.save(subscription);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public String requiredPlanCode() {
+<span class="fc" id="L74">        return MONTHLY_PLAN_CODE;</span>
+    }
+
+    @Transactional
+    public CheckoutResult createCheckoutSession(String company, String companyEmail) {
+<span class="pc bpc" id="L79" title="1 of 4 branches missed.">        if (secretKey == null || secretKey.isBlank()) {</span>
+<span class="fc" id="L80">            throw new IllegalStateException(&quot;Configuração do Stripe ausente&quot;);</span>
+        }
+<span class="pc bpc" id="L82" title="1 of 4 branches missed.">        if (priceId == null || priceId.isBlank()) {</span>
+<span class="fc" id="L83">            throw new IllegalStateException(&quot;Stripe monthly price id não configurado&quot;);</span>
+        }
+<span class="fc" id="L85">        Stripe.apiKey = secretKey;</span>
+
+<span class="fc" id="L87">        Subscription subscription = subscriptionRepository.findByCompanyEmailIgnoreCase(companyEmail)</span>
+<span class="fc" id="L88">                .orElseGet(() -&gt; new Subscription(company, companyEmail, MONTHLY_PLAN_CODE));</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (!Objects.equals(subscription.getCompany(), company)) {</span>
+<span class="fc" id="L90">            subscription = new Subscription(company, companyEmail, MONTHLY_PLAN_CODE);</span>
+        }
+<span class="fc" id="L92">        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), null);</span>
+<span class="fc" id="L93">        subscription = subscriptionRepository.save(subscription);</span>
+
+        try {
+<span class="fc" id="L96">            SessionCreateParams params = SessionCreateParams.builder()</span>
+<span class="fc" id="L97">                    .setMode(SessionCreateParams.Mode.SUBSCRIPTION)</span>
+<span class="fc" id="L98">                    .addLineItem(SessionCreateParams.LineItem.builder()</span>
+<span class="fc" id="L99">                            .setQuantity(1L)</span>
+<span class="fc" id="L100">                            .setPrice(priceId)</span>
+<span class="fc" id="L101">                            .build())</span>
+<span class="fc" id="L102">                    .setSuccessUrl(successUrl + &quot;?subscription=&quot; + subscription.getId())</span>
+<span class="fc" id="L103">                    .setCancelUrl(cancelUrl + &quot;?subscription=&quot; + subscription.getId())</span>
+<span class="fc" id="L104">                    .putMetadata(&quot;subscriptionId&quot;, String.valueOf(subscription.getId()))</span>
+<span class="fc" id="L105">                    .putMetadata(&quot;companyEmail&quot;, companyEmail)</span>
+<span class="fc" id="L106">                    .build();</span>
+<span class="fc" id="L107">            Session session = Session.create(params);</span>
+<span class="fc" id="L108">            subscription.activate(subscription.getValidUntil(), session.getId());</span>
+<span class="fc" id="L109">            subscriptionRepository.save(subscription);</span>
+<span class="fc" id="L110">            return new CheckoutResult(subscription, session.getUrl());</span>
+<span class="fc" id="L111">        } catch (StripeException ex) {</span>
+<span class="fc" id="L112">            throw new IllegalStateException(&quot;Não foi possível iniciar o checkout do Stripe&quot;, ex);</span>
+        }
+    }
+
+<span class="fc" id="L116">    public record CheckoutResult(Subscription subscription, String checkoutUrl) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

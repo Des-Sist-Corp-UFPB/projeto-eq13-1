@@ -2,19 +2,18 @@ import http from 'k6/http';
 import { check, sleep, group } from 'k6';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Teste de carga e performance — k6
+// Teste de carga e performance — k6  (RadarTech PB)
 //
 // IMPORTANTE: rode contra o SEU AMBIENTE LOCAL (suba o projeto com
 // docker-compose antes). NÃO aponte para https://eqNN.dsc.rodrigor.com — o
 // servidor e o PostgreSQL são compartilhados com as outras equipes.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// URL base do seu ambiente local. Ajuste a PORTA conforme o seu docker-compose
-// (ex.: 8080 para Spring Boot/Javalin, 8000 para FastAPI, 3000 para Next.js).
+// URL base do seu ambiente local. Ajuste a PORTA conforme o seu docker-compose.
 const BASE = __ENV.BASE_URL || 'http://localhost:8080';
 
 // Nº de usuários virtuais simultâneos. Sobrescreva pela linha de comando:
-//   k6 run -e VUS=20 -e BASE_URL=http://localhost:3000 loadtest/carga.js
+//   k6 run -e VUS=20 -e BASE_URL=http://localhost:8080 loadtest/carga.js
 const VUS = Number(__ENV.VUS || 10);
 
 export const options = {
@@ -30,24 +29,47 @@ export const options = {
 };
 
 export default function () {
+  // 1. Health check
   group('healthcheck', () => {
     const res = http.get(`${BASE}/ping`);
-    check(res, { 'status 200': (r) => r.status === 200 });
+    check(res, { 'ping status 200': (r) => r.status === 200 });
   });
 
-  // ── EXEMPLO: fluxo autenticado — descomente e adapte ao seu projeto ──
-  // group('login + rota protegida', () => {
-  //   const login = http.post(`${BASE}/login`, JSON.stringify({
-  //     email: 'teste@exemplo.com', senha: 'senha123',
-  //   }), { headers: { 'Content-Type': 'application/json' } });
-  //   check(login, { 'login ok': (r) => r.status === 200 });
-  //
-  //   const token = login.json('token');
-  //   const r = http.get(`${BASE}/api/recurso`, {
-  //     headers: { Authorization: `Bearer ${token}` },
-  //   });
-  //   check(r, { 'recurso 200': (x) => x.status === 200 });
-  // });
+  // 2. Página inicial
+  group('pagina-inicial', () => {
+    const res = http.get(`${BASE}/`);
+    check(res, { 'home status 200': (r) => r.status === 200 });
+  });
+
+  // 3. Listagem pública de vagas
+  group('listagem-vagas', () => {
+    const res = http.get(`${BASE}/vagas`);
+    check(res, { 'vagas status 200': (r) => r.status === 200 });
+  });
+
+  // 4. Busca de vagas com filtro
+  group('busca-vagas', () => {
+    const res = http.get(`${BASE}/vagas?q=estagio&location=REMOTE`);
+    check(res, { 'busca status 200': (r) => r.status === 200 });
+  });
+
+  // 5. Página de login
+  group('login-page', () => {
+    const res = http.get(`${BASE}/login`);
+    check(res, { 'login status 200': (r) => r.status === 200 });
+  });
+
+  // 6. Página de cadastro
+  group('cadastro-page', () => {
+    const res = http.get(`${BASE}/cadastro`);
+    check(res, { 'cadastro status 200': (r) => r.status === 200 });
+  });
+
+  // 7. Formulário de divulgação de vagas
+  group('divulgar-page', () => {
+    const res = http.get(`${BASE}/divulgar`);
+    check(res, { 'divulgar status 200': (r) => r.status === 200 });
+  });
 
   sleep(1);
 }
