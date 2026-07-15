@@ -11,7 +11,7 @@ env:
 jobs:
   build-and-deploy:
     name: Build, push e deploy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dsc-selfhosted]
     permissions:
       contents: read
       packages: write
