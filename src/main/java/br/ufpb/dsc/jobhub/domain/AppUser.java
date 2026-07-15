@@ -24,6 +24,8 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    
     @NotBlank
     @Column(nullable = false, length = 140)
     private String name;
