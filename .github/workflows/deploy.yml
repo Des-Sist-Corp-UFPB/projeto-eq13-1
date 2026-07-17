@@ -29,6 +29,14 @@ jobs:
       - name: Executa testes e cobertura
         run: mvn verify -B
 
+      - name: Publica relatório JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-jacoco
+          path: target/site/jacoco/
+          if-no-files-found: warn
+
       - name: Prepara nome da imagem (lowercase)
         id: image
         run: echo "image=ghcr.io/des-sist-corp-ufpb/projeto-eq13:latest" >> "$GITHUB_OUTPUT"
