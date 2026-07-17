@@ -22,7 +22,10 @@
             </div>
             <div class="hero-board" aria-label="Atalhos para encontrar vagas">
                 <div class="hero-logo-card">
-                    <img th:src="@{/images/radartech-logo.png}" alt="Logotipo RadarTech PB">
+                    <span class="hero-logo-switch" role="img" aria-label="Logotipo RadarTech PB">
+                        <img class="theme-logo-light" th:src="@{/images/radartech-logo-transparent.png}" alt="">
+                        <img class="theme-logo-dark" th:src="@{/images/radartech-logo-dark.png}" alt="">
+                    </span>
                     <div><strong>Seu radar de carreira</strong><span>Oportunidades verificadas e perfis que contam histórias.</span></div>
                 </div>
                 <a class="signal-card strong" th:href="@{/vagas(q='estágio')}">

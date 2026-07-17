@@ -523,24 +523,22 @@ h1, h2, h3 { color: var(--text); }
     gap: 22px;
 }
 .brand-logo-window {
-    position: relative;
     display: block;
     width: 48px;
     height: 48px;
-    overflow: hidden;
     flex: 0 0 auto;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: var(--shadow-soft);
 }
 .brand-logo-window img {
-    position: absolute;
-    width: 170px;
-    max-width: none;
-    height: auto;
-    left: -61px;
-    top: -24px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.theme-logo-dark { display: none !important; }
+html[data-theme="dark"] .theme-logo-light { display: none !important; }
+html[data-theme="dark"] .theme-logo-dark { display: block !important; }
+@media (prefers-color-scheme: dark) {
+    html[data-theme="system"] .theme-logo-light { display: none !important; }
+    html[data-theme="system"] .theme-logo-dark { display: block !important; }
 }
 .brand-copy strong { color: var(--primary-dark); font-size: 1.02rem; }
 .brand-copy small { font-size: 0.72rem; }
@@ -630,7 +628,8 @@ h1, h2, h3 { color: var(--text); }
     background: rgba(255, 255, 255, 0.96);
     color: #0b315d;
 }
-.hero-logo-card img { width: 130px; height: 72px; object-fit: cover; border-radius: 8px; }
+.hero-logo-switch { width: 74px; height: 74px; flex: 0 0 74px; }
+.hero-logo-switch img { width: 100%; height: 100%; object-fit: contain; }
 .hero-logo-card strong, .hero-logo-card span { display: block; }
 .hero-logo-card span { margin-top: 4px; color: #527086; font-size: 0.82rem; line-height: 1.35; }
 .signal-card.strong { background: linear-gradient(135deg, var(--accent), #65e6d4); color: #07344c; }
@@ -713,7 +712,7 @@ html[data-theme="dark"] .salary-line { color: var(--accent); }
     .topbar-inner { min-height: 60px; align-items: center; gap: 8px; }
     .brand-copy { display: none; }
     .brand-logo-window { width: 43px; height: 43px; }
-    .brand-logo-window img { width: 153px; left: -55px; top: -22px; }
+    .brand-logo-window img { width: 100%; height: 100%; }
     .nav-links { display: flex; align-self: center; justify-content: flex-end; margin-left: auto; overflow-x: auto; }
     .nav-links a { min-width: 38px; width: 38px; height: 58px; padding: 4px; }
     .nav-links a span:last-child { display: none; }
@@ -721,7 +720,7 @@ html[data-theme="dark"] .salary-line { color: var(--accent); }
     .nav-links .nav-signup { display: none; }
     .theme-toggle { width: 36px; height: 36px; flex: 0 0 auto; }
     .hero-logo-card { flex-direction: column; align-items: flex-start; }
-    .hero-logo-card img { width: 100%; height: 90px; }
+    .hero-logo-switch { width: 68px; height: 68px; flex-basis: 68px; }
     .experience-item { grid-template-columns: 40px minmax(0, 1fr) auto; }
     .experience-logo { width: 40px; height: 40px; }
 }

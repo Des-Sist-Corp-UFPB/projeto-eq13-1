@@ -76,7 +76,7 @@ Foto e currículo são privados e só podem ser acessados pela própria conta au
 
 ### Identidade visual e temas
 
-A interface usa a logomarca oficial em `src/main/resources/static/images/radartech-logo.png` e a paleta azul-marinho, azul e turquesa da marca. O layout foi reorganizado com navegação e cartões inspirados em redes profissionais, mantendo componentes próprios do RadarTech PB.
+A interface usa a logomarca oficial recortada, sem fundo, nas variantes `radartech-logo-transparent.png` (tema claro) e `radartech-logo-dark.png` (branco/turquesa no tema escuro), além da paleta azul-marinho, azul e turquesa da marca. O layout foi reorganizado com navegação e cartões inspirados em redes profissionais, mantendo componentes próprios do RadarTech PB.
 
 Visitantes começam no tema claro com fundo branco e podem trocar o tema localmente. Para usuários autenticados, a preferência `LIGHT`, `DARK` ou `SYSTEM` também é persistida no perfil.
 

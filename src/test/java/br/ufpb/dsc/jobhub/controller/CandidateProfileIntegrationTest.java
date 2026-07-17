@@ -55,7 +55,8 @@ class CandidateProfileIntegrationTest {
                 .andExpect(status().is3xxRedirection());
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("radartech-logo.png")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("radartech-logo-transparent.png")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("radartech-logo-dark.png")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("data-theme=\"light\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("theme-toggle")));
     }
