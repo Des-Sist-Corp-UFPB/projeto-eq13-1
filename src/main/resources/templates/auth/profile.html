@@ -1,24 +1,140 @@
 <!DOCTYPE html>
 <html th:replace="~{fragments/layout :: shell('Minha conta', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
-<main class="section container">
-    <div class="page-header">
-        <div>
-            <span class="eyebrow">Minha conta</span>
-            <h1 th:text="${user.name}">Usuário</h1>
-            <p class="muted">Dados básicos da sua conta no RadarTech PB.</p>
+<main class="section container profile-page">
+    <div class="alert success" th:if="${profileSaved}">Perfil atualizado com sucesso.</div>
+    <div class="alert success" th:if="${experienceSaved}">Experiência adicionada ao perfil.</div>
+    <div class="alert success" th:if="${experienceRemoved}">Experiência removida.</div>
+
+    <div class="profile-layout">
+        <aside class="profile-summary-card">
+            <div class="profile-cover"></div>
+            <div class="profile-summary-body">
+                <div class="profile-avatar large">
+                    <img th:if="${user.photoContent != null}" th:src="@{/minha-conta/foto}" alt="Foto do perfil">
+                    <span th:unless="${user.photoContent != null}" th:text="${#strings.substring(user.name, 0, 1)}">U</span>
+                </div>
+                <h1 th:text="${user.name}">Usuário</h1>
+                <p class="profile-headline" th:text="${user.biography ?: 'Conte sua trajetória, seus interesses e o próximo desafio que procura.'}"></p>
+                <div class="profile-contact">
+                    <span th:text="${user.email}">email</span>
+                    <span th:text="${user.role.label}">Perfil</span>
+                    <span th:text="${user.provider}">LOCAL</span>
+                </div>
+                <a class="btn primary full" th:if="${user.resumeContent != null}" th:href="@{/minha-conta/curriculo}">
+                    Baixar meu currículo
+                </a>
+                <p class="profile-completeness" th:if="${user.resumeContent == null}">
+                    Adicione seu currículo para deixar o perfil mais completo.
+                </p>
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="btn ghost full" type="submit">Sair da conta</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="profile-content-stack">
+            <section class="panel profile-edit-card">
+                <div class="section-heading compact">
+                    <div>
+                        <span class="eyebrow">Apresentação</span>
+                        <h2>Edite seu perfil profissional</h2>
+                        <p class="muted">As informações ajudam você a manter currículo e experiência organizados.</p>
+                    </div>
+                    <span class="badge blue" th:text="${user.themePreference.label} + ' • tema'">Tema</span>
+                </div>
+                <form th:action="@{/minha-conta}" th:object="${profileForm}" method="post"
+                      enctype="multipart/form-data" class="profile-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="alert" th:if="${#fields.hasGlobalErrors()}" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+                    <label>Nome completo
+                        <input class="input" th:field="*{name}" autocomplete="name">
+                        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+                    </label>
+                    <label>Biografia
+                        <textarea class="textarea biography-input" th:field="*{biography}"
+                                  placeholder="Conte sobre sua área, conhecimentos, objetivos e o tipo de oportunidade que procura."></textarea>
+                        <span class="field-hint">Até 1.200 caracteres.</span>
+                        <span class="error" th:if="${#fields.hasErrors('biography')}" th:errors="*{biography}"></span>
+                    </label>
+                    <div class="upload-grid">
+                        <label class="upload-card">
+                            <strong>Foto do perfil</strong>
+                            <span>JPEG, PNG ou WebP • máximo 3 MB</span>
+                            <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+                        </label>
+                        <label class="upload-card">
+                            <strong>Currículo profissional</strong>
+                            <span>Somente PDF • máximo 5 MB</span>
+                            <input type="file" name="resume" accept="application/pdf,.pdf">
+                        </label>
+                    </div>
+                    <button class="btn primary" type="submit">Salvar alterações</button>
+                </form>
+            </section>
+
+            <section id="experiencias" class="panel experience-section">
+                <div class="section-heading compact">
+                    <div>
+                        <span class="eyebrow">Trajetória</span>
+                        <h2>Experiências</h2>
+                        <p class="muted">Registre empregos, estágios, projetos e trabalhos relevantes.</p>
+                    </div>
+                    <span class="count-pill" th:text="${#lists.size(experiences)}">0</span>
+                </div>
+
+                <div class="experience-list" th:if="${!#lists.isEmpty(experiences)}">
+                    <article class="experience-item" th:each="experience : ${experiences}">
+                        <div class="experience-logo" th:text="${#strings.substring(experience.company, 0, 1)}">E</div>
+                        <div class="experience-copy">
+                            <h3 th:text="${experience.roleTitle}">Cargo</h3>
+                            <p><strong th:text="${experience.company}">Empresa</strong></p>
+                            <p class="muted">
+                                <span th:text="${#temporals.format(experience.startedOn, 'MM/yyyy')}">01/2024</span>
+                                <span> — </span>
+                                <span th:text="${experience.endedOn != null ? #temporals.format(experience.endedOn, 'MM/yyyy') : 'Atual'}">Atual</span>
+                            </p>
+                            <p th:if="${experience.description != null}" th:text="${experience.description}">Descrição</p>
+                        </div>
+                        <form th:action="@{/minha-conta/experiencias/{id}/remover(id=${experience.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button class="icon-button danger-text" type="submit" aria-label="Remover experiência">×</button>
+                        </form>
+                    </article>
+                </div>
+                <div class="empty-inline" th:if="${#lists.isEmpty(experiences)}">
+                    <strong>Sua trajetória começa aqui.</strong>
+                    <span>Adicione sua primeira experiência abaixo.</span>
+                </div>
+
+                <details class="experience-editor" th:open="${experienceHasErrors}">
+                    <summary class="btn">＋ Adicionar experiência</summary>
+                    <form th:action="@{/minha-conta/experiencias}" th:object="${experienceForm}" method="post" class="grid two experience-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="alert span-two" th:if="${#fields.hasGlobalErrors()}" th:each="error : ${#fields.globalErrors()}" th:text="${error}"></div>
+                        <label>Cargo ou função
+                            <input class="input" th:field="*{roleTitle}" placeholder="Ex: Pessoa desenvolvedora Java">
+                            <span class="error" th:if="${#fields.hasErrors('roleTitle')}" th:errors="*{roleTitle}"></span>
+                        </label>
+                        <label>Empresa ou projeto
+                            <input class="input" th:field="*{company}" placeholder="Nome da organização">
+                            <span class="error" th:if="${#fields.hasErrors('company')}" th:errors="*{company}"></span>
+                        </label>
+                        <label>Início
+                            <input class="input" type="date" th:field="*{startedOn}">
+                            <span class="error" th:if="${#fields.hasErrors('startedOn')}" th:errors="*{startedOn}"></span>
+                        </label>
+                        <label>Fim <span class="muted">(deixe vazio se atual)</span>
+                            <input class="input" type="date" th:field="*{endedOn}">
+                        </label>
+                        <label class="span-two">Descrição
+                            <textarea class="textarea" th:field="*{description}" placeholder="Principais atividades, tecnologias e resultados."></textarea>
+                        </label>
+                        <button class="btn primary" type="submit">Adicionar ao perfil</button>
+                    </form>
+                </details>
+            </section>
         </div>
-        <form th:action="@{/logout}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <button class="btn" type="submit">Sair</button>
-        </form>
     </div>
-    <section class="panel">
-        <dl class="profile-list">
-            <div><dt>E-mail</dt><dd th:text="${user.email}">email</dd></div>
-            <div><dt>Usuário</dt><dd th:text="${user.username ?: 'Não informado'}">usuario</dd></div>
-            <div><dt>Perfil</dt><dd th:text="${user.role.label}">Perfil</dd></div>
-            <div><dt>Origem</dt><dd th:text="${user.provider}">LOCAL</dd></div>
-        </dl>
-    </section>
 </main>
 </html>

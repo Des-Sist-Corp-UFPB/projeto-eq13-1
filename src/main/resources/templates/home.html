@@ -21,6 +21,10 @@
                 </div>
             </div>
             <div class="hero-board" aria-label="Atalhos para encontrar vagas">
+                <div class="hero-logo-card">
+                    <img th:src="@{/images/radartech-logo.png}" alt="Logotipo RadarTech PB">
+                    <div><strong>Seu radar de carreira</strong><span>Oportunidades verificadas e perfis que contam histórias.</span></div>
+                </div>
                 <a class="signal-card strong" th:href="@{/vagas(q='estágio')}">
                     <span>Primeira experiência</span>
                     <strong>Estágios em TI</strong>
@@ -72,6 +76,7 @@
                     <span class="muted" th:if="${job.city != null && !job.city.isBlank()}" th:text="|em ${job.city}|"></span>
                 </p>
                 <p class="muted" th:text="${#strings.abbreviate(job.description, 120)}">Descrição da vaga</p>
+                <span class="job-date" th:text="|Publicada em ${#temporals.format(job.createdAt, 'dd/MM')}|">Publicada recentemente</span>
                 <div class="card-footer">
                     <a class="btn small primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
                     <a class="btn small" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se</a>

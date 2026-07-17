@@ -34,10 +34,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 <span class="fc" id="L35">        http</span>
 <span class="fc" id="L36">                .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="fc" id="L37">                        .requestMatchers(&quot;/&quot;, &quot;/vagas&quot;, &quot;/vagas/**&quot;, &quot;/divulgar&quot;, &quot;/ping&quot;, &quot;/css/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L37">                        .requestMatchers(&quot;/&quot;, &quot;/vagas&quot;, &quot;/vagas/**&quot;, &quot;/divulgar&quot;, &quot;/ping&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/images/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
 <span class="fc" id="L38">                        .requestMatchers(&quot;/login&quot;, &quot;/cadastro&quot;, &quot;/admin/login&quot;, &quot;/oauth2/**&quot;, &quot;/login/oauth2/**&quot;).permitAll()</span>
 <span class="fc" id="L39">                        .requestMatchers(&quot;/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
-<span class="fc" id="L40">                        .requestMatchers(&quot;/minha-conta&quot;).authenticated()</span>
+<span class="fc" id="L40">                        .requestMatchers(&quot;/minha-conta/**&quot;).authenticated()</span>
 <span class="fc" id="L41">                        .anyRequest().permitAll()</span>
                 )
 <span class="fc" id="L43">                .formLogin(login -&gt; login</span>
@@ -65,4 +65,4 @@ public class SecurityConfig {
 <span class="fc" id="L65">        return http.build();</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

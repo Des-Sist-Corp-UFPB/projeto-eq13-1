@@ -62,6 +62,28 @@ ADMIN_PASSWORD=admin123
 
 Em produção, troque `ADMIN_PASSWORD` por uma senha real fora do código-fonte.
 
+### Perfil profissional do candidato
+
+Em `/minha-conta`, usuários autenticados podem personalizar:
+
+- nome e biografia profissional;
+- foto em JPEG, PNG ou WebP, limitada a 3 MB;
+- currículo em PDF, limitado a 5 MB;
+- múltiplas experiências profissionais com período e descrição;
+- tema claro com fundo branco por padrão, escuro ou automático.
+
+Foto e currículo são privados e só podem ser acessados pela própria conta autenticada. Atualização do perfil, arquivos, experiências e tema geram eventos persistentes na auditoria administrativa.
+
+### Identidade visual e temas
+
+A interface usa a logomarca oficial em `src/main/resources/static/images/radartech-logo.png` e a paleta azul-marinho, azul e turquesa da marca. O layout foi reorganizado com navegação e cartões inspirados em redes profissionais, mantendo componentes próprios do RadarTech PB.
+
+Visitantes começam no tema claro com fundo branco e podem trocar o tema localmente. Para usuários autenticados, a preferência `LIGHT`, `DARK` ou `SYSTEM` também é persistida no perfil.
+
+### Curadoria recente de vagas
+
+A migration `V9__seed_recent_verified_jobs.sql` adiciona oportunidades verificadas entre 10 e 17 de julho de 2026, com links para as publicações originais. A inclusão também registra a ação `JOB_CURATED` na auditoria.
+
 ## Google OAuth2
 
 Foi escolhido Google OAuth2 porque é a alternativa mais simples e compatível com Spring Security OAuth2 Client.
@@ -118,6 +140,9 @@ Eventos auditados incluem:
 - logout;
 - cadastro de usuário;
 - login/cadastro via Google;
+- atualização de perfil, foto, currículo e tema;
+- inclusão e remoção de experiências profissionais;
+- inclusão de vagas verificadas pela curadoria;
 - envio público de vaga;
 - criação de vaga pelo admin;
 - publicação, pendência, arquivamento e remoção de vaga;
@@ -203,7 +228,7 @@ mvn verify
 
 O projeto usa JaCoCo e exige cobertura mínima integral de 85%, sem excluir os pacotes de domínio, DTOs ou segurança. O build falha caso a cobertura fique abaixo do mínimo configurado.
 
-**Cobertura total de linhas: 92,96%** (647 de 696 linhas cobertas).
+**Cobertura total de linhas: 91,71%** (819 de 893 linhas cobertas).
 
 O relatório de cobertura está commitado na pasta `cobertura/` na raiz do projeto:
 

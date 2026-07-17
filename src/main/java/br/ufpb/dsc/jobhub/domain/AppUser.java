@@ -15,6 +15,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
 
 @Entity
 @Table(name = "app_user")
@@ -52,6 +57,32 @@ public class AppUser {
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    @Column(columnDefinition = "text")
+    private String biography;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ThemePreference themePreference = ThemePreference.LIGHT;
+
+    @Column(columnDefinition = "bytea")
+    private byte[] photoContent;
+
+    @Column(length = 100)
+    private String photoContentType;
+
+    @Column(columnDefinition = "bytea")
+    private byte[] resumeContent;
+
+    @Column(length = 255)
+    private String resumeFileName;
+
+    @Column(length = 100)
+    private String resumeContentType;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CandidateExperience> experiences = new ArrayList<>();
 
     @Column(nullable = false)
     private Instant createdAt;
@@ -93,6 +124,26 @@ public class AppUser {
         this.role = role;
     }
 
+    public void updateProfile(String name, String biography) {
+        this.name = name;
+        this.biography = biography;
+    }
+
+    public void updatePhoto(byte[] content, String contentType) {
+        this.photoContent = content;
+        this.photoContentType = contentType;
+    }
+
+    public void updateResume(byte[] content, String fileName, String contentType) {
+        this.resumeContent = content;
+        this.resumeFileName = fileName;
+        this.resumeContentType = contentType;
+    }
+
+    public void changeTheme(ThemePreference themePreference) {
+        this.themePreference = themePreference;
+    }
+
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
@@ -101,6 +152,14 @@ public class AppUser {
     public UserRole getRole() { return role; }
     public AuthProvider getProvider() { return provider; }
     public boolean isEnabled() { return enabled; }
+    public String getBiography() { return biography; }
+    public ThemePreference getThemePreference() { return themePreference; }
+    public byte[] getPhotoContent() { return photoContent; }
+    public String getPhotoContentType() { return photoContentType; }
+    public byte[] getResumeContent() { return resumeContent; }
+    public String getResumeFileName() { return resumeFileName; }
+    public String getResumeContentType() { return resumeContentType; }
+    public List<CandidateExperience> getExperiences() { return experiences; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
