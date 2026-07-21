@@ -23,6 +23,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,7 +74,11 @@ class PublicAndSecurityIntegrationTest {
         mockMvc.perform(get("/vagas")).andExpect(status().isOk()).andExpect(view().name("jobs/list"));
         mockMvc.perform(get("/divulgar")).andExpect(status().isOk()).andExpect(view().name("jobs/post"));
         mockMvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("auth/login"));
-        mockMvc.perform(get("/cadastro")).andExpect(status().isOk()).andExpect(view().name("auth/register"));
+        mockMvc.perform(get("/cadastro"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/register"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/oauth2/authorization/google")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Cadastrar com Google")));
     }
 
     @Test
