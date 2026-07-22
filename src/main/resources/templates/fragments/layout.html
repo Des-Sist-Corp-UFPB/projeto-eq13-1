@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR" th:fragment="shell(title, content)" xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-theme=${viewer != null ? #strings.toLowerCase(viewer.themePreference.name()) : 'light'},data-authenticated=${viewer != null}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' | RadarTech PB'">RadarTech PB</title>
+    <meta name="theme-color" content="#07539a">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <script>
+        (() => {
+            const root = document.documentElement;
+            if (root.dataset.authenticated !== 'true') {
+                root.dataset.theme = localStorage.getItem('radartech-theme') || root.dataset.theme || 'light';
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/}" aria-label="RadarTech PB - página inicial">
+            <span class="brand-logo-window" aria-hidden="true">
+                <img class="theme-logo-light" th:src="@{/images/radartech-logo-transparent.png}" alt="">
+                <img class="theme-logo-dark" th:src="@{/images/radartech-logo-dark.png}" alt="">
+            </span>
+            <span class="brand-copy">
+                <strong>RadarTech PB</strong>
+                <small>Carreiras em tecnologia</small>
+            </span>
+        </a>
+        <nav class="nav-links" aria-label="Navegação principal">
+            <a th:href="@{/}" title="Início"><span class="nav-icon" aria-hidden="true">⌂</span><span>Início</span></a>
+            <a th:href="@{/vagas}" title="Vagas"><span class="nav-icon" aria-hidden="true">▣</span><span>Vagas</span></a>
+            <a th:href="@{/divulgar}" title="Divulgar vaga"><span class="nav-icon" aria-hidden="true">＋</span><span>Divulgar</span></a>
+            <a th:if="${viewer != null && viewer.role.name() == 'ROLE_ADMIN'}" th:href="@{/admin}" title="Administração">
+                <span class="nav-icon" aria-hidden="true">◆</span><span>Admin</span>
+            </a>
+            <a th:if="${viewer != null}" class="nav-profile" th:href="@{/minha-conta}" title="Minha conta">
+                <span class="mini-avatar">
+                    <img th:if="${viewer.photoContent != null}" th:src="@{/minha-conta/foto}" alt="">
+                    <span th:unless="${viewer.photoContent != null}" th:text="${#strings.substring(viewer.name, 0, 1)}">U</span>
+                </span>
+                <span>Eu</span>
+            </a>
+            <a th:if="${viewer == null}" th:href="@{/login}"><span class="nav-icon" aria-hidden="true">◎</span><span>Entrar</span></a>
+            <a th:if="${viewer == null}" class="nav-signup" th:href="@{/cadastro}">Criar conta</a>
+            <button id="theme-toggle" class="theme-toggle" type="button" title="Alterar tema"
+                    th:attr="data-save-url=${viewer != null ? '/minha-conta/tema' : null}">
+                <span class="theme-icon" aria-hidden="true">◐</span><span class="sr-only">Alterar tema</span>
+            </button>
+        </nav>
+    </div>
+</header>
+<th:block th:replace="${content}"></th:block>
+<footer class="footer">
+    <strong>RadarTech PB</strong>
+    <span>Conectando talentos a oportunidades de tecnologia na Paraíba e no Brasil.</span>
+</footer>
+<script th:src="@{/js/app.js}" defer></script>
+</body>
+</html>

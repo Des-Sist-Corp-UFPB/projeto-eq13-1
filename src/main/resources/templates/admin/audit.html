@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Auditoria', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+    <div class="page-header">
+        <div><h1>Auditoria</h1><p class="muted">Eventos importantes de autenticação, vagas e candidaturas.</p></div>
+    </div>
+    <form class="filter-bar" th:action="@{/admin/auditoria}" method="get">
+        <input class="input" name="action" placeholder="Ação" th:value="${action}">
+        <input class="input" name="actor" placeholder="Usuário/e-mail" th:value="${actor}">
+        <input class="input" name="entityType" placeholder="Entidade" th:value="${entityType}">
+        <input class="input" type="date" name="from" th:value="${from}">
+        <input class="input" type="date" name="to" th:value="${to}">
+        <button class="btn primary" type="submit">Filtrar</button>
+        <a class="btn ghost" th:href="@{/admin/auditoria}">Limpar</a>
+    </form>
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr><th>Data</th><th>Ação</th><th>Usuário</th><th>Entidade</th><th>Descrição</th><th>IP</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="log : ${logs}">
+                <td th:text="${#temporals.format(log.createdAt, 'dd/MM/yyyy HH:mm')}">Data</td>
+                <td><span class="badge blue" th:text="${log.action}">AÇÃO</span></td>
+                <td th:text="${log.actorEmail ?: 'Sistema'}">email</td>
+                <td th:text="|${log.entityType ?: '-'} #${log.entityId ?: '-'}|">Entidade</td>
+                <td th:text="${log.description}">Descrição</td>
+                <td th:text="${log.ipAddress ?: '-'}">IP</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>

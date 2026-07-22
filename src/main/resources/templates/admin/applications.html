@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Candidaturas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+    <div class="page-header">
+        <div><h1>Candidaturas</h1><p class="muted">Pessoas interessadas nas vagas publicadas.</p></div>
+    </div>
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr><th>Candidato</th><th>Conta</th><th>Vaga</th><th>Contato</th><th>Mensagem</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="candidateApplication : ${applications}">
+                <td><strong th:text="${candidateApplication.applicantName}">Nome</strong><br><span class="muted" th:text="${#temporals.format(candidateApplication.createdAt, 'dd/MM/yyyy HH:mm')}">Data</span></td>
+                <td th:text="${candidateApplication.applicantUser != null ? candidateApplication.applicantUser.email : 'Visitante'}">Conta</td>
+                <td th:text="${candidateApplication.job.title}">Vaga</td>
+                <td><a th:href="|mailto:${candidateApplication.applicantEmail}|" th:text="${candidateApplication.applicantEmail}">email</a><br><a th:if="${candidateApplication.linkedinUrl != null && !candidateApplication.linkedinUrl.isBlank()}" th:href="${candidateApplication.linkedinUrl}" target="_blank" rel="noopener">Perfil</a></td>
+                <td th:text="${candidateApplication.message}">Mensagem</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>
+

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    private final AuditAuthenticationSuccessHandler authenticationSuccessHandler;
+    private final AuditAuthenticationFailureHandler authenticationFailureHandler;
+    private final AuditLogoutSuccessHandler logoutSuccessHandler;
+    private final RadarOAuth2UserService oAuth2UserService;
+    private final AuditOAuth2SuccessHandler oAuth2SuccessHandler;
+
+    public SecurityConfig(AuditAuthenticationSuccessHandler authenticationSuccessHandler,
+                          AuditAuthenticationFailureHandler authenticationFailureHandler,
+                          AuditLogoutSuccessHandler logoutSuccessHandler,
+                          RadarOAuth2UserService oAuth2UserService,
+<span class="fc" id="L25">                          AuditOAuth2SuccessHandler oAuth2SuccessHandler) {</span>
+<span class="fc" id="L26">        this.authenticationSuccessHandler = authenticationSuccessHandler;</span>
+<span class="fc" id="L27">        this.authenticationFailureHandler = authenticationFailureHandler;</span>
+<span class="fc" id="L28">        this.logoutSuccessHandler = logoutSuccessHandler;</span>
+<span class="fc" id="L29">        this.oAuth2UserService = oAuth2UserService;</span>
+<span class="fc" id="L30">        this.oAuth2SuccessHandler = oAuth2SuccessHandler;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L35">        http</span>
+<span class="fc" id="L36">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L37">                        .requestMatchers(&quot;/&quot;, &quot;/vagas&quot;, &quot;/vagas/**&quot;, &quot;/divulgar&quot;, &quot;/ping&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/images/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L38">                        .requestMatchers(&quot;/login&quot;, &quot;/cadastro&quot;, &quot;/admin/login&quot;, &quot;/oauth2/**&quot;, &quot;/login/oauth2/**&quot;).permitAll()</span>
+<span class="fc" id="L39">                        .requestMatchers(&quot;/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L40">                        .requestMatchers(&quot;/minha-conta/**&quot;).authenticated()</span>
+<span class="fc" id="L41">                        .anyRequest().permitAll()</span>
+                )
+<span class="fc" id="L43">                .formLogin(login -&gt; login</span>
+<span class="fc" id="L44">                        .loginPage(&quot;/login&quot;)</span>
+<span class="fc" id="L45">                        .loginProcessingUrl(&quot;/login&quot;)</span>
+<span class="fc" id="L46">                        .usernameParameter(&quot;username&quot;)</span>
+<span class="fc" id="L47">                        .successHandler(authenticationSuccessHandler)</span>
+<span class="fc" id="L48">                        .failureHandler(authenticationFailureHandler)</span>
+<span class="fc" id="L49">                        .permitAll()</span>
+                )
+<span class="fc" id="L51">                .oauth2Login(oauth2 -&gt; oauth2</span>
+<span class="fc" id="L52">                        .loginPage(&quot;/login&quot;)</span>
+<span class="fc" id="L53">                        .userInfoEndpoint(userInfo -&gt; userInfo.userService(oAuth2UserService))</span>
+<span class="fc" id="L54">                        .successHandler(oAuth2SuccessHandler)</span>
+<span class="fc" id="L55">                        .permitAll()</span>
+                )
+<span class="fc" id="L57">                .logout(logout -&gt; logout</span>
+<span class="fc" id="L58">                        .logoutRequestMatcher(new OrRequestMatcher(</span>
+                                new AntPathRequestMatcher(&quot;/logout&quot;, &quot;POST&quot;),
+                                new AntPathRequestMatcher(&quot;/admin/logout&quot;, &quot;POST&quot;)
+                        ))
+<span class="fc" id="L62">                        .logoutSuccessHandler(logoutSuccessHandler)</span>
+<span class="fc" id="L63">                        .permitAll()</span>
+                );
+<span class="fc" id="L65">        return http.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobPosting.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.domain</a> &gt; <span class="el_source">JobPosting.java</span></div><h1>JobPosting.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.domain;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+public class JobPosting {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false, length = 160)
+    private String title;
+
+    @NotBlank
+    @Column(nullable = false, length = 140)
+    private String company;
+
+    @Email
+    @NotBlank
+    @Column(nullable = false, length = 190)
+    private String companyEmail;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private JobLocationType locationType;
+
+    @Column(length = 80)
+    private String city;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private Seniority seniority;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private ContractType contractType;
+
+    @Column(length = 80)
+    private String salaryRange;
+
+    @NotBlank
+    @Column(nullable = false, columnDefinition = &quot;text&quot;)
+    private String description;
+
+    @Column(columnDefinition = &quot;text&quot;)
+    private String requirements;
+
+    @Column(length = 500)
+    private String applyUrl;
+
+<span class="fc" id="L73">    @NotNull</span>
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private JobStatus status = JobStatus.PENDING;
+
+<span class="fc" id="L78">    @Column(nullable = false)</span>
+    private int views = 0;
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    @Column(nullable = false)
+    private Instant updatedAt;
+
+<span class="fc" id="L87">    @OneToMany(mappedBy = &quot;job&quot;, cascade = CascadeType.REMOVE, orphanRemoval = true)</span>
+    private List&lt;CandidateApplication&gt; applications = new ArrayList&lt;&gt;();
+
+<span class="fc" id="L90">    protected JobPosting() {</span>
+<span class="fc" id="L91">    }</span>
+
+    public JobPosting(String title, String company, String companyEmail, JobLocationType locationType,
+                      String city, Seniority seniority, ContractType contractType, String salaryRange,
+<span class="fc" id="L95">                      String description, String requirements, String applyUrl) {</span>
+<span class="fc" id="L96">        this.title = title;</span>
+<span class="fc" id="L97">        this.company = company;</span>
+<span class="fc" id="L98">        this.companyEmail = companyEmail;</span>
+<span class="fc" id="L99">        this.locationType = locationType;</span>
+<span class="fc" id="L100">        this.city = city;</span>
+<span class="fc" id="L101">        this.seniority = seniority;</span>
+<span class="fc" id="L102">        this.contractType = contractType;</span>
+<span class="fc" id="L103">        this.salaryRange = salaryRange;</span>
+<span class="fc" id="L104">        this.description = description;</span>
+<span class="fc" id="L105">        this.requirements = requirements;</span>
+<span class="fc" id="L106">        this.applyUrl = applyUrl;</span>
+<span class="fc" id="L107">    }</span>
+
+    @PrePersist
+    void onCreate() {
+<span class="fc" id="L111">        Instant now = Instant.now();</span>
+<span class="fc" id="L112">        createdAt = now;</span>
+<span class="fc" id="L113">        updatedAt = now;</span>
+<span class="fc" id="L114">    }</span>
+
+    @PreUpdate
+    void onUpdate() {
+<span class="fc" id="L118">        updatedAt = Instant.now();</span>
+<span class="fc" id="L119">    }</span>
+
+<span class="fc" id="L121">    public void publish() { status = JobStatus.PUBLISHED; }</span>
+<span class="fc" id="L122">    public void archive() { status = JobStatus.ARCHIVED; }</span>
+<span class="fc" id="L123">    public void sendToPending() { status = JobStatus.PENDING; }</span>
+<span class="fc" id="L124">    public void incrementViews() { views++; }</span>
+
+<span class="fc" id="L126">    public Long getId() { return id; }</span>
+<span class="fc" id="L127">    public String getTitle() { return title; }</span>
+<span class="fc" id="L128">    public String getCompany() { return company; }</span>
+<span class="nc" id="L129">    public String getCompanyEmail() { return companyEmail; }</span>
+<span class="fc" id="L130">    public JobLocationType getLocationType() { return locationType; }</span>
+<span class="fc" id="L131">    public String getCity() { return city; }</span>
+<span class="fc" id="L132">    public Seniority getSeniority() { return seniority; }</span>
+<span class="fc" id="L133">    public ContractType getContractType() { return contractType; }</span>
+<span class="fc" id="L134">    public String getSalaryRange() { return salaryRange; }</span>
+<span class="fc" id="L135">    public String getDescription() { return description; }</span>
+<span class="fc" id="L136">    public String getRequirements() { return requirements; }</span>
+<span class="fc" id="L137">    public String getApplyUrl() { return applyUrl; }</span>
+<span class="fc" id="L138">    public JobStatus getStatus() { return status; }</span>
+<span class="fc" id="L139">    public int getViews() { return views; }</span>
+<span class="fc" id="L140">    public Instant getCreatedAt() { return createdAt; }</span>
+<span class="nc" id="L141">    public Instant getUpdatedAt() { return updatedAt; }</span>
+<span class="nc" id="L142">    public List&lt;CandidateApplication&gt; getApplications() { return applications; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

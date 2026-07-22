@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">JobService.java</span></div><h1>JobService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
+
+import br.ufpb.dsc.jobhub.domain.CandidateApplication;
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.JobLocationType;
+import br.ufpb.dsc.jobhub.domain.JobPosting;
+import br.ufpb.dsc.jobhub.domain.JobStatus;
+import br.ufpb.dsc.jobhub.dto.CandidateApplicationForm;
+import br.ufpb.dsc.jobhub.dto.JobPostForm;
+import br.ufpb.dsc.jobhub.repository.CandidateApplicationRepository;
+import br.ufpb.dsc.jobhub.repository.JobPostingRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Locale;
+
+@Service
+public class JobService {
+
+    private final JobPostingRepository jobPostingRepository;
+    private final CandidateApplicationRepository applicationRepository;
+
+<span class="fc" id="L24">    public JobService(JobPostingRepository jobPostingRepository, CandidateApplicationRepository applicationRepository) {</span>
+<span class="fc" id="L25">        this.jobPostingRepository = jobPostingRepository;</span>
+<span class="fc" id="L26">        this.applicationRepository = applicationRepository;</span>
+<span class="fc" id="L27">    }</span>
+
+    @Transactional(readOnly = true)
+    public List&lt;JobPosting&gt; featuredJobs() {
+<span class="fc" id="L31">        return jobPostingRepository.findTop6ByStatusOrderByCreatedAtDesc(JobStatus.PUBLISHED);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;JobPosting&gt; searchPublished(String keyword, String location) {
+<span class="fc" id="L36">        return jobPostingRepository.searchPublished(normalize(keyword), parseLocation(location));</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;JobPosting&gt; searchAdmin(String keyword, String status, String location) {
+<span class="fc" id="L41">        return jobPostingRepository.searchAdmin(normalize(keyword), parseStatus(status), parseLocation(location));</span>
+    }
+
+    @Transactional
+    public JobPosting publicDetails(Long id) {
+<span class="fc" id="L46">        JobPosting job = jobPostingRepository.findByIdAndStatus(id, JobStatus.PUBLISHED)</span>
+<span class="fc" id="L47">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Vaga não encontrada&quot;));</span>
+<span class="fc" id="L48">        job.incrementViews();</span>
+<span class="fc" id="L49">        return job;</span>
+    }
+
+    @Transactional
+    public JobPosting createPending(JobPostForm form) {
+<span class="fc" id="L54">        validateLocation(form.locationType(), form.city());</span>
+<span class="fc" id="L55">        JobPosting job = new JobPosting(</span>
+<span class="fc" id="L56">                trim(form.title()), trim(form.company()), trim(form.companyEmail()), form.locationType(),</span>
+<span class="fc" id="L57">                normalizeCity(form.locationType(), form.city()), form.seniority(), form.contractType(), trim(form.salaryRange()),</span>
+<span class="fc" id="L58">                trim(form.description()), trim(form.requirements()), trim(form.applyUrl())</span>
+        );
+<span class="fc" id="L60">        return jobPostingRepository.save(job);</span>
+    }
+
+    @Transactional
+    public JobPosting createByAdmin(JobPostForm form) {
+<span class="fc" id="L65">        JobPosting job = createPending(form);</span>
+<span class="fc" id="L66">        job.publish();</span>
+<span class="fc" id="L67">        return job;</span>
+    }
+
+    @Transactional
+    public CandidateApplication apply(Long jobId, CandidateApplicationForm form) {
+<span class="fc" id="L72">        return apply(jobId, form, null);</span>
+    }
+
+    @Transactional
+    public CandidateApplication apply(Long jobId, CandidateApplicationForm form, AppUser applicantUser) {
+<span class="fc" id="L77">        JobPosting job = jobPostingRepository.findByIdAndStatus(jobId, JobStatus.PUBLISHED)</span>
+<span class="fc" id="L78">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Vaga não encontrada&quot;));</span>
+<span class="fc" id="L79">        CandidateApplication application = new CandidateApplication(</span>
+<span class="fc" id="L80">                job, applicantUser, trim(form.applicantName()), trim(form.applicantEmail()),</span>
+<span class="fc" id="L81">                trim(form.linkedinUrl()), trim(form.message())</span>
+        );
+<span class="fc" id="L83">        return applicationRepository.save(application);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;JobPosting&gt; allJobs() {
+<span class="fc" id="L88">        return jobPostingRepository.findAllByOrderByCreatedAtDesc();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;CandidateApplication&gt; allApplications() {
+<span class="fc" id="L93">        return applicationRepository.findAllByOrderByCreatedAtDesc();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public JobPosting findAny(Long id) {
+<span class="fc" id="L98">        return jobPostingRepository.findById(id).orElseThrow();</span>
+    }
+
+    @Transactional
+    public JobPosting publish(Long id) {
+<span class="fc" id="L103">        JobPosting job = jobPostingRepository.findById(id).orElseThrow();</span>
+<span class="fc" id="L104">        job.publish();</span>
+<span class="fc" id="L105">        return job;</span>
+    }
+
+    @Transactional
+    public JobPosting archive(Long id) {
+<span class="fc" id="L110">        JobPosting job = jobPostingRepository.findById(id).orElseThrow();</span>
+<span class="fc" id="L111">        job.archive();</span>
+<span class="fc" id="L112">        return job;</span>
+    }
+
+    @Transactional
+    public JobPosting sendToPending(Long id) {
+<span class="fc" id="L117">        JobPosting job = jobPostingRepository.findById(id).orElseThrow();</span>
+<span class="fc" id="L118">        job.sendToPending();</span>
+<span class="fc" id="L119">        return job;</span>
+    }
+
+    @Transactional
+    public JobPosting delete(Long id) {
+<span class="fc" id="L124">        JobPosting job = jobPostingRepository.findById(id).orElseThrow();</span>
+<span class="fc" id="L125">        jobPostingRepository.delete(job);</span>
+<span class="fc" id="L126">        return job;</span>
+    }
+
+    private JobLocationType parseLocation(String location) {
+<span class="fc bfc" id="L130" title="All 4 branches covered.">        if (location == null || location.isBlank()) {</span>
+<span class="fc" id="L131">            return null;</span>
+        }
+        try {
+<span class="fc" id="L134">            return JobLocationType.valueOf(location.toUpperCase(Locale.ROOT));</span>
+<span class="fc" id="L135">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L136">            return null;</span>
+        }
+    }
+
+    private JobStatus parseStatus(String status) {
+<span class="pc bpc" id="L141" title="1 of 4 branches missed.">        if (status == null || status.isBlank()) {</span>
+<span class="fc" id="L142">            return null;</span>
+        }
+        try {
+<span class="fc" id="L145">            return JobStatus.valueOf(status.toUpperCase(Locale.ROOT));</span>
+<span class="fc" id="L146">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L147">            return null;</span>
+        }
+    }
+
+    private void validateLocation(JobLocationType locationType, String city) {
+<span class="fc bfc" id="L152" title="All 6 branches covered.">        if (locationType != JobLocationType.REMOTE &amp;&amp; (city == null || city.isBlank())) {</span>
+<span class="fc" id="L153">            throw new IllegalArgumentException(&quot;Informe a cidade para vagas híbridas ou presenciais na Paraíba.&quot;);</span>
+        }
+<span class="fc" id="L155">    }</span>
+
+    private String normalizeCity(JobLocationType locationType, String city) {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (locationType == JobLocationType.REMOTE) {</span>
+<span class="fc" id="L159">            return null;</span>
+        }
+<span class="fc" id="L161">        return trim(city);</span>
+    }
+
+    private String normalize(String value) {
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        return value == null ? &quot;&quot; : value.trim();</span>
+    }
+
+    private String trim(String value) {
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        return value == null ? null : value.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,12 +1,8 @@
-# Não copiar para o contexto Docker (reduz tamanho do build)
-.git
-.gitignore
 target/
-*.md
+.git/
+.github/
 .idea/
 .vscode/
-*.iml
-.DS_Store
-docker/data/
-dependency-check-report*
-spotbugsXml.xml
+.env
+*.log
+README.md

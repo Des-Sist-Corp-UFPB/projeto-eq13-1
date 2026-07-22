@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PublicController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.controller</a> &gt; <span class="el_source">PublicController.java</span></div><h1>PublicController.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.controller;
+
+import br.ufpb.dsc.jobhub.domain.ContractType;
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.JobLocationType;
+import br.ufpb.dsc.jobhub.domain.Seniority;
+import br.ufpb.dsc.jobhub.dto.CandidateApplicationForm;
+import br.ufpb.dsc.jobhub.dto.JobPostForm;
+import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.JobService;
+import br.ufpb.dsc.jobhub.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+public class PublicController {
+
+    private final JobService jobService;
+    private final UserService userService;
+    private final AuditLogService auditLogService;
+
+<span class="fc" id="L32">    public PublicController(JobService jobService, UserService userService, AuditLogService auditLogService) {</span>
+<span class="fc" id="L33">        this.jobService = jobService;</span>
+<span class="fc" id="L34">        this.userService = userService;</span>
+<span class="fc" id="L35">        this.auditLogService = auditLogService;</span>
+<span class="fc" id="L36">    }</span>
+
+    @ModelAttribute(&quot;locationTypes&quot;)
+    JobLocationType[] locationTypes() {
+<span class="fc" id="L40">        return JobLocationType.values();</span>
+    }
+
+    @ModelAttribute(&quot;seniorities&quot;)
+    Seniority[] seniorities() {
+<span class="fc" id="L45">        return Seniority.values();</span>
+    }
+
+    @ModelAttribute(&quot;contractTypes&quot;)
+    ContractType[] contractTypes() {
+<span class="fc" id="L50">        return ContractType.values();</span>
+    }
+
+    @GetMapping(&quot;/&quot;)
+    public String home(Model model) {
+<span class="fc" id="L55">        model.addAttribute(&quot;featuredJobs&quot;, jobService.featuredJobs());</span>
+<span class="fc" id="L56">        return &quot;home&quot;;</span>
+    }
+
+    @GetMapping(&quot;/vagas&quot;)
+    public String jobs(@RequestParam(defaultValue = &quot;&quot;) String q,
+                       @RequestParam(defaultValue = &quot;&quot;) String location,
+                       Model model) {
+<span class="fc" id="L63">        model.addAttribute(&quot;jobs&quot;, jobService.searchPublished(q, location));</span>
+<span class="fc" id="L64">        model.addAttribute(&quot;q&quot;, q);</span>
+<span class="fc" id="L65">        model.addAttribute(&quot;selectedLocation&quot;, location);</span>
+<span class="fc" id="L66">        return &quot;jobs/list&quot;;</span>
+    }
+
+    @GetMapping(&quot;/vagas/{id}&quot;)
+    public String jobDetails(@PathVariable Long id,
+                             @RequestParam(required = false) String applied,
+                             Model model) {
+<span class="fc" id="L73">        model.addAttribute(&quot;job&quot;, jobService.publicDetails(id));</span>
+<span class="fc" id="L74">        model.addAttribute(&quot;applicationForm&quot;, CandidateApplicationForm.empty());</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        model.addAttribute(&quot;applied&quot;, applied != null);</span>
+<span class="fc" id="L76">        return &quot;jobs/detail&quot;;</span>
+    }
+
+    @PostMapping(&quot;/vagas/{id}/candidatar&quot;)
+    public String apply(@PathVariable Long id,
+                        @Valid @ModelAttribute(&quot;applicationForm&quot;) CandidateApplicationForm form,
+                        BindingResult bindingResult,
+                        Model model,
+                        Authentication authentication,
+                        HttpServletRequest request) {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L87">            model.addAttribute(&quot;job&quot;, jobService.publicDetails(id));</span>
+<span class="fc" id="L88">            model.addAttribute(&quot;applied&quot;, false);</span>
+<span class="fc" id="L89">            return &quot;jobs/detail&quot;;</span>
+        }
+<span class="fc" id="L91">        AppUser applicantUser = userService.currentUser(authentication).orElse(null);</span>
+<span class="fc" id="L92">        var application = jobService.apply(id, form, applicantUser);</span>
+<span class="fc" id="L93">        auditLogService.log(request, authentication, &quot;APPLICATION_SUBMITTED&quot;, &quot;CANDIDATE_APPLICATION&quot;, application.getId(), &quot;Candidatura interna enviada.&quot;);</span>
+<span class="fc" id="L94">        return &quot;redirect:/vagas/&quot; + id + &quot;?applied=true&quot;;</span>
+    }
+
+    @GetMapping(&quot;/divulgar&quot;)
+    public String publishJob(Model model) {
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
+<span class="fc" id="L100">            model.addAttribute(&quot;form&quot;, JobPostForm.empty());</span>
+        }
+<span class="fc" id="L102">        return &quot;jobs/post&quot;;</span>
+    }
+
+    @PostMapping(&quot;/divulgar&quot;)
+    public String createJob(@Valid @ModelAttribute(&quot;form&quot;) JobPostForm form,
+                            BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication,
+                            HttpServletRequest request) {
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L112">            return &quot;jobs/post&quot;;</span>
+        }
+        try {
+<span class="fc" id="L115">            var job = jobService.createPending(form);</span>
+<span class="fc" id="L116">            auditLogService.log(request, authentication, &quot;PUBLIC_JOB_SUBMITTED&quot;, &quot;JOB_POSTING&quot;, job.getId(), &quot;Vaga enviada pela página pública.&quot;);</span>
+<span class="fc" id="L117">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L118">            bindingResult.reject(&quot;job.location&quot;, ex.getMessage());</span>
+<span class="fc" id="L119">            return &quot;jobs/post&quot;;</span>
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">        redirectAttributes.addFlashAttribute(&quot;success&quot;, true);</span>
+<span class="fc" id="L122">        return &quot;redirect:/divulgar&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

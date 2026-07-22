@@ -1,343 +1,336 @@
-# Sistema Mercado — Projeto Base DSC/UFPB
+# RadarTech PB - Sistema de Vagas de TI
 
-Projeto base (boilerplate) para a disciplina **Desenvolvimento de Sistemas Corporativos**.
+Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O RadarTech PB é um portal para curadoria, busca e gerenciamento de vagas de tecnologia, com foco em estudantes, estagiários e profissionais júnior.
 
-**Professor**: Rodrigo Rebouças | **UFPB — Campus IV**
+## Visão Geral
 
----
+O sistema permite que visitantes consultem vagas reais de TI, filtrem oportunidades por modelo de trabalho e abram o link público da vaga original. Também existe uma área administrativa para moderação das vagas, acompanhamento das candidaturas internas, consulta de auditoria e visualização de indicadores.
+
+As vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas e presenciais são focadas apenas na Paraíba.
 
 ## Tecnologias
 
 | Camada | Tecnologia |
-|--------|-----------|
-| Backend | Java 21 + Spring Boot 3.4.5 |
-| Templates | Thymeleaf + HTMX 2.0 |
-| Frontend | Bootstrap 5.3 |
-| Banco | PostgreSQL 16 |
-| Migrações | Flyway 11 |
-| Segurança | Spring Security 6 |
-| Build | Maven 3.9 |
-| CI/CD | GitHub Actions |
+| --- | --- |
+| Backend | Java 21 + Spring Boot 3.5 |
+| Web | Spring MVC + Thymeleaf |
+| Segurança | Spring Security + OAuth2 Client |
+| Banco de dados | PostgreSQL |
+| Migrações | Flyway |
+| Build | Maven |
+| Testes | JUnit 5, MockMvc, Mockito, JaCoCo |
+| Infraestrutura | Docker + Docker Compose |
+| CI/CD | GitHub Actions + GHCR |
 
----
+## Funcionalidades
 
-## Guia de Instalação para Alunos
+- Página inicial com busca e atalhos para vagas.
+- Listagem pública de vagas.
+- Filtro por termo de busca e modelo de trabalho.
+- Página de detalhes da vaga.
+- Link externo para candidatura em plataformas como Gupy, LinkedIn e Indeed.
+- Formulário público de candidatura interna.
+- Associação da candidatura ao usuário logado, quando houver.
+- Página pública para divulgar novas vagas.
+- Login tradicional com e-mail/usuário e senha.
+- Cadastro de usuário comum.
+- Login com Google OAuth2.
+- Página "Minha conta".
+- Login administrativo.
+- Checkout de assinatura com Stripe para recursos administrativos de cobranca.
+- Painel administrativo com indicadores.
+- Gestão de vagas com busca e filtros.
+- Gestão de usuários.
+- Consulta de logs de auditoria.
+- Health check público em `GET /ping`.
 
-### Passo 1 — Instale o Java 21
+## Login e Perfis
 
-O projeto requer Java 21. Recomendamos o **Eclipse Temurin** (distribuição gratuita da Adoptium).
+O sistema usa dois papéis:
 
-**Windows / macOS / Linux:**
-1. Acesse https://adoptium.net/temurin/releases/?version=21
-2. Baixe o instalador para seu sistema operacional
-3. Execute o instalador e siga as instruções
+- `ROLE_USER`: usuário comum.
+- `ROLE_ADMIN`: administrador.
 
-**Verificar se está correto:**
+Páginas públicas continuam acessíveis sem login. A área `/admin/**` exige `ROLE_ADMIN`.
+
+O login tradicional usa BCrypt para armazenar senhas. O usuário administrador inicial é criado automaticamente a partir das variáveis:
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+Em produção, troque `ADMIN_PASSWORD` por uma senha real fora do código-fonte.
+
+### Perfil profissional do candidato
+
+Em `/minha-conta`, usuários autenticados podem personalizar:
+
+- nome e biografia profissional;
+- foto em JPEG, PNG ou WebP, limitada a 3 MB;
+- currículo em PDF, limitado a 5 MB;
+- múltiplas experiências profissionais com período e descrição;
+- tema claro com fundo branco por padrão, escuro ou automático.
+
+Foto e currículo são privados e só podem ser acessados pela própria conta autenticada. Atualização do perfil, arquivos, experiências e tema geram eventos persistentes na auditoria administrativa.
+
+### Identidade visual e temas
+
+A interface usa a logomarca oficial recortada, sem fundo, nas variantes `radartech-logo-transparent.png` (tema claro) e `radartech-logo-dark.png` (branco/turquesa no tema escuro), além da paleta azul-marinho, azul e turquesa da marca. O layout foi reorganizado com navegação e cartões inspirados em redes profissionais, mantendo componentes próprios do RadarTech PB.
+
+Visitantes começam no tema claro com fundo branco e podem trocar o tema localmente. Para usuários autenticados, a preferência `LIGHT`, `DARK` ou `SYSTEM` também é persistida no perfil.
+
+### Curadoria recente de vagas
+
+A migration `V9__seed_recent_verified_jobs.sql` adiciona oportunidades verificadas entre 10 e 17 de julho de 2026, com links para as publicações originais. A inclusão também registra a ação `JOB_CURATED` na auditoria.
+
+## Google OAuth2
+
+Foi escolhido Google OAuth2 porque é a alternativa mais simples e compatível com Spring Security OAuth2 Client.
+
+Configure as credenciais por variáveis de ambiente:
+
+```env
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+```
+
+No console do Google Cloud, configure o redirect URI autorizado:
+
+```text
+https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+```
+
+Para testes locais, use também:
+
+```text
+http://localhost:8080/login/oauth2/code/google
+```
+
+Nunca versione client id real, client secret real, tokens ou senhas reais.
+
+Ao logar com Google:
+
+- se o e-mail ainda não existir, o sistema cria um usuário com `ROLE_USER`;
+- se o e-mail já existir, o sistema reutiliza a conta existente;
+- usuários administradores existentes preservam o papel administrativo.
+
+## Cobranca com Stripe
+
+O painel administrativo possui um fluxo de checkout de assinatura usando Stripe Checkout. As credenciais e o identificador do preco mensal devem ser configurados apenas por variaveis de ambiente:
+
+```env
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/admin/billing/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/admin/billing/cancelado
+```
+
+Nunca versione chaves reais da Stripe. Sem `STRIPE_SECRET_KEY` e `STRIPE_MONTHLY_PRICE_ID`, o checkout fica indisponivel e o sistema informa a ausencia de configuracao.
+
+## Auditoria
+
+O sistema grava logs persistentes na tabela `audit_log`.
+
+Eventos auditados incluem:
+
+- login tradicional bem-sucedido;
+- falha de login;
+- logout;
+- cadastro de usuário;
+- login/cadastro via Google;
+- atualização de perfil, foto, currículo e tema;
+- inclusão e remoção de experiências profissionais;
+- inclusão de vagas verificadas pela curadoria;
+- envio público de vaga;
+- criação de vaga pelo admin;
+- publicação, pendência, arquivamento e remoção de vaga;
+- envio de candidatura interna.
+
+Administradores podem consultar os logs em:
+
+```text
+/admin/auditoria
+```
+
+A tela permite filtros por ação, usuário/e-mail, tipo de entidade e período.
+
+## Painel Administrativo
+
+O painel admin possui navegação para:
+
+- Dashboard;
+- Vagas;
+- Candidaturas;
+- Auditoria;
+- Usuários.
+
+O dashboard exibe:
+
+- total de vagas;
+- vagas publicadas;
+- vagas pendentes;
+- vagas arquivadas;
+- total de candidaturas internas;
+- total de usuários cadastrados;
+- vagas por modalidade;
+- visualizações.
+
+## Como Rodar Localmente
+
+Antes de iniciar a aplicação, suba o PostgreSQL:
+
 ```bash
-java -version
-# Esperado: openjdk version "21.x.x" ...
+docker compose -f docker/docker-compose.dev.yml up -d
 ```
 
-> **Dica para Windows:** durante a instalação, marque a opção *"Add to PATH"* e *"Set JAVA_HOME"*.
-
----
-
-### Passo 2 — Instale o Maven
-
-O Maven é a ferramenta de build do projeto.
-
-**macOS (com Homebrew):**
-```bash
-brew install maven
-```
-
-**Windows:**
-1. Acesse https://maven.apache.org/download.cgi
-2. Baixe o arquivo `apache-maven-3.x.x-bin.zip`
-3. Extraia para uma pasta (ex.: `C:\maven`)
-4. Adicione `C:\maven\bin` à variável de ambiente `PATH`
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt install maven
-```
-
-**Verificar:**
-```bash
-mvn -version
-# Esperado: Apache Maven 3.x.x
-```
-
----
-
-### Passo 3 — Instale o Docker Desktop
-
-O Docker sobe o banco de dados PostgreSQL sem precisar instalar nada manualmente.
-
-1. Acesse https://www.docker.com/products/docker-desktop/
-2. Baixe e instale o Docker Desktop para seu sistema
-3. Abra o Docker Desktop e aguarde ele inicializar (ícone na barra de tarefas)
-
-**Verificar:**
-```bash
-docker -v
-# Esperado: Docker version 27.x.x ...
-```
-
-> **Importante:** o Docker Desktop deve estar **em execução** sempre que você for rodar o projeto.
-
----
-
-### Passo 4 — Clone o repositório
+Depois rode a aplicação Spring Boot:
 
 ```bash
-git clone <URL-DO-REPOSITÓRIO>
-cd base_projeto
-```
-
-> Substitua `<URL-DO-REPOSITÓRIO>` pela URL fornecida pelo professor.
-
----
-
-### Passo 5 — Execute o projeto
-
-Você tem duas opções. **Recomendamos a Opção A para a primeira execução.**
-
-#### Opção A: Tudo com Docker (mais simples)
-
-Um único comando sobe o banco, a aplicação e o Adminer (interface web do banco):
-
-```bash
-docker compose -f docker/docker-compose.dev.yml up --build
-```
-
-Aguarde as mensagens de inicialização. Quando aparecer algo como:
-```
-Started MercadoApplication in X.XXX seconds
-```
-...a aplicação está pronta.
-
-#### Opção B: Banco no Docker + aplicação local (recomendado para desenvolvimento)
-
-Esta opção permite editar o código e ver as mudanças mais rápido:
-
-```bash
-# Terminal 1 — sobe o banco de dados
-docker compose -f docker/docker-compose.dev.yml up postgres adminer
-
-# Terminal 2 — roda a aplicação (em outro terminal, na mesma pasta)
 mvn spring-boot:run
 ```
 
----
+A aplicação ficará disponível em:
 
-### Passo 6 — Acesse no browser
-
-| O que | Endereço |
-|-------|----------|
-| Aplicação | http://localhost:8080 |
-| Login | usuário: `admin` / senha: `admin123` |
-| Adminer (banco) | http://localhost:8888 |
-| Health check | http://localhost:8080/actuator/health |
-
----
-
-### Parando o projeto
-
-```bash
-# Parar a aplicação: Ctrl+C no terminal onde está rodando
-
-# Parar os containers Docker:
-docker compose -f docker/docker-compose.dev.yml down
+```text
+http://localhost:8080
 ```
 
----
+## Acesso Administrativo Local
 
-## Solução de Problemas Comuns
-
-### "Port 8080 already in use"
-Outra aplicação está usando a porta 8080. Para liberar:
-```bash
-# macOS / Linux
-lsof -ti:8080 | xargs kill
-
-# Windows (PowerShell)
-netstat -ano | findstr :8080
-# Anote o PID da última coluna e execute:
-taskkill /PID <número-do-pid> /F
+```text
+Usuário: admin
+Senha: admin123
 ```
 
-### "Cannot connect to the Docker daemon"
-O Docker Desktop não está em execução. Abra o aplicativo Docker Desktop e aguarde inicializar.
+## Banco de Dados Local
 
-### "Connection refused" ao banco de dados
-O container do PostgreSQL ainda não subiu. Aguarde alguns segundos e tente novamente. Você pode verificar com:
-```bash
-docker compose -f docker/docker-compose.dev.yml ps
-# O container "mercado-postgres-dev" deve estar com status "healthy"
-```
+O ambiente de desenvolvimento usa PostgreSQL no Docker.
 
-### Erro de compilação Java
-Verifique se o Java 21 está sendo usado pelo Maven:
-```bash
-mvn -version
-# A linha "Java version:" deve mostrar 21.x.x
-```
-Se mostrar outra versão, configure a variável `JAVA_HOME` apontando para o Java 21.
+| Configuração | Valor |
+| --- | --- |
+| Host | `localhost` |
+| Porta | `5432` |
+| Banco | `jobhub_dev` |
+| Usuário | `jobhub` |
+| Senha | `jobhub123` |
 
-### Flyway: "Found non-empty schema(s) with no schema history table"
-O banco existe mas foi criado sem as migrations. Apague os dados e recomece:
-```bash
-docker compose -f docker/docker-compose.dev.yml down -v
-docker compose -f docker/docker-compose.dev.yml up postgres
-```
+As tabelas são criadas automaticamente pelas migrations Flyway em `src/main/resources/db/migration`.
 
----
+## Testes e Cobertura
 
-## Testes
+Para executar testes e cobertura:
 
 ```bash
-# Rodar todos os testes (requer Docker em execução — usa Testcontainers)
-mvn test
-
-# Rodar com relatório de cobertura (JaCoCo)
 mvn verify
-# Relatório: abra o arquivo target/site/jacoco/index.html no browser
 ```
 
----
+O projeto usa JaCoCo e exige cobertura mínima integral de 85%, sem excluir os pacotes de domínio, DTOs ou segurança. O build falha caso a cobertura fique abaixo do mínimo configurado.
 
-## Análise de Segurança (SAST)
+**Cobertura total de linhas: 91,71%** (819 de 893 linhas cobertas).
 
-```bash
-# SpotBugs + FindSecBugs + OWASP Dependency Check
-mvn verify -Psecurity
+O relatório de cobertura está commitado na pasta `cobertura/` na raiz do projeto:
 
-# Trivy: scan de vulnerabilidades no filesystem
-docker compose -f docker/docker-compose.dev.yml --profile scan up trivy
-
-# Verificar dependências desatualizadas
-mvn versions:display-dependency-updates -Pversions
+```text
+cobertura/index.html
 ```
 
-Veja `docs/SECURITY.md` para detalhes.
+O relatório também pode ser regenerado localmente em:
 
----
+```text
+target/site/jacoco/index.html
+```
 
-## Configurando o Deploy Automático (GitHub Actions)
-
-O projeto inclui um pipeline de CI/CD em `.github/workflows/deploy.yml` que:
-- roda os testes automaticamente a cada `push` na branch `main`
-- executa análise de segurança (SAST) no código e nas dependências
-- constrói a imagem Docker de produção e faz o deploy no servidor da disciplina
-
-Para ativar o deploy, você precisa configurar **dois secrets** e uma **variável** no seu repositório GitHub.
-
----
-
-### Secret 1 — Chave SSH de deploy (`SSH_DEPLOY_KEY`)
-
-O servidor da disciplina (`dsc.rodrigor.com`) já está preparado para receber deploys.
-A chave SSH que autoriza o acesso está disponível na página da disciplina:
-
-**Acesse: https://gd.dsc.rodrigor.com** e copie a chave SSH privada disponibilizada pelo professor.
-
-Depois, adicione no seu repositório:
-
-1. No GitHub, acesse seu repositório → **Settings**
-2. No menu lateral: **Secrets and variables → Actions**
-3. Clique em **New repository secret**
-4. Nome: `SSH_DEPLOY_KEY`
-5. Valor: cole a chave privada copiada do portal (o texto completo, incluindo as linhas `-----BEGIN...` e `-----END...`)
-6. Clique em **Add secret**
-
----
-
-### Secret 2 — Chave da API do NVD (`NVD_API_KEY`)
-
-#### O que é o NVD?
-
-**NVD** significa *National Vulnerability Database* — é o banco de dados oficial do governo americano (NIST) que cataloga todas as vulnerabilidades de segurança conhecidas em softwares. Cada vulnerabilidade recebe um identificador chamado **CVE** (ex.: CVE-2024-12345) e uma nota de gravidade chamada **CVSS** (de 0 a 10).
-
-O **OWASP Dependency Check** (uma das ferramentas de segurança do projeto) consulta esse banco para verificar se as bibliotecas que o seu projeto usa possuem vulnerabilidades conhecidas.
-
-#### Por que preciso de uma chave?
-
-Sem a chave, o download do banco de dados NVD é muito lento (pode levar 20+ minutos no CI/CD, ou até falhar por timeout). Com a chave gratuita, o download é feito via API e leva menos de 2 minutos.
-
-#### Como obter (gratuito, leva ~1 minuto)
-
-1. Acesse https://nvd.nist.gov/developers/request-an-api-key
-2. Preencha seu e-mail institucional (use o e-mail da UFPB se possível)
-3. Marque a caixa de uso não-comercial
-4. Clique em **Submit**
-5. Acesse seu e-mail — você receberá a chave em segundos
-
-#### Adicionando ao repositório
-
-1. No GitHub: **Settings → Secrets and variables → Actions**
-2. Clique em **New repository secret**
-3. Nome: `NVD_API_KEY`
-4. Valor: cole a chave recebida por e-mail
-5. Clique em **Add secret**
-
-> **Sem a chave ainda?** O pipeline funciona mesmo sem ela, mas o OWASP Dependency Check
-> pode demorar muito ou falhar por timeout. Configure assim que possível.
-
----
-
-### Variável — Nome da imagem Docker (`APP_IMAGE`)
-
-O pipeline publica a imagem Docker no GitHub Container Registry (GHCR) com o nome do seu repositório. Você não precisa configurar isso manualmente — o workflow usa `${{ github.repository }}` para montar o nome automaticamente.
-
-Mas o arquivo `.env` no servidor precisa saber qual imagem usar. O script de deploy atualiza isso automaticamente na primeira execução.
-
----
-
-### Verificando se o deploy funcionou
-
-Após configurar os secrets e fazer um `push` na branch `main`:
-
-1. No GitHub, clique na aba **Actions**
-2. Você verá o workflow **"Build & Deploy"** em execução
-3. Ele tem 3 etapas: **Testes e SAST → Build e push → Deploy em produção**
-4. Se tudo der certo, a aplicação estará disponível em `https://dsc.rodrigor.com`
-
-Se alguma etapa falhar, clique nela para ver os logs detalhados.
-
----
 
 ## Estrutura do Projeto
 
-```
-base_projeto/
-├── .github/workflows/
-│   └── deploy.yml           # Pipeline CI/CD (GitHub Actions)
-├── src/main/java/br/ufpb/dsc/mercado/
-│   ├── config/              # Configurações (Security, GlobalModelAttributes, etc.)
-│   ├── controller/          # Controllers HTTP + HTMX
-│   ├── domain/              # Entidades JPA
-│   ├── dto/                 # Data Transfer Objects (Records)
-│   ├── exception/           # Exceções de domínio
-│   ├── repository/          # Interfaces Spring Data JPA
-│   └── service/             # Lógica de negócio
-├── src/main/resources/
-│   ├── db/migration/        # Scripts Flyway (V1__, V2__, ...)
-│   └── templates/           # Templates Thymeleaf
-├── docker/                  # Dockerfiles + docker-compose
-├── docs/                    # Documentação técnica
-├── CLAUDE.md                # Memória para Claude Code
-└── pom.xml
+```text
+.
+|-- .github/workflows/        # Workflow de deploy
+|-- docker/                   # Dockerfile e arquivos Docker Compose
+|-- src/main/java/br/ufpb/dsc/jobhub/
+|   |-- config/               # Configurações de segurança e autenticação
+|   |-- controller/           # Controllers HTTP
+|   |-- domain/               # Entidades JPA
+|   |-- dto/                  # Objetos de transferência/formulários
+|   |-- repository/           # Repositórios Spring Data JPA
+|   `-- service/              # Regras de negócio
+|-- src/main/resources/
+|   |-- db/migration/         # Migrations Flyway
+|   |-- static/               # Arquivos estáticos
+|   `-- templates/            # Páginas Thymeleaf
+|-- src/test/                 # Testes automatizados
+`-- pom.xml                   # Configuração Maven
 ```
 
----
+## Variáveis de Ambiente
 
-## Para Alunos: Adaptando o Boilerplate
+O projeto inclui um arquivo `.env.example` com valores de exemplo. Não faça commit de arquivos `.env` reais com senhas ou tokens.
 
-1. **Renomear** a entidade `Produto` para sua entidade principal
-2. **Criar migration** Flyway com a nova estrutura da tabela (`src/main/resources/db/migration/V2__...sql`)
-3. **Atualizar** Repository, Service, Controller e templates seguindo os mesmos padrões
-4. **Manter** a estrutura de pacotes e convenções (ver `docs/CONVENTIONS.md`)
-5. **Nunca editar** migrations já aplicadas — sempre criar uma nova (`V3__`, `V4__`, ...)
+```env
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<senha-admin>
+```
 
-> Dúvidas? Consulte a documentação em `docs/` ou o professor.
+## Deploy
+
+O workflow em `.github/workflows/deploy.yml` executa o pipeline de produção:
+
+1. roda `mvn verify -B`;
+2. valida testes e cobertura;
+3. constrói a imagem Docker com `docker/Dockerfile`;
+4. publica a imagem no GitHub Container Registry (GHCR);
+5. aciona o deploy no servidor `dsc.rodrigor.com` usando o secret `SSH_DEPLOY_KEY`.
+
+O deploy usa o usuário SSH da equipe `eq13` e publica a aplicação na porta `8113`.
+
+### Secrets no GitHub
+
+Configure em `Settings -> Secrets and variables -> Actions`:
+
+| Secret | Valor |
+| --- | --- |
+| `SSH_USERNAME` | `eq13` |
+| `SSH_DEPLOY_KEY` | chave privada SSH fornecida pela disciplina |
+
+### Variáveis no Servidor
+
+Configure as variáveis reais no `.env` do servidor ou pelo painel da disciplina. Não versione senhas reais no GitHub.
+
+```env
+APP_IMAGE=ghcr.io/des-sist-corp-ufpb/projeto-eq13:latest
+SERVER_PORT=8113
+
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eq13
+SPRING_DATASOURCE_USERNAME=eq13
+SPRING_DATASOURCE_PASSWORD=<senha-real-do-banco>
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5
+
+AWS_S3_ENDPOINT=http://minio:9000
+AWS_S3_PUBLIC_ENDPOINT=https://s3.dsc.rodrigor.com
+AWS_S3_REGION=us-east-1
+AWS_S3_BUCKET=eq13
+AWS_S3_ACCESS_KEY=<access-key-minio>
+AWS_S3_SECRET_KEY=<secret-real-do-minio>
+
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/admin/billing/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/admin/billing/cancelado
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<senha-admin>
+```
+
+O portal da disciplina verifica `GET /ping`. Essa rota é pública e retorna JSON com `status: "ok"` e `service: "eq13"`.

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppUser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.domain</a> &gt; <span class="el_source">AppUser.java</span></div><h1>AppUser.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
+
+@Entity
+@Table(name = &quot;app_user&quot;)
+public class AppUser {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false, length = 140)
+    private String name;
+
+    @Email
+    @NotBlank
+    @Column(nullable = false, length = 190)
+    private String email;
+
+    @Column(length = 80)
+    private String username;
+
+    @NotBlank
+    @Column(nullable = false, length = 120)
+    private String passwordHash;
+
+<span class="fc" id="L48">    @NotNull</span>
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private UserRole role = UserRole.ROLE_USER;
+
+<span class="fc" id="L53">    @NotNull</span>
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 40)
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+<span class="fc" id="L58">    @Column(nullable = false)</span>
+    private boolean enabled = true;
+
+    @Column(columnDefinition = &quot;text&quot;)
+    private String biography;
+
+<span class="fc" id="L64">    @NotNull</span>
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ThemePreference themePreference = ThemePreference.LIGHT;
+
+    @Column(columnDefinition = &quot;bytea&quot;)
+    private byte[] photoContent;
+
+    @Column(length = 100)
+    private String photoContentType;
+
+    @Column(columnDefinition = &quot;bytea&quot;)
+    private byte[] resumeContent;
+
+    @Column(length = 255)
+    private String resumeFileName;
+
+    @Column(length = 100)
+    private String resumeContentType;
+
+<span class="fc" id="L84">    @OneToMany(mappedBy = &quot;user&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
+    private List&lt;CandidateExperience&gt; experiences = new ArrayList&lt;&gt;();
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    @Column(nullable = false)
+    private Instant updatedAt;
+
+<span class="fc" id="L93">    protected AppUser() {</span>
+<span class="fc" id="L94">    }</span>
+
+<span class="fc" id="L96">    public AppUser(String name, String email, String username, String passwordHash, UserRole role, AuthProvider provider) {</span>
+<span class="fc" id="L97">        this.name = name;</span>
+<span class="fc" id="L98">        this.email = email;</span>
+<span class="fc" id="L99">        this.username = username;</span>
+<span class="fc" id="L100">        this.passwordHash = passwordHash;</span>
+<span class="fc" id="L101">        this.role = role;</span>
+<span class="fc" id="L102">        this.provider = provider;</span>
+<span class="fc" id="L103">    }</span>
+
+    @PrePersist
+    void onCreate() {
+<span class="fc" id="L107">        Instant now = Instant.now();</span>
+<span class="fc" id="L108">        createdAt = now;</span>
+<span class="fc" id="L109">        updatedAt = now;</span>
+<span class="fc" id="L110">    }</span>
+
+    @PreUpdate
+    void onUpdate() {
+<span class="fc" id="L114">        updatedAt = Instant.now();</span>
+<span class="fc" id="L115">    }</span>
+
+    public void updateGoogleProfile(String name) {
+<span class="pc bpc" id="L118" title="2 of 4 branches missed.">        if (name != null &amp;&amp; !name.isBlank()) {</span>
+<span class="fc" id="L119">            this.name = name;</span>
+        }
+<span class="fc" id="L121">    }</span>
+
+    public void changeRole(UserRole role) {
+<span class="fc" id="L124">        this.role = role;</span>
+<span class="fc" id="L125">    }</span>
+
+    public void updateProfile(String name, String biography) {
+<span class="fc" id="L128">        this.name = name;</span>
+<span class="fc" id="L129">        this.biography = biography;</span>
+<span class="fc" id="L130">    }</span>
+
+    public void updatePhoto(byte[] content, String contentType) {
+<span class="fc" id="L133">        this.photoContent = content;</span>
+<span class="fc" id="L134">        this.photoContentType = contentType;</span>
+<span class="fc" id="L135">    }</span>
+
+    public void updateResume(byte[] content, String fileName, String contentType) {
+<span class="fc" id="L138">        this.resumeContent = content;</span>
+<span class="fc" id="L139">        this.resumeFileName = fileName;</span>
+<span class="fc" id="L140">        this.resumeContentType = contentType;</span>
+<span class="fc" id="L141">    }</span>
+
+    public void changeTheme(ThemePreference themePreference) {
+<span class="fc" id="L144">        this.themePreference = themePreference;</span>
+<span class="fc" id="L145">    }</span>
+
+<span class="fc" id="L147">    public Long getId() { return id; }</span>
+<span class="fc" id="L148">    public String getName() { return name; }</span>
+<span class="fc" id="L149">    public String getEmail() { return email; }</span>
+<span class="fc" id="L150">    public String getUsername() { return username; }</span>
+<span class="fc" id="L151">    public String getPasswordHash() { return passwordHash; }</span>
+<span class="fc" id="L152">    public UserRole getRole() { return role; }</span>
+<span class="fc" id="L153">    public AuthProvider getProvider() { return provider; }</span>
+<span class="fc" id="L154">    public boolean isEnabled() { return enabled; }</span>
+<span class="fc" id="L155">    public String getBiography() { return biography; }</span>
+<span class="fc" id="L156">    public ThemePreference getThemePreference() { return themePreference; }</span>
+<span class="fc" id="L157">    public byte[] getPhotoContent() { return photoContent; }</span>
+<span class="fc" id="L158">    public String getPhotoContentType() { return photoContentType; }</span>
+<span class="fc" id="L159">    public byte[] getResumeContent() { return resumeContent; }</span>
+<span class="fc" id="L160">    public String getResumeFileName() { return resumeFileName; }</span>
+<span class="nc" id="L161">    public String getResumeContentType() { return resumeContentType; }</span>
+<span class="nc" id="L162">    public List&lt;CandidateExperience&gt; getExperiences() { return experiences; }</span>
+<span class="fc" id="L163">    public Instant getCreatedAt() { return createdAt; }</span>
+<span class="nc" id="L164">    public Instant getUpdatedAt() { return updatedAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

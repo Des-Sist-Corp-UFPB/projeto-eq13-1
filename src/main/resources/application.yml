@@ -1,18 +1,36 @@
 spring:
   application:
-    name: mercado
+    name: radartech-pb
   profiles:
-    active: dev
+    default: dev
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:<google-client-id>}
+            client-secret: ${GOOGLE_CLIENT_SECRET:<google-client-secret>}
+            redirect-uri: ${GOOGLE_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
+            scope:
+              - openid
+              - profile
+              - email
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 9MB
 
-# Actuator - monitoramento da aplicação
-# Acesse: http://localhost:8080/actuator/health
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  monthly-price-id: ${STRIPE_MONTHLY_PRICE_ID:}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:8080/admin/billing/sucesso}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:8080/admin/billing/cancelado}
+
 management:
   endpoints:
     web:
       exposure:
-        # Expõe apenas os endpoints necessários (não exponha todos em produção!)
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      # Detalhes do health só são exibidos para usuários autenticados
       show-details: when-authorized

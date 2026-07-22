@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Subscription.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.domain</a> &gt; <span class="el_source">Subscription.java</span></div><h1>Subscription.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
+import java.time.Instant;
+
+@Entity
+public class Subscription {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 140)
+    private String company;
+
+    @Column(nullable = false, length = 190)
+    private String companyEmail;
+
+    @Column(nullable = false, length = 120)
+    private String planCode;
+
+<span class="fc" id="L31">    @Enumerated(EnumType.STRING)</span>
+    @Column(nullable = false, length = 40)
+    private SubscriptionStatus status = SubscriptionStatus.PENDING;
+
+    @Column(length = 120)
+    private String externalReference;
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    @Column(nullable = false)
+    private Instant updatedAt;
+
+    @Column
+    private Instant validUntil;
+
+<span class="fc" id="L47">    protected Subscription() {</span>
+<span class="fc" id="L48">    }</span>
+
+<span class="fc" id="L50">    public Subscription(String company, String companyEmail, String planCode) {</span>
+<span class="fc" id="L51">        this.company = company;</span>
+<span class="fc" id="L52">        this.companyEmail = companyEmail;</span>
+<span class="fc" id="L53">        this.planCode = planCode;</span>
+<span class="fc" id="L54">    }</span>
+
+    @PrePersist
+    void onCreate() {
+<span class="nc" id="L58">        Instant now = Instant.now();</span>
+<span class="nc" id="L59">        createdAt = now;</span>
+<span class="nc" id="L60">        updatedAt = now;</span>
+<span class="nc" id="L61">    }</span>
+
+    @PreUpdate
+    void onUpdate() {
+<span class="nc" id="L65">        updatedAt = Instant.now();</span>
+<span class="nc" id="L66">    }</span>
+
+    public boolean isActive() {
+<span class="pc bpc" id="L69" title="2 of 6 branches missed.">        return status == SubscriptionStatus.ACTIVE &amp;&amp; (validUntil == null || validUntil.isAfter(Instant.now()));</span>
+    }
+
+    public void activate(Instant validUntil, String externalReference) {
+<span class="fc" id="L73">        this.status = SubscriptionStatus.ACTIVE;</span>
+<span class="fc" id="L74">        this.validUntil = validUntil;</span>
+<span class="fc" id="L75">        this.externalReference = externalReference;</span>
+<span class="fc" id="L76">    }</span>
+
+    public void cancel() {
+<span class="fc" id="L79">        this.status = SubscriptionStatus.CANCELED;</span>
+<span class="fc" id="L80">    }</span>
+
+    public Long getId() {
+<span class="fc" id="L83">        return id;</span>
+    }
+
+    public String getCompany() {
+<span class="fc" id="L87">        return company;</span>
+    }
+
+    public String getCompanyEmail() {
+<span class="fc" id="L91">        return companyEmail;</span>
+    }
+
+    public String getPlanCode() {
+<span class="fc" id="L95">        return planCode;</span>
+    }
+
+    public SubscriptionStatus getStatus() {
+<span class="fc" id="L99">        return status;</span>
+    }
+
+    public String getExternalReference() {
+<span class="fc" id="L103">        return externalReference;</span>
+    }
+
+    public Instant getCreatedAt() {
+<span class="nc" id="L107">        return createdAt;</span>
+    }
+
+    public Instant getUpdatedAt() {
+<span class="nc" id="L111">        return updatedAt;</span>
+    }
+
+    public Instant getValidUntil() {
+<span class="fc" id="L115">        return validUntil;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
