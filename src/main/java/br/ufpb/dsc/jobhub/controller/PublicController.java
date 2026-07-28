@@ -7,6 +7,7 @@ import br.ufpb.dsc.jobhub.domain.Seniority;
 import br.ufpb.dsc.jobhub.dto.CandidateApplicationForm;
 import br.ufpb.dsc.jobhub.dto.JobPostForm;
 import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.BillingService;
 import br.ufpb.dsc.jobhub.service.JobService;
 import br.ufpb.dsc.jobhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,11 +29,14 @@ public class PublicController {
     private final JobService jobService;
     private final UserService userService;
     private final AuditLogService auditLogService;
+    private final BillingService billingService;
 
-    public PublicController(JobService jobService, UserService userService, AuditLogService auditLogService) {
+    public PublicController(JobService jobService, UserService userService,
+                            AuditLogService auditLogService, BillingService billingService) {
         this.jobService = jobService;
         this.userService = userService;
         this.auditLogService = auditLogService;
+        this.billingService = billingService;
     }
 
     @ModelAttribute("locationTypes")
@@ -90,15 +94,25 @@ public class PublicController {
         }
         AppUser applicantUser = userService.currentUser(authentication).orElse(null);
         var application = jobService.apply(id, form, applicantUser);
-        auditLogService.log(request, authentication, "APPLICATION_SUBMITTED", "CANDIDATE_APPLICATION", application.getId(), "Candidatura interna enviada.");
+        auditLogService.log(request, authentication, "APPLICATION_SUBMITTED", "CANDIDATE_APPLICATION",
+                application.getId(), "Candidatura interna enviada.");
         return "redirect:/vagas/" + id + "?applied=true";
     }
 
+    // ── Divulgação de vagas (requer login + assinatura ativa) ────────────────
+
     @GetMapping("/divulgar")
-    public String publishJob(Model model) {
-        if (!model.containsAttribute("form")) {
-            model.addAttribute("form", JobPostForm.empty());
+    public String publishJob(Model model, Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (!billingService.hasActiveSubscription(user.getEmail())) {
+            redirectAttributes.addFlashAttribute("subscriptionRequired", true);
+            return "redirect:/divulgar/assinar";
         }
+        if (!model.containsAttribute("form")) {
+            model.addAttribute("form", prefillForm(user));
+        }
+        model.addAttribute("user", user);
         return "jobs/post";
     }
 
@@ -107,18 +121,65 @@ public class PublicController {
                             BindingResult bindingResult,
                             RedirectAttributes redirectAttributes,
                             Authentication authentication,
-                            HttpServletRequest request) {
+                            HttpServletRequest request,
+                            Model model) {
+        AppUser user = currentUser(authentication);
+        // Dupla verificação: bloqueia mesmo acesso direto via POST
+        if (!billingService.hasActiveSubscription(user.getEmail())) {
+            redirectAttributes.addFlashAttribute("subscriptionRequired", true);
+            return "redirect:/divulgar/assinar";
+        }
         if (bindingResult.hasErrors()) {
+            model.addAttribute("user", user);
             return "jobs/post";
         }
         try {
             var job = jobService.createPending(form);
-            auditLogService.log(request, authentication, "PUBLIC_JOB_SUBMITTED", "JOB_POSTING", job.getId(), "Vaga enviada pela página pública.");
+            auditLogService.log(request, authentication, "PUBLIC_JOB_SUBMITTED", "JOB_POSTING",
+                    job.getId(), "Vaga enviada pela página pública.");
         } catch (IllegalArgumentException ex) {
             bindingResult.reject("job.location", ex.getMessage());
+            model.addAttribute("user", user);
             return "jobs/post";
         }
         redirectAttributes.addFlashAttribute("success", true);
         return "redirect:/divulgar";
+    }
+
+    @GetMapping("/divulgar/assinar")
+    public String subscribe(Model model, Authentication authentication) {
+        AppUser user = currentUser(authentication);
+        model.addAttribute("user", user);
+        model.addAttribute("subscription", billingService.findByCompanyEmail(user.getEmail()));
+        return "jobs/subscribe";
+    }
+
+    @PostMapping("/divulgar/assinar/checkout")
+    public String subscribeCheckout(Authentication authentication,
+                                    RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        try {
+            BillingService.CheckoutResult result = billingService.createCheckoutSessionForUser(user);
+            return "redirect:" + result.checkoutUrl();
+        } catch (IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("billingError", ex.getMessage());
+            return "redirect:/divulgar/assinar";
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private AppUser currentUser(Authentication authentication) {
+        return userService.currentUser(authentication).orElseThrow();
+    }
+
+    private JobPostForm prefillForm(AppUser user) {
+        return new JobPostForm(
+                "", user.getName(), user.getEmail(),
+                br.ufpb.dsc.jobhub.domain.JobLocationType.REMOTE, "",
+                br.ufpb.dsc.jobhub.domain.Seniority.JUNIOR,
+                br.ufpb.dsc.jobhub.domain.ContractType.CLT,
+                "", "", "", ""
+        );
     }
 }

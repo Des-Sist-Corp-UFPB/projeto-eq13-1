@@ -7,6 +7,18 @@
             <h1>Divulgue uma vaga de tecnologia</h1>
             <p class="muted">Vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas ou presenciais são aceitas apenas para cidades da Paraíba. Toda nova vaga passa por moderação antes de ser publicada.</p>
             <div class="alert success" th:if="${success}">Vaga enviada para revisão. O admin pode publicar pelo painel.</div>
+
+            <div class="panel" style="margin-top: 16px; background: var(--surface-2, #f8f9fa);">
+                <p class="muted" style="margin: 0; font-size: 0.875rem;">
+                    <strong>Conta:</strong>
+                    <span th:text="${user.name}">Empresa</span>
+                    &mdash;
+                    <span th:text="${user.email}">email@empresa.com</span>
+                </p>
+                <p class="muted" style="margin: 4px 0 0; font-size: 0.8rem;">
+                    Os campos <em>Empresa</em> e <em>Email</em> são preenchidos automaticamente com os dados da sua conta.
+                </p>
+            </div>
         </section>
 
         <section class="panel">
@@ -19,12 +31,12 @@
                         <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
                     </label>
                     <label>Empresa
-                        <input class="input" th:field="*{company}" placeholder="Nome da empresa">
+                        <input class="input" th:field="*{company}" placeholder="Nome da empresa" readonly style="opacity: 0.75; cursor: not-allowed;">
                         <span class="error" th:if="${#fields.hasErrors('company')}" th:errors="*{company}"></span>
                     </label>
                 </div>
                 <label>Email da empresa
-                    <input class="input" th:field="*{companyEmail}" placeholder="rh@empresa.com">
+                    <input class="input" th:field="*{companyEmail}" placeholder="rh@empresa.com" readonly style="opacity: 0.75; cursor: not-allowed;">
                     <span class="error" th:if="${#fields.hasErrors('companyEmail')}" th:errors="*{companyEmail}"></span>
                 </label>
                 <div class="grid two">

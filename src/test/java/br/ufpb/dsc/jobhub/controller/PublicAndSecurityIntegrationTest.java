@@ -39,6 +39,9 @@ class PublicAndSecurityIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
+    private br.ufpb.dsc.jobhub.service.BillingService billingService;
+
+    @Autowired
     private JobPostingRepository jobPostingRepository;
 
     @Autowired
@@ -72,7 +75,6 @@ class PublicAndSecurityIntegrationTest {
     void publicPagesShouldBeAccessibleWithoutLogin() throws Exception {
         mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("home"));
         mockMvc.perform(get("/vagas")).andExpect(status().isOk()).andExpect(view().name("jobs/list"));
-        mockMvc.perform(get("/divulgar")).andExpect(status().isOk()).andExpect(view().name("jobs/post"));
         mockMvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("auth/login"));
         mockMvc.perform(get("/cadastro"))
                 .andExpect(status().isOk())
@@ -176,7 +178,11 @@ class PublicAndSecurityIntegrationTest {
 
     @Test
     void publicJobSubmissionCreatesPendingJob() throws Exception {
+        userRepository.save(new br.ufpb.dsc.jobhub.domain.AppUser("Teste Tech", "rh@testetech.com", "testetech", "senha", br.ufpb.dsc.jobhub.domain.UserRole.ROLE_USER, br.ufpb.dsc.jobhub.domain.AuthProvider.LOCAL));
+        billingService.startMonthlySubscription("Teste Tech", "rh@testetech.com");
+
         mockMvc.perform(post("/divulgar")
+                        .with(user("rh@testetech.com").roles("USER"))
                         .with(csrf())
                         .param("title", "Estágio em QA")
                         .param("company", "Teste Tech")
@@ -195,11 +201,17 @@ class PublicAndSecurityIntegrationTest {
 
     @Test
     void invalidPublicJobSubmissionReturnsForm() throws Exception {
-        mockMvc.perform(post("/divulgar").with(csrf()))
+        userRepository.save(new br.ufpb.dsc.jobhub.domain.AppUser("Suporte PB", "rh@suportepb.com", "suportepb", "senha", br.ufpb.dsc.jobhub.domain.UserRole.ROLE_USER, br.ufpb.dsc.jobhub.domain.AuthProvider.LOCAL));
+        billingService.startMonthlySubscription("Suporte PB", "rh@suportepb.com");
+
+        mockMvc.perform(post("/divulgar")
+                        .with(user("rh@suportepb.com").roles("USER"))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("jobs/post"));
 
         mockMvc.perform(post("/divulgar")
+                        .with(user("rh@suportepb.com").roles("USER"))
                         .with(csrf())
                         .param("title", "Estagio em Suporte")
                         .param("company", "Suporte PB")

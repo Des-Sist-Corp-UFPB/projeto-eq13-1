@@ -115,4 +115,9 @@ public class BillingService {
 
     public record CheckoutResult(Subscription subscription, String checkoutUrl) {
     }
+
+    @Transactional
+    public CheckoutResult createCheckoutSessionForUser(br.ufpb.dsc.jobhub.domain.AppUser user) {
+        return createCheckoutSession(user.getName(), user.getEmail());
+    }
 }
