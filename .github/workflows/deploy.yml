@@ -68,24 +68,8 @@ jobs:
           printf '%s\n' "${{ secrets.SSH_DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          # Cria arquivo .env temporário com as variáveis de ambiente
-          cat > .env.deploy << 'EOF'
-          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_MONTHLY_PRICE_ID=${{ secrets.STRIPE_MONTHLY_PRICE_ID }}
-          EOF
-
-          # Envia arquivo .env para o servidor
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            .env.deploy "$DEPLOY_USER@$DEPLOY_HOST:/tmp/.env.prod"
-
-          # Conecta no servidor e inicia o deploy com as variáveis
+          # Envia "actor:token" ao servidor. A chave e travada (command=),
+          # entao o servidor usa esse token efemero so para puxar a imagem do GHCR.
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "cd /opt/eq13 && \
-             export $(cat /tmp/.env.prod | xargs) && \
-             docker compose -f docker/docker-compose.prod.yml pull && \
-             docker compose -f docker/docker-compose.prod.yml up -d && \
-             rm /tmp/.env.prod"
-
-          # Limpa arquivo local
-          rm .env.deploy
+            "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
