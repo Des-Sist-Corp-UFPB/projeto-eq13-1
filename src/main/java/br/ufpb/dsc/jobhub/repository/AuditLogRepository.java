@@ -15,8 +15,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
             where (:action is null or :action = '' or lower(a.action) like lower(concat('%', :action, '%')))
               and (:actor is null or :actor = '' or lower(coalesce(a.actorEmail, '')) like lower(concat('%', :actor, '%')))
               and (:entityType is null or :entityType = '' or lower(coalesce(a.entityType, '')) like lower(concat('%', :entityType, '%')))
-              and (:fromDate is null or a.createdAt >= :fromDate)
-              and (:toDate is null or a.createdAt < :toDate)
+              and (cast(:fromDate as timestamp) is null or a.createdAt >= :fromDate)
+              and (cast(:toDate as timestamp) is null or a.createdAt < :toDate)
             order by a.createdAt desc
             """)
     List<AuditLog> search(@Param("action") String action,
