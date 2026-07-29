@@ -86,7 +86,11 @@ public class AuthController {
 
     @GetMapping("/minha-conta")
     public String profile(Authentication authentication, Model model) {
-        return profileView(currentUser(authentication), model);
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        return profileView(user, model);
     }
 
     @PostMapping(value = "/minha-conta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -99,6 +103,9 @@ public class AuthController {
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
         if (bindingResult.hasErrors()) {
             return profileView(user, model);
         }
@@ -130,6 +137,9 @@ public class AuthController {
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
         if (bindingResult.hasErrors()) {
             model.addAttribute("profileForm", new ProfileUpdateForm(user.getName(), user.getBiography()));
             model.addAttribute("experienceHasErrors", true);
@@ -153,6 +163,9 @@ public class AuthController {
     public String removeExperience(@PathVariable Long id, Authentication authentication,
                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
         var experience = profileService.removeExperience(user, id);
         auditLogService.log(request, user, "PROFILE_EXPERIENCE_REMOVED", "CANDIDATE_EXPERIENCE",
                 experience.getId(), "Experiência profissional removida do perfil.");
@@ -164,6 +177,9 @@ public class AuthController {
     public ResponseEntity<Void> changeTheme(@RequestParam String theme, Authentication authentication,
                                             HttpServletRequest request) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         ThemePreference preference;
         try {
             preference = ThemePreference.valueOf(theme.trim().toUpperCase(Locale.ROOT));
@@ -179,6 +195,9 @@ public class AuthController {
     @GetMapping("/minha-conta/foto")
     public ResponseEntity<byte[]> photo(Authentication authentication) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         if (user.getPhotoContent() == null || user.getPhotoContentType() == null) {
             return ResponseEntity.notFound().build();
         }
@@ -191,6 +210,9 @@ public class AuthController {
     @GetMapping("/minha-conta/curriculo")
     public ResponseEntity<byte[]> resume(Authentication authentication) {
         AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         if (user.getResumeContent() == null) {
             return ResponseEntity.notFound().build();
         }
@@ -216,7 +238,7 @@ public class AuthController {
     }
 
     private AppUser currentUser(Authentication authentication) {
-        return userService.currentUser(authentication).orElseThrow();
+        return userService.currentUser(authentication).orElse(null);
     }
 
     private boolean isAuthenticated(Authentication authentication) {

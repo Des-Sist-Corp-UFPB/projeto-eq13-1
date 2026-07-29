@@ -94,6 +94,7 @@ Configure as credenciais por variáveis de ambiente:
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
 GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+GOOGLE_REDIRECT_URI_DEV=http://localhost:8080/login/oauth2/code/google
 ```
 
 No console do Google Cloud, configure o redirect URI autorizado:
@@ -107,6 +108,9 @@ Para testes locais, use também:
 ```text
 http://localhost:8080/login/oauth2/code/google
 ```
+
+Em desenvolvimento (`spring.profiles.active=dev`), o projeto usa `GOOGLE_REDIRECT_URI_DEV` por padrão.
+Isso evita que uma variável `GOOGLE_REDIRECT_URI` de produção redirecione o login local para `eq13.dsc.rodrigor.com`.
 
 Nunca versione client id real, client secret real, tokens ou senhas reais.
 
@@ -272,6 +276,7 @@ O projeto inclui um arquivo `.env.example` com valores de exemplo. Não faça co
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
 GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+GOOGLE_REDIRECT_URI_DEV=http://localhost:8080/login/oauth2/code/google
 STRIPE_SECRET_KEY=<stripe-secret-key>
 STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
 ADMIN_USERNAME=admin

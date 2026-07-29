@@ -10,6 +10,12 @@ spring:
     show-sql: false
   flyway:
     enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: ${GOOGLE_REDIRECT_URI_DEV:http://localhost:8080/login/oauth2/code/google}
 
 app:
   admin:
