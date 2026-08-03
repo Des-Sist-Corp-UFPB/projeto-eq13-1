@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -54,9 +55,12 @@ public class AuthController {
     @GetMapping("/login")
     public String login(Authentication authentication) {
         if (isAuthenticated(authentication)) {
-            boolean admin = authentication.getAuthorities().stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-            return admin ? "redirect:/admin" : "redirect:/minha-conta";
+            Object principal = authentication.getPrincipal();
+            if (!(principal instanceof OAuth2User) || currentUser(authentication) != null) {
+                boolean admin = authentication.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                return admin ? "redirect:/admin" : "redirect:/minha-conta";
+            }
         }
         return "auth/login";
     }

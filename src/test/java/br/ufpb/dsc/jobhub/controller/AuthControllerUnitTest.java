@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +47,10 @@ class AuthControllerUnitTest {
 
     @Test
     void everyAccountResourceRejectsMissingAuthenticatedUser() {
+        when(authentication.isAuthenticated()).thenReturn(true);
+                doReturn(List.of(new SimpleGrantedAuthority("ROLE_USER"))).when(authentication).getAuthorities();
+
+        assertThat(controller.login(authentication)).isEqualTo("redirect:/minha-conta");
         assertThat(controller.profile(authentication, new ExtendedModelMap()))
                 .isEqualTo("redirect:/login?error");
         assertThat(controller.updateProfile(new ProfileUpdateForm("Pessoa", null), mock(BindingResult.class),
@@ -61,6 +68,16 @@ class AuthControllerUnitTest {
         assertThat(controller.photo(authentication).getStatusCode().value()).isEqualTo(401);
         assertThat(controller.resume(authentication).getStatusCode().value()).isEqualTo(401);
     }
+
+        @Test
+        void oauth2AuthenticatedUsersWithoutResolvedAppUserStayOnLoginPage() {
+                OAuth2User oauth2User = mock(OAuth2User.class);
+                when(authentication.isAuthenticated()).thenReturn(true);
+                when(authentication.getPrincipal()).thenReturn(oauth2User);
+                doReturn(List.of(new SimpleGrantedAuthority("ROLE_USER"))).when(authentication).getAuthorities();
+
+                assertThat(controller.login(authentication)).isEqualTo("auth/login");
+        }
 
     @Test
     void redisplaysAccountFormsWithValidationErrorsAndProfileContext() {

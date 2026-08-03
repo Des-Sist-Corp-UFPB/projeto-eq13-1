@@ -155,6 +155,22 @@ class ServiceBehaviorIntegrationTest {
     }
 
     @Test
+    void oauthCurrentUserIsProvisionedWhenMissing() {
+        var oauthUser = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("ROLE_USER")),
+                Map.of("email", "oauth-provision@example.com", "name", "OAuth Provision"),
+                "email"
+        );
+        var authentication = new TestingAuthenticationToken(oauthUser, "n/a", "ROLE_USER");
+
+        assertThat(userService.currentUser(authentication))
+                .isPresent()
+                .get()
+                .extracting(AppUser::getEmail)
+                .isEqualTo("oauth-provision@example.com");
+    }
+
+    @Test
     void auditLogCanBePersistedAndFiltered() {
         auditLogService.logSystem("auditor@example.com", "TEST_ACTION", "TEST_ENTITY", 99L, "Evento de teste.");
 

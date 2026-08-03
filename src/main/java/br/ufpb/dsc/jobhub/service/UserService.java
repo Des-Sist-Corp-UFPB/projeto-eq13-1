@@ -105,7 +105,7 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<AppUser> currentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return Optional.empty();
@@ -114,7 +114,8 @@ public class UserService implements UserDetailsService {
         if (principal instanceof OAuth2User oauth2User) {
             Object email = oauth2User.getAttribute("email");
             if (email != null) {
-                return userRepository.findByEmailIgnoreCase(email.toString());
+                return userRepository.findByEmailIgnoreCase(email.toString())
+                        .or(() -> Optional.of(findOrCreateGoogleUser(email.toString(), valueAsString(oauth2User, "name")).user()));
             }
         }
         return findByLogin(authentication.getName());
@@ -165,5 +166,10 @@ public class UserService implements UserDetailsService {
             return name.trim();
         }
         return email;
+    }
+
+    private String valueAsString(OAuth2User oauth2User, String attribute) {
+        Object value = oauth2User.getAttribute(attribute);
+        return value == null ? null : value.toString();
     }
 }
