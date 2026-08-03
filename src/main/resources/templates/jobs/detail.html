@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell(${job.title}, ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <a class="btn small" th:href="@{/vagas}">Voltar</a>
+    <div class="grid two" style="margin-top: 16px; align-items: start;">
+        <article class="panel">
+            <div class="meta">
+                <span class="badge blue" th:text="${job.locationType.label}">Remota</span>
+                <span class="badge gray" th:text="${job.seniority.label}">Pleno</span>
+                <span class="badge green" th:text="${job.contractType.label}">CLT</span>
+            </div>
+            <h1 th:text="${job.title}">Título</h1>
+            <p><strong th:text="${job.company}">Empresa</strong></p>
+            <p class="muted" th:if="${job.city != null && !job.city.isBlank()}" th:text="${job.city}">Cidade</p>
+            <p class="muted" th:if="${job.salaryRange != null && !job.salaryRange.isBlank()}" th:text="${job.salaryRange}">Faixa</p>
+            <h2>Descrição</h2>
+            <p th:text="${job.description}">Descrição</p>
+            <h2 th:if="${job.requirements != null && !job.requirements.isBlank()}">Requisitos</h2>
+            <p th:if="${job.requirements != null && !job.requirements.isBlank()}" th:text="${job.requirements}">Requisitos</p>
+            <a class="btn primary" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se no site original</a>
+        </article>
+
+        <aside class="panel" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}">
+            <span class="badge green">Link público</span>
+            <h2>Candidatura externa</h2>
+            <p class="muted">Esta vaga foi curada a partir de uma fonte pública. A candidatura oficial acontece no site da empresa ou plataforma parceira.</p>
+            <a class="btn success" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga original</a>
+        </aside>
+
+        <aside class="panel" th:if="${job.applyUrl == null || job.applyUrl.isBlank()}">
+            <h2>Candidatar-se</h2>
+            <div class="alert success" th:if="${applied}">Candidatura registrada. Boa sorte.</div>
+            <form th:action="@{/vagas/{id}/candidatar(id=${job.id})}" th:object="${applicationForm}" method="post" class="grid">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label>Nome
+                    <input class="input" th:field="*{applicantName}" placeholder="Seu nome">
+                    <span class="error" th:if="${#fields.hasErrors('applicantName')}" th:errors="*{applicantName}"></span>
+                </label>
+                <label>Email
+                    <input class="input" th:field="*{applicantEmail}" placeholder="seu.email@exemplo.com">
+                    <span class="error" th:if="${#fields.hasErrors('applicantEmail')}" th:errors="*{applicantEmail}"></span>
+                </label>
+                <label>LinkedIn ou portfólio
+                    <input class="input" th:field="*{linkedinUrl}" placeholder="https://linkedin.com/in/...">
+                </label>
+                <label>Mensagem
+                    <textarea class="textarea" th:field="*{message}" placeholder="Conte rapidamente por que você combina com a vaga"></textarea>
+                </label>
+                <button class="btn success" type="submit">Enviar candidatura</button>
+            </form>
+        </aside>
+    </div>
+</main>
+</html>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StripeWebhookService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">StripeWebhookService.java</span></div><h1>StripeWebhookService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
+
+import br.ufpb.dsc.jobhub.domain.Subscription;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Event;
+import com.stripe.model.StripeObject;
+import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+@Service
+public class StripeWebhookService {
+
+    private final BillingService billingService;
+    private final AuditLogService auditLogService;
+    private final String webhookSecret;
+
+    public StripeWebhookService(BillingService billingService,
+                                AuditLogService auditLogService,
+<span class="fc" id="L23">                                @Value(&quot;${stripe.webhook-secret:}&quot;) String webhookSecret) {</span>
+<span class="fc" id="L24">        this.billingService = billingService;</span>
+<span class="fc" id="L25">        this.auditLogService = auditLogService;</span>
+<span class="fc" id="L26">        this.webhookSecret = webhookSecret;</span>
+<span class="fc" id="L27">    }</span>
+
+    public void handle(String payload, String signatureHeader) {
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        if (webhookSecret == null || webhookSecret.isBlank()) {</span>
+<span class="fc" id="L31">            throw new IllegalStateException(&quot;Webhook do Stripe não configurado&quot;);</span>
+        }
+<span class="pc bpc" id="L33" title="1 of 4 branches missed.">        if (signatureHeader == null || signatureHeader.isBlank()) {</span>
+<span class="fc" id="L34">            throw new IllegalArgumentException(&quot;Assinatura do webhook ausente&quot;);</span>
+        }
+        try {
+<span class="fc" id="L37">            processVerifiedEvent(Webhook.constructEvent(payload, signatureHeader, webhookSecret));</span>
+<span class="fc" id="L38">        } catch (SignatureVerificationException ex) {</span>
+<span class="fc" id="L39">            throw new IllegalArgumentException(&quot;Assinatura do webhook inválida&quot;, ex);</span>
+<span class="fc" id="L40">        }</span>
+<span class="fc" id="L41">    }</span>
+
+    public void processVerifiedEvent(Event event) {
+<span class="fc" id="L44">        StripeObject object = event.getDataObjectDeserializer().getObject().orElse(null);</span>
+<span class="pc bpc" id="L45" title="1 of 4 branches missed.">        if (&quot;checkout.session.completed&quot;.equals(event.getType()) &amp;&amp; object instanceof Session session) {</span>
+<span class="fc" id="L46">            Long subscriptionId = metadataId(session.getMetadata());</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            if (subscriptionId == null) {</span>
+<span class="fc" id="L48">                throw new IllegalArgumentException(&quot;Webhook sem identificador da assinatura&quot;);</span>
+            }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            String externalReference = session.getSubscription() == null</span>
+<span class="fc" id="L51">                    ? session.getId()</span>
+<span class="fc" id="L52">                    : session.getSubscription();</span>
+<span class="fc" id="L53">            Subscription subscription = billingService.activateAfterConfirmedPayment(subscriptionId, externalReference);</span>
+<span class="fc" id="L54">            auditLogService.logSystem(subscription.getCompanyEmail(), &quot;STRIPE_SUBSCRIPTION_ACTIVATED&quot;,</span>
+<span class="fc" id="L55">                    &quot;SUBSCRIPTION&quot;, subscription.getId(), &quot;Pagamento confirmado pelo webhook assinado do Stripe.&quot;);</span>
+<span class="fc" id="L56">            return;</span>
+        }
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        if (&quot;customer.subscription.deleted&quot;.equals(event.getType())</span>
+<span class="fc" id="L59">                &amp;&amp; object instanceof com.stripe.model.Subscription stripeSubscription) {</span>
+<span class="fc" id="L60">            Long subscriptionId = metadataId(stripeSubscription.getMetadata());</span>
+<span class="fc" id="L61">            Subscription subscription = billingService.cancelFromProvider(subscriptionId, stripeSubscription.getId());</span>
+<span class="fc" id="L62">            auditLogService.logSystem(subscription.getCompanyEmail(), &quot;STRIPE_SUBSCRIPTION_CANCELED&quot;,</span>
+<span class="fc" id="L63">                    &quot;SUBSCRIPTION&quot;, subscription.getId(), &quot;Cancelamento confirmado pelo Stripe.&quot;);</span>
+        }
+<span class="fc" id="L65">    }</span>
+
+    private Long metadataId(Map&lt;String, String&gt; metadata) {
+<span class="pc bpc" id="L68" title="1 of 4 branches missed.">        if (metadata == null || metadata.get(&quot;subscriptionId&quot;) == null) {</span>
+<span class="fc" id="L69">            return null;</span>
+        }
+        try {
+<span class="fc" id="L72">            return Long.valueOf(metadata.get(&quot;subscriptionId&quot;));</span>
+<span class="fc" id="L73">        } catch (NumberFormatException ex) {</span>
+<span class="fc" id="L74">            throw new IllegalArgumentException(&quot;Identificador de assinatura inválido&quot;, ex);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

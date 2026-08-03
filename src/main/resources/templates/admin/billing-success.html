@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Billing concluído', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <section class="panel">
+        <span class="badge green">Checkout</span>
+        <h1>Assinatura iniciada</h1>
+        <p class="muted" th:text="${billingMessage}">Assinatura iniciada com sucesso.</p>
+        <a class="btn primary" th:href="@{/admin}">Voltar ao dashboard</a>
+    </section>
+</main>
+</html>

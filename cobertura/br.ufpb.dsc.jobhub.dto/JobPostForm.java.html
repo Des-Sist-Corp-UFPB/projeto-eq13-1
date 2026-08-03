@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobPostForm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.dto</a> &gt; <span class="el_source">JobPostForm.java</span></div><h1>JobPostForm.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.dto;
+
+import br.ufpb.dsc.jobhub.domain.ContractType;
+import br.ufpb.dsc.jobhub.domain.JobLocationType;
+import br.ufpb.dsc.jobhub.domain.Seniority;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+<span class="fc" id="L11">public record JobPostForm(</span>
+        @NotBlank @Size(max = 160) String title,
+        @NotBlank @Size(max = 140) String company,
+        @NotBlank @Email @Size(max = 190) String companyEmail,
+        @NotNull JobLocationType locationType,
+        @Size(max = 80) String city,
+        @NotNull Seniority seniority,
+        @NotNull ContractType contractType,
+        @Size(max = 80) String salaryRange,
+        @NotBlank @Size(min = 40, max = 4000) String description,
+        @Size(max = 4000) String requirements,
+        @Size(max = 500) String applyUrl
+) {
+    public static JobPostForm empty() {
+<span class="fc" id="L25">        return new JobPostForm(&quot;&quot;, &quot;&quot;, &quot;&quot;, JobLocationType.REMOTE, &quot;&quot;, Seniority.JUNIOR,</span>
+                ContractType.CLT, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

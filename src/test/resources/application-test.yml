@@ -1,19 +1,28 @@
 spring:
+  datasource:
+    url: "jdbc:h2:mem:radartech;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;INIT=CREATE DOMAIN IF NOT EXISTS TIMESTAMPTZ AS TIMESTAMP WITH TIME ZONE"
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      # validate: o Hibernate verifica o schema mas não modifica nada.
-      # O Flyway cria as tabelas via migrações antes dos testes iniciarem.
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+      ddl-auto: create-drop
+    show-sql: false
   flyway:
-    enabled: true
-    # Testcontainers + @ServiceConnection configura automaticamente a URL do banco.
-    # O Flyway executa as migrações no container PostgreSQL antes dos testes.
-    locations: classpath:db/migration
+    enabled: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-google-client-id
+            client-secret: test-google-client-secret
+            scope:
+              - openid
+              - profile
+              - email
 
-logging:
-  level:
-    br.ufpb.dsc.mercado: DEBUG
+app:
+  admin:
+    username: admin
+    password: admin123

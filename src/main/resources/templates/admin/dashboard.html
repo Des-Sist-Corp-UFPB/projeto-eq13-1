@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Dashboard', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<main class="section container">
+    <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+    <div class="actions" style="justify-content: space-between;">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="muted">Visão geral do produto, vagas e candidaturas.</p>
+        </div>
+        <form th:action="@{/admin/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn" type="submit">Sair</button>
+        </form>
+    </div>
+
+    <section class="grid four" style="margin: 18px 0;">
+        <div class="stat-card"><span>Vagas totais</span><strong th:text="${stats.totalJobs}">0</strong></div>
+        <div class="stat-card"><span>Publicadas</span><strong th:text="${stats.publishedJobs}">0</strong></div>
+        <div class="stat-card"><span>Pendentes</span><strong th:text="${stats.pendingJobs}">0</strong></div>
+        <div class="stat-card"><span>Arquivadas</span><strong th:text="${stats.archivedJobs}">0</strong></div>
+    </section>
+    <section class="grid four" style="margin-bottom: 20px;">
+        <div class="stat-card"><span>Candidaturas</span><strong th:text="${stats.totalApplications}">0</strong></div>
+        <div class="stat-card"><span>Usuários</span><strong th:text="${stats.totalUsers}">0</strong></div>
+        <div class="stat-card"><span>Remotas</span><strong th:text="${stats.remoteJobs}">0</strong></div>
+        <div class="stat-card"><span>Híbridas PB</span><strong th:text="${stats.hybridPbJobs}">0</strong></div>
+    </section>
+    <section class="grid four" style="margin-bottom: 20px;">
+        <div class="stat-card"><span>Presenciais PB</span><strong th:text="${stats.presencialPbJobs}">0</strong></div>
+        <div class="stat-card"><span>Vagas em 7 dias</span><strong th:text="${stats.jobsLast7Days}">0</strong></div>
+        <div class="stat-card"><span>Candidaturas em 7 dias</span><strong th:text="${stats.applicationsLast7Days}">0</strong></div>
+        <div class="stat-card"><span>Visualizações</span><strong th:text="${stats.totalViews}">0</strong></div>
+    </section>
+
+    <section class="panel" style="margin-bottom: 20px;">
+        <div class="actions" style="justify-content: space-between;">
+            <div>
+                <h2>Billing</h2>
+                <p class="muted">Visão geral da mensalidade e atalho para iniciar o checkout da empresa padrão.</p>
+            </div>
+            <form th:action="@{/admin/billing/checkout}" method="post" class="inline-actions">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input class="input" type="text" name="company" placeholder="Empresa" th:value="${billingCompany}" style="max-width: 180px;">
+                <input class="input" type="email" name="companyEmail" placeholder="Email da empresa" th:value="${billingCompanyEmail}" style="max-width: 240px;">
+                <button class="btn primary" type="submit">Iniciar checkout</button>
+            </form>
+        </div>
+        <p class="hint" th:if="${billingMessage}" th:text="${billingMessage}"></p>
+        <p class="hint" th:if="${subscription != null}">
+            Assinatura atual: <span th:text="${subscription.status}">PENDING</span>
+            <span th:if="${subscription.validUntil != null}">até</span>
+            <span th:if="${subscription.validUntil != null}" th:text="${subscription.validUntil}"></span>
+        </p>
+    </section>
+
+    <div class="grid two">
+        <section>
+            <div class="actions" style="justify-content: space-between;"><h2>Vagas recentes</h2><a class="btn small" th:href="@{/admin/vagas}">Gerenciar</a></div>
+            <div class="grid">
+                <article class="job-card" th:each="job : ${jobs}">
+                    <div class="meta"><span class="badge" th:text="${job.status.label}">Status</span><span class="badge blue" th:text="${job.locationType.label}">Modelo</span></div>
+                    <h3 th:text="${job.title}">Vaga</h3>
+                    <p class="muted" th:text="${job.company}">Empresa</p>
+                </article>
+            </div>
+        </section>
+        <section>
+            <div class="actions" style="justify-content: space-between;"><h2>Candidaturas recentes</h2><a class="btn small" th:href="@{/admin/candidaturas}">Ver todas</a></div>
+            <div class="grid">
+                <article class="job-card" th:each="candidateApplication : ${applications}">
+                    <h3 th:text="${candidateApplication.applicantName}">Nome</h3>
+                    <p class="muted" th:text="${candidateApplication.job.title}">Vaga</p>
+                    <p class="muted" th:text="${candidateApplication.applicantEmail}">email</p>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+</html>
