@@ -91,7 +91,8 @@ public class UserService implements UserDetailsService {
         if (existing.isPresent()) {
             AppUser user = existing.get();
             user.changeRole(UserRole.ROLE_ADMIN);
-            return user;
+            user.changePasswordHash(passwordEncoder.encode(password));
+            return userRepository.save(user);
         }
         AppUser user = new AppUser(
                 "Administrador",

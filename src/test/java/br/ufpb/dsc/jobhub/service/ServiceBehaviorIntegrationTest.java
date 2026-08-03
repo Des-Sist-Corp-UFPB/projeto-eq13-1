@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.test.context.ActiveProfiles;
@@ -53,6 +54,9 @@ class ServiceBehaviorIntegrationTest {
 
     @Autowired
     private JobPostingRepository jobPostingRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void seedRepositorySearchData() {
@@ -132,6 +136,7 @@ class ServiceBehaviorIntegrationTest {
         AppUser reusedAdmin = userService.ensureAdminUser("admincobertura", "admin5678");
         assertThat(reusedAdmin.getId()).isEqualTo(createdAdmin.getId());
         assertThat(reusedAdmin.getRole()).isEqualTo(UserRole.ROLE_ADMIN);
+        assertThat(passwordEncoder.matches("admin5678", reusedAdmin.getPasswordHash())).isTrue();
 
         var google = userService.findOrCreateGoogleUser("oauth-current@example.com", " ");
         var oauthUser = new DefaultOAuth2User(

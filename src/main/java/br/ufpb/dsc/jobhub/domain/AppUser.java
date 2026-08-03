@@ -124,6 +124,10 @@ public class AppUser {
         this.role = role;
     }
 
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public void updateProfile(String name, String biography) {
         this.name = name;
         this.biography = biography;

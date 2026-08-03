@@ -91,79 +91,80 @@ public class UserService implements UserDetailsService {
 <span class="fc bfc" id="L91" title="All 2 branches covered.">        if (existing.isPresent()) {</span>
 <span class="fc" id="L92">            AppUser user = existing.get();</span>
 <span class="fc" id="L93">            user.changeRole(UserRole.ROLE_ADMIN);</span>
-<span class="fc" id="L94">            return user;</span>
+<span class="fc" id="L94">            user.changePasswordHash(passwordEncoder.encode(password));</span>
+<span class="fc" id="L95">            return userRepository.save(user);</span>
         }
-<span class="fc" id="L96">        AppUser user = new AppUser(</span>
+<span class="fc" id="L97">        AppUser user = new AppUser(</span>
                 &quot;Administrador&quot;,
                 adminEmail,
                 normalizedUsername,
-<span class="fc" id="L100">                passwordEncoder.encode(password),</span>
+<span class="fc" id="L101">                passwordEncoder.encode(password),</span>
                 UserRole.ROLE_ADMIN,
                 AuthProvider.LOCAL
         );
-<span class="fc" id="L104">        return userRepository.save(user);</span>
+<span class="fc" id="L105">        return userRepository.save(user);</span>
     }
 
     @Transactional(readOnly = true)
     public Optional&lt;AppUser&gt; currentUser(Authentication authentication) {
-<span class="pc bpc" id="L109" title="1 of 4 branches missed.">        if (authentication == null || !authentication.isAuthenticated()) {</span>
-<span class="fc" id="L110">            return Optional.empty();</span>
+<span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (authentication == null || !authentication.isAuthenticated()) {</span>
+<span class="fc" id="L111">            return Optional.empty();</span>
         }
-<span class="fc" id="L112">        Object principal = authentication.getPrincipal();</span>
-<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (principal instanceof OAuth2User oauth2User) {</span>
-<span class="fc" id="L114">            Object email = oauth2User.getAttribute(&quot;email&quot;);</span>
-<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if (email != null) {</span>
-<span class="fc" id="L116">                return userRepository.findByEmailIgnoreCase(email.toString());</span>
+<span class="fc" id="L113">        Object principal = authentication.getPrincipal();</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (principal instanceof OAuth2User oauth2User) {</span>
+<span class="fc" id="L115">            Object email = oauth2User.getAttribute(&quot;email&quot;);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            if (email != null) {</span>
+<span class="fc" id="L117">                return userRepository.findByEmailIgnoreCase(email.toString());</span>
             }
         }
-<span class="fc" id="L119">        return findByLogin(authentication.getName());</span>
+<span class="fc" id="L120">        return findByLogin(authentication.getName());</span>
     }
 
     @Transactional(readOnly = true)
     public List&lt;AppUser&gt; allUsers() {
-<span class="fc" id="L124">        return userRepository.findAllByOrderByCreatedAtDesc();</span>
+<span class="fc" id="L125">        return userRepository.findAllByOrderByCreatedAtDesc();</span>
     }
 
     @Transactional(readOnly = true)
     public long countUsers() {
-<span class="fc" id="L129">        return userRepository.count();</span>
+<span class="fc" id="L130">        return userRepository.count();</span>
     }
 
     @Transactional(readOnly = true)
     public Optional&lt;AppUser&gt; findByLogin(String login) {
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        String normalized = login == null ? &quot;&quot; : login.trim();</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (normalized.isBlank()) {</span>
-<span class="fc" id="L136">            return Optional.empty();</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        String normalized = login == null ? &quot;&quot; : login.trim();</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (normalized.isBlank()) {</span>
+<span class="fc" id="L137">            return Optional.empty();</span>
         }
-<span class="fc" id="L138">        return userRepository.findByUsernameIgnoreCase(normalized)</span>
-<span class="fc" id="L139">                .or(() -&gt; userRepository.findByEmailIgnoreCase(normalized));</span>
+<span class="fc" id="L139">        return userRepository.findByUsernameIgnoreCase(normalized)</span>
+<span class="fc" id="L140">                .or(() -&gt; userRepository.findByEmailIgnoreCase(normalized));</span>
     }
 
     public UserDetails toUserDetails(AppUser user) {
-<span class="fc" id="L143">        return User.builder()</span>
-<span class="fc" id="L144">                .username(user.getEmail())</span>
-<span class="fc" id="L145">                .password(user.getPasswordHash())</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">                .disabled(!user.isEnabled())</span>
-<span class="fc" id="L147">                .authorities(new SimpleGrantedAuthority(user.getRole().name()))</span>
-<span class="fc" id="L148">                .build();</span>
+<span class="fc" id="L144">        return User.builder()</span>
+<span class="fc" id="L145">                .username(user.getEmail())</span>
+<span class="fc" id="L146">                .password(user.getPasswordHash())</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">                .disabled(!user.isEnabled())</span>
+<span class="fc" id="L148">                .authorities(new SimpleGrantedAuthority(user.getRole().name()))</span>
+<span class="fc" id="L149">                .build();</span>
     }
 
     private String normalizeEmail(String email) {
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        return email == null ? &quot;&quot; : email.trim().toLowerCase(Locale.ROOT);</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        return email == null ? &quot;&quot; : email.trim().toLowerCase(Locale.ROOT);</span>
     }
 
     private String normalizeUsername(String username) {
-<span class="pc bpc" id="L156" title="1 of 4 branches missed.">        if (username == null || username.isBlank()) {</span>
-<span class="fc" id="L157">            return null;</span>
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">        if (username == null || username.isBlank()) {</span>
+<span class="fc" id="L158">            return null;</span>
         }
-<span class="fc" id="L159">        return username.trim().toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L160">        return username.trim().toLowerCase(Locale.ROOT);</span>
     }
 
     private String normalizeName(String name, String email) {
-<span class="pc bpc" id="L163" title="1 of 4 branches missed.">        if (name != null &amp;&amp; !name.isBlank()) {</span>
-<span class="fc" id="L164">            return name.trim();</span>
+<span class="pc bpc" id="L164" title="1 of 4 branches missed.">        if (name != null &amp;&amp; !name.isBlank()) {</span>
+<span class="fc" id="L165">            return name.trim();</span>
         }
-<span class="fc" id="L166">        return email;</span>
+<span class="fc" id="L167">        return email;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

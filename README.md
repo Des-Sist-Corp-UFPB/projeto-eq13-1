@@ -89,7 +89,7 @@ usuário: admin
 senha: admin123
 ```
 
-Essa senha é apenas local. Em produção, `ADMIN_PASSWORD` é obrigatória e deve ser fornecida fora do repositório.
+Essa senha é apenas local. Em produção, `ADMIN_PASSWORD` deve ser fornecida fora do repositório. Sem ela, uma conta já existente continua disponível, mas o sistema não cria administrador nem altera sua senha. Ao configurá-la, o bootstrap cria a conta ausente ou rotaciona a senha da conta administrativa existente.
 
 ### Google OAuth2
 

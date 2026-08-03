@@ -19,6 +19,7 @@ class DomainModelTest {
         user.updateGoogleProfile("Pessoa Google");
         user.updateGoogleProfile(" ");
         user.changeRole(UserRole.ROLE_ADMIN);
+        user.changePasswordHash("novo-hash");
         user.updateProfile("Pessoa Atualizada", "Biografia");
         user.updatePhoto(new byte[]{1, 2}, "image/png");
         user.updateResume(new byte[]{3, 4}, "curriculo.pdf", "application/pdf");
@@ -29,7 +30,7 @@ class DomainModelTest {
         assertThat(user.getName()).isEqualTo("Pessoa Atualizada");
         assertThat(user.getEmail()).isEqualTo("pessoa@example.com");
         assertThat(user.getUsername()).isEqualTo("pessoa");
-        assertThat(user.getPasswordHash()).isEqualTo("hash");
+        assertThat(user.getPasswordHash()).isEqualTo("novo-hash");
         assertThat(user.getRole()).isEqualTo(UserRole.ROLE_ADMIN);
         assertThat(user.getProvider()).isEqualTo(AuthProvider.LOCAL);
         assertThat(user.isEnabled()).isTrue();
