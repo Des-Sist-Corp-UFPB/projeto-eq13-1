@@ -89,7 +89,7 @@ public class BillingService {
 <span class="fc bfc" id="L89" title="All 2 branches covered.">        if (!Objects.equals(subscription.getCompany(), company)) {</span>
 <span class="fc" id="L90">            subscription = new Subscription(company, companyEmail, MONTHLY_PLAN_CODE);</span>
         }
-<span class="fc" id="L92">        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), null);</span>
+<span class="fc" id="L92">        subscription.markPending(null);</span>
 <span class="fc" id="L93">        subscription = subscriptionRepository.save(subscription);</span>
 
         try {
@@ -101,19 +101,47 @@ public class BillingService {
 <span class="fc" id="L101">                            .build())</span>
 <span class="fc" id="L102">                    .setSuccessUrl(successUrl + &quot;?subscription=&quot; + subscription.getId())</span>
 <span class="fc" id="L103">                    .setCancelUrl(cancelUrl + &quot;?subscription=&quot; + subscription.getId())</span>
-<span class="fc" id="L104">                    .putMetadata(&quot;subscriptionId&quot;, String.valueOf(subscription.getId()))</span>
-<span class="fc" id="L105">                    .putMetadata(&quot;companyEmail&quot;, companyEmail)</span>
-<span class="fc" id="L106">                    .build();</span>
-<span class="fc" id="L107">            Session session = Session.create(params);</span>
-<span class="fc" id="L108">            subscription.activate(subscription.getValidUntil(), session.getId());</span>
-<span class="fc" id="L109">            subscriptionRepository.save(subscription);</span>
-<span class="fc" id="L110">            return new CheckoutResult(subscription, session.getUrl());</span>
-<span class="fc" id="L111">        } catch (StripeException ex) {</span>
-<span class="fc" id="L112">            throw new IllegalStateException(&quot;Não foi possível iniciar o checkout do Stripe&quot;, ex);</span>
+<span class="fc" id="L104">                    .setSubscriptionData(SessionCreateParams.SubscriptionData.builder()</span>
+<span class="fc" id="L105">                            .putMetadata(&quot;subscriptionId&quot;, String.valueOf(subscription.getId()))</span>
+<span class="fc" id="L106">                            .putMetadata(&quot;companyEmail&quot;, companyEmail)</span>
+<span class="fc" id="L107">                            .build())</span>
+<span class="fc" id="L108">                    .putMetadata(&quot;subscriptionId&quot;, String.valueOf(subscription.getId()))</span>
+<span class="fc" id="L109">                    .putMetadata(&quot;companyEmail&quot;, companyEmail)</span>
+<span class="fc" id="L110">                    .build();</span>
+<span class="fc" id="L111">            Session session = Session.create(params);</span>
+<span class="fc" id="L112">            subscription.markPending(session.getId());</span>
+<span class="fc" id="L113">            subscriptionRepository.save(subscription);</span>
+<span class="fc" id="L114">            return new CheckoutResult(subscription, session.getUrl());</span>
+<span class="fc" id="L115">        } catch (StripeException ex) {</span>
+<span class="fc" id="L116">            throw new IllegalStateException(&quot;Não foi possível iniciar o checkout do Stripe&quot;, ex);</span>
         }
     }
 
-<span class="fc" id="L116">    public record CheckoutResult(Subscription subscription, String checkoutUrl) {</span>
+<span class="fc" id="L120">    public record CheckoutResult(Subscription subscription, String checkoutUrl) {</span>
+    }
+
+    @Transactional
+    public CheckoutResult createCheckoutSessionForUser(br.ufpb.dsc.jobhub.domain.AppUser user) {
+<span class="nc" id="L125">        return createCheckoutSession(user.getName(), user.getEmail());</span>
+    }
+
+    @Transactional
+    public Subscription activateAfterConfirmedPayment(Long subscriptionId, String externalReference) {
+<span class="fc" id="L130">        Subscription subscription = subscriptionRepository.findById(subscriptionId)</span>
+<span class="fc" id="L131">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Assinatura não encontrada&quot;));</span>
+<span class="fc" id="L132">        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), externalReference);</span>
+<span class="fc" id="L133">        return subscriptionRepository.save(subscription);</span>
+    }
+
+    @Transactional
+    public Subscription cancelFromProvider(Long subscriptionId, String externalReference) {
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        Subscription subscription = subscriptionId == null</span>
+<span class="fc" id="L139">                ? subscriptionRepository.findByExternalReference(externalReference)</span>
+<span class="pc" id="L140">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Assinatura não encontrada&quot;))</span>
+<span class="fc" id="L141">                : subscriptionRepository.findById(subscriptionId)</span>
+<span class="pc" id="L142">                    .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Assinatura não encontrada&quot;));</span>
+<span class="fc" id="L143">        subscription.cancel();</span>
+<span class="fc" id="L144">        return subscriptionRepository.save(subscription);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -22,9 +22,17 @@ spring:
 
 stripe:
   secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
   monthly-price-id: ${STRIPE_MONTHLY_PRICE_ID:}
-  success-url: ${STRIPE_SUCCESS_URL:http://localhost:8080/admin/billing/sucesso}
-  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:8080/admin/billing/cancelado}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:8080/divulgar/assinar/sucesso}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:8080/divulgar/assinar/cancelado}
+
+ai:
+  litellm:
+    enabled: ${LITELLM_ENABLED:true}
+    base-url: ${LITELLM_BASE_URL:https://llm.rodrigor.com}
+    api-key: ${LITELLM_API_KEY:}
+    model: ${LITELLM_MODEL:gpt-4o-mini}
 
 management:
   endpoints:

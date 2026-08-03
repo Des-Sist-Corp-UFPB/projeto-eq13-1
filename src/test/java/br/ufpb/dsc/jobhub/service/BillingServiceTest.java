@@ -131,7 +131,8 @@ class BillingServiceTest {
 
             assertThat(result.checkoutUrl()).isEqualTo("https://checkout.stripe.test/session");
             assertThat(result.subscription().getCompany()).isEqualTo("Empresa Nova");
-            assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.PENDING);
+            assertThat(result.subscription().getValidUntil()).isNull();
             assertThat(result.subscription().getExternalReference()).isEqualTo("cs_test_123");
             sessions.verify(() -> Session.create(any(SessionCreateParams.class)));
         }
@@ -174,7 +175,7 @@ class BillingServiceTest {
 
             assertThat(result.checkoutUrl()).isEqualTo("https://checkout.stripe.test/session");
             assertThat(result.subscription().getCompany()).isEqualTo("Nova Empresa 2");
-            assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+            assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.PENDING);
             assertThat(result.subscription().getExternalReference()).isEqualTo("cs_test_new");
             sessions.verify(() -> Session.create(any(SessionCreateParams.class)));
         }
@@ -199,13 +200,44 @@ class BillingServiceTest {
         }
     }
 
+    @Test
+    void activatesOnlyAfterConfirmedPaymentAndCancelsProviderSubscription() {
+        Subscription pending = new Subscription("Empresa", "confirm@example.com", "monthly-basic");
+        BillingService service = serviceWithStripeConfig();
+        when(subscriptionRepository.findById(42L)).thenReturn(Optional.of(pending));
+        when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Subscription active = service.activateAfterConfirmedPayment(42L, "sub_stripe_42");
+        assertThat(active.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(active.getExternalReference()).isEqualTo("sub_stripe_42");
+        assertThat(active.getValidUntil()).isAfter(Instant.now());
+
+        Subscription canceled = service.cancelFromProvider(42L, "sub_stripe_42");
+        assertThat(canceled.getStatus()).isEqualTo(SubscriptionStatus.CANCELED);
+    }
+
+    @Test
+    void cancelsByExternalReferenceAndRejectsUnknownConfirmation() {
+        Subscription subscription = new Subscription("Empresa", "provider@example.com", "monthly-basic");
+        BillingService service = serviceWithStripeConfig();
+        when(subscriptionRepository.findByExternalReference("sub_external"))
+                .thenReturn(Optional.of(subscription));
+        when(subscriptionRepository.findById(99L)).thenReturn(Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertThat(service.cancelFromProvider(null, "sub_external").getStatus())
+                .isEqualTo(SubscriptionStatus.CANCELED);
+        assertThatThrownBy(() -> service.activateAfterConfirmedPayment(99L, "sub_missing"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     private BillingService serviceWithStripeConfig() {
         return new BillingService(
                 subscriptionRepository,
                 "test-stripe-secret",
                 "price_123",
-                "http://localhost:8080/admin/billing/sucesso",
-                "http://localhost:8080/admin/billing/cancelado"
+                "http://localhost:8080/divulgar/assinar/sucesso",
+                "http://localhost:8080/divulgar/assinar/cancelado"
         );
     }
 }

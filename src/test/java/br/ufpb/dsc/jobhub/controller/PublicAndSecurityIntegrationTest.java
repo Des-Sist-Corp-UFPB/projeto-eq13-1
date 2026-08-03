@@ -152,7 +152,14 @@ class PublicAndSecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"))
                 .andExpect(jsonPath("$.service").value("eq13"))
+                .andExpect(jsonPath("$.database").value("up"))
                 .andExpect(jsonPath("$.timestamp").exists());
+
+        mockMvc.perform(post("/webhooks/stripe")
+                        .contentType("application/json")
+                        .content("{}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.status").value("not_configured"));
     }
 
     @Test

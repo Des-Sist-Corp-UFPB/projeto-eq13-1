@@ -33,36 +33,39 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 <span class="fc" id="L35">        http</span>
-<span class="fc" id="L36">                .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="fc" id="L37">                        .requestMatchers(&quot;/&quot;, &quot;/vagas&quot;, &quot;/vagas/**&quot;, &quot;/divulgar&quot;, &quot;/ping&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/images/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
-<span class="fc" id="L38">                        .requestMatchers(&quot;/login&quot;, &quot;/cadastro&quot;, &quot;/admin/login&quot;, &quot;/oauth2/**&quot;, &quot;/login/oauth2/**&quot;).permitAll()</span>
-<span class="fc" id="L39">                        .requestMatchers(&quot;/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
-<span class="fc" id="L40">                        .requestMatchers(&quot;/minha-conta/**&quot;).authenticated()</span>
-<span class="fc" id="L41">                        .anyRequest().permitAll()</span>
+<span class="fc" id="L36">                .csrf(csrf -&gt; csrf.ignoringRequestMatchers(&quot;/webhooks/stripe&quot;))</span>
+<span class="fc" id="L37">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L38">                        .requestMatchers(&quot;/&quot;, &quot;/vagas&quot;, &quot;/vagas/**&quot;, &quot;/ping&quot;, &quot;/webhooks/stripe&quot;,</span>
+<span class="fc" id="L39">                                &quot;/css/**&quot;, &quot;/js/**&quot;, &quot;/images/**&quot;, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L40">                        .requestMatchers(&quot;/divulgar&quot;, &quot;/divulgar/**&quot;).authenticated()</span>
+<span class="fc" id="L41">                        .requestMatchers(&quot;/login&quot;, &quot;/cadastro&quot;, &quot;/admin/login&quot;, &quot;/oauth2/**&quot;, &quot;/login/oauth2/**&quot;).permitAll()</span>
+<span class="fc" id="L42">                        .requestMatchers(&quot;/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L43">                        .requestMatchers(&quot;/minha-conta/**&quot;).authenticated()</span>
+<span class="fc" id="L44">                        .anyRequest().permitAll()</span>
                 )
-<span class="fc" id="L43">                .formLogin(login -&gt; login</span>
-<span class="fc" id="L44">                        .loginPage(&quot;/login&quot;)</span>
-<span class="fc" id="L45">                        .loginProcessingUrl(&quot;/login&quot;)</span>
-<span class="fc" id="L46">                        .usernameParameter(&quot;username&quot;)</span>
-<span class="fc" id="L47">                        .successHandler(authenticationSuccessHandler)</span>
-<span class="fc" id="L48">                        .failureHandler(authenticationFailureHandler)</span>
-<span class="fc" id="L49">                        .permitAll()</span>
+<span class="fc" id="L46">                .formLogin(login -&gt; login</span>
+<span class="fc" id="L47">                        .loginPage(&quot;/login&quot;)</span>
+<span class="fc" id="L48">                        .loginProcessingUrl(&quot;/login&quot;)</span>
+<span class="fc" id="L49">                        .usernameParameter(&quot;username&quot;)</span>
+<span class="fc" id="L50">                        .successHandler(authenticationSuccessHandler)</span>
+<span class="fc" id="L51">                        .failureHandler(authenticationFailureHandler)</span>
+<span class="fc" id="L52">                        .permitAll()</span>
                 )
-<span class="fc" id="L51">                .oauth2Login(oauth2 -&gt; oauth2</span>
-<span class="fc" id="L52">                        .loginPage(&quot;/login&quot;)</span>
-<span class="fc" id="L53">                        .userInfoEndpoint(userInfo -&gt; userInfo.userService(oAuth2UserService))</span>
-<span class="fc" id="L54">                        .successHandler(oAuth2SuccessHandler)</span>
-<span class="fc" id="L55">                        .permitAll()</span>
+<span class="fc" id="L54">                .oauth2Login(oauth2 -&gt; oauth2</span>
+<span class="fc" id="L55">                        .loginPage(&quot;/login&quot;)</span>
+<span class="fc" id="L56">                        .userInfoEndpoint(userInfo -&gt; userInfo.userService(oAuth2UserService))</span>
+<span class="fc" id="L57">                        .successHandler(oAuth2SuccessHandler)</span>
+<span class="fc" id="L58">                        .permitAll()</span>
                 )
-<span class="fc" id="L57">                .logout(logout -&gt; logout</span>
-<span class="fc" id="L58">                        .logoutRequestMatcher(new OrRequestMatcher(</span>
+<span class="fc" id="L60">                .logout(logout -&gt; logout</span>
+<span class="fc" id="L61">                        .logoutRequestMatcher(new OrRequestMatcher(</span>
                                 new AntPathRequestMatcher(&quot;/logout&quot;, &quot;POST&quot;),
                                 new AntPathRequestMatcher(&quot;/admin/logout&quot;, &quot;POST&quot;)
                         ))
-<span class="fc" id="L62">                        .logoutSuccessHandler(logoutSuccessHandler)</span>
-<span class="fc" id="L63">                        .permitAll()</span>
+<span class="fc" id="L65">                        .logoutSuccessHandler(logoutSuccessHandler)</span>
+<span class="fc" id="L66">                        .permitAll()</span>
                 );
-<span class="fc" id="L65">        return http.build();</span>
+<span class="fc" id="L68">        return http.build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

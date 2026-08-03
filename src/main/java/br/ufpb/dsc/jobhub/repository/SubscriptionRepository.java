@@ -9,5 +9,7 @@ import java.util.Optional;
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     Optional<Subscription> findByCompanyEmailIgnoreCase(String companyEmail);
 
+    Optional<Subscription> findByExternalReference(String externalReference);
+
     long countByStatus(SubscriptionStatus status);
 }

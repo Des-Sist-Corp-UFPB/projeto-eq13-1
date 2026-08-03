@@ -3,6 +3,11 @@ FROM maven:3.9.9-eclipse-temurin-21 AS builder
 WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline -B -q
+RUN mvn dependency:copy \
+    -Dartifact=io.opentelemetry.javaagent:opentelemetry-javaagent:2.20.1 \
+    -DoutputDirectory=/build/otel \
+    -Dmdep.stripVersion=true \
+    -B -q
 COPY src ./src
 RUN mvn clean package -DskipTests -B -q
 
@@ -16,7 +21,8 @@ RUN apt-get update && \
 
 WORKDIR /app
 COPY --from=builder /build/target/*.jar app.jar
-RUN chown app:app app.jar
+COPY --from=builder /build/otel/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+RUN chown app:app app.jar opentelemetry-javaagent.jar
 
 USER app
 EXPOSE 8080
@@ -24,4 +30,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -fsS http://localhost:8080/ping >/dev/null || exit 1
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

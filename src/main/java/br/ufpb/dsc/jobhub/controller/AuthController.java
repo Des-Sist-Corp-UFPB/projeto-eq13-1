@@ -2,11 +2,13 @@ package br.ufpb.dsc.jobhub.controller;
 
 import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.ThemePreference;
+import br.ufpb.dsc.jobhub.dto.AiCareerForm;
 import br.ufpb.dsc.jobhub.dto.ExperienceForm;
 import br.ufpb.dsc.jobhub.dto.ProfileUpdateForm;
 import br.ufpb.dsc.jobhub.dto.ProfileUpdateResult;
 import br.ufpb.dsc.jobhub.dto.RegistrationForm;
 import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.AiCareerService;
 import br.ufpb.dsc.jobhub.service.CandidateProfileService;
 import br.ufpb.dsc.jobhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,12 +41,14 @@ public class AuthController {
     private final UserService userService;
     private final CandidateProfileService profileService;
     private final AuditLogService auditLogService;
+    private final AiCareerService aiCareerService;
 
     public AuthController(UserService userService, CandidateProfileService profileService,
-                          AuditLogService auditLogService) {
+                          AuditLogService auditLogService, AiCareerService aiCareerService) {
         this.userService = userService;
         this.profileService = profileService;
         this.auditLogService = auditLogService;
+        this.aiCareerService = aiCareerService;
     }
 
     @GetMapping("/login")
@@ -192,6 +196,33 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/minha-conta/assistente")
+    public String careerAssistant(@Valid @ModelAttribute("aiCareerForm") AiCareerForm form,
+                                  BindingResult bindingResult,
+                                  Authentication authentication,
+                                  HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        redirectAttributes.addFlashAttribute("aiQuestion", form.question());
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("aiError",
+                    bindingResult.getAllErrors().getFirst().getDefaultMessage());
+            return "redirect:/minha-conta#assistente-ia";
+        }
+        try {
+            String answer = aiCareerService.generateCareerAdvice(user, profileService.experiences(user), form.question());
+            auditLogService.log(request, user, "AI_CAREER_ASSISTANT_USED", "APP_USER", user.getId(),
+                    "Assistente de carreira via LiteLLM utilizado.");
+            redirectAttributes.addFlashAttribute("aiAnswer", answer);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("aiError", ex.getMessage());
+        }
+        return "redirect:/minha-conta#assistente-ia";
+    }
+
     @GetMapping("/minha-conta/foto")
     public ResponseEntity<byte[]> photo(Authentication authentication) {
         AppUser user = currentUser(authentication);
@@ -233,6 +264,9 @@ public class AuthController {
         }
         if (!model.containsAttribute("experienceForm")) {
             model.addAttribute("experienceForm", new ExperienceForm(null, null, null, null, null));
+        }
+        if (!model.containsAttribute("aiCareerForm")) {
+            model.addAttribute("aiCareerForm", new AiCareerForm(""));
         }
         return "auth/profile";
     }

@@ -33,8 +33,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/webhooks/stripe"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/vagas", "/vagas/**", "/ping", "/css/**", "/js/**", "/images/**", "/actuator/health").permitAll()
+                        .requestMatchers("/", "/vagas", "/vagas/**", "/ping", "/webhooks/stripe",
+                                "/css/**", "/js/**", "/images/**", "/actuator/health").permitAll()
                         .requestMatchers("/divulgar", "/divulgar/**").authenticated()
                         .requestMatchers("/login", "/cadastro", "/admin/login", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

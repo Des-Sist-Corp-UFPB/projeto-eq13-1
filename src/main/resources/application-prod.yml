@@ -19,6 +19,9 @@ spring:
           google:
             redirect-uri: ${GOOGLE_REDIRECT_URI:https://eq13.dsc.rodrigor.com/login/oauth2/code/google}
 
+server:
+  forward-headers-strategy: framework
+
 aws:
   s3:
     endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
@@ -31,7 +34,7 @@ aws:
 app:
   admin:
     username: ${ADMIN_USERNAME:admin}
-    password: ${ADMIN_PASSWORD:admin123}
+    password: ${ADMIN_PASSWORD}
 
 logging:
   level:

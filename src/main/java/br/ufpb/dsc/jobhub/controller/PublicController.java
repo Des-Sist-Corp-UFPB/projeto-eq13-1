@@ -156,15 +156,31 @@ public class PublicController {
 
     @PostMapping("/divulgar/assinar/checkout")
     public String subscribeCheckout(Authentication authentication,
+                                    HttpServletRequest request,
                                     RedirectAttributes redirectAttributes) {
         AppUser user = currentUser(authentication);
         try {
             BillingService.CheckoutResult result = billingService.createCheckoutSessionForUser(user);
+            auditLogService.log(request, user, "STRIPE_CHECKOUT_STARTED", "SUBSCRIPTION",
+                    result.subscription().getId(), "Checkout de assinatura iniciado no Stripe.");
             return "redirect:" + result.checkoutUrl();
         } catch (IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("billingError", ex.getMessage());
             return "redirect:/divulgar/assinar";
         }
+    }
+
+    @GetMapping("/divulgar/assinar/sucesso")
+    public String subscriptionSuccess(Model model) {
+        model.addAttribute("billingMessage",
+                "Pagamento recebido. A assinatura será liberada assim que o webhook do Stripe confirmar a cobrança.");
+        return "admin/billing-success";
+    }
+
+    @GetMapping("/divulgar/assinar/cancelado")
+    public String subscriptionCanceled(Model model) {
+        model.addAttribute("billingMessage", "Checkout cancelado. Nenhuma assinatura foi ativada.");
+        return "admin/billing-canceled";
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

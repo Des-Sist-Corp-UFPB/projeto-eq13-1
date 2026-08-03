@@ -34,6 +34,32 @@
         </aside>
 
         <div class="profile-content-stack">
+            <section id="assistente-ia" class="panel profile-edit-card">
+                <div class="section-heading compact">
+                    <div>
+                        <span class="eyebrow">IA aplicada</span>
+                        <h2>Assistente de carreira</h2>
+                        <p class="muted">Receba orientações práticas usando sua biografia e experiências cadastradas.</p>
+                    </div>
+                    <span class="badge blue">LiteLLM</span>
+                </div>
+                <div class="alert" th:if="${aiError}" th:text="${aiError}"></div>
+                <div class="ai-answer" th:if="${aiAnswer}">
+                    <strong>Orientação do RadarTech</strong>
+                    <p th:text="${aiAnswer}">Resposta da IA</p>
+                </div>
+                <form th:action="@{/minha-conta/assistente}" th:object="${aiCareerForm}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <label>Como podemos ajudar?
+                        <textarea class="textarea" th:field="*{question}"
+                                  placeholder="Ex.: Como posso melhorar meu perfil para uma vaga Java júnior?"
+                                  maxlength="800"></textarea>
+                    </label>
+                    <p class="field-hint">Não envie dados sensíveis. A resposta é uma orientação e pode precisar de revisão.</p>
+                    <button class="btn primary" type="submit">Gerar orientação com IA</button>
+                </form>
+            </section>
+
             <section class="panel profile-edit-card">
                 <div class="section-heading compact">
                     <div>

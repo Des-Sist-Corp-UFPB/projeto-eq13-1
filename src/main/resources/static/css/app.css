@@ -724,3 +724,15 @@ html[data-theme="dark"] .salary-line { color: var(--accent); }
     .experience-item { grid-template-columns: 40px minmax(0, 1fr) auto; }
     .experience-logo { width: 40px; height: 40px; }
 }
+.ai-answer {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-left: 4px solid var(--primary);
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+    white-space: pre-wrap;
+}
+
+.ai-answer p {
+    margin-bottom: 0;
+}

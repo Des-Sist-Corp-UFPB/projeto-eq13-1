@@ -5,6 +5,7 @@ import br.ufpb.dsc.jobhub.domain.ThemePreference;
 import br.ufpb.dsc.jobhub.dto.RegistrationForm;
 import br.ufpb.dsc.jobhub.repository.AuditLogRepository;
 import br.ufpb.dsc.jobhub.repository.CandidateExperienceRepository;
+import br.ufpb.dsc.jobhub.service.AiCareerService;
 import br.ufpb.dsc.jobhub.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -38,6 +44,7 @@ class CandidateProfileIntegrationTest {
     @Autowired private UserService userService;
     @Autowired private CandidateExperienceRepository experienceRepository;
     @Autowired private AuditLogRepository auditLogRepository;
+    @MockitoBean private AiCareerService aiCareerService;
 
     private AppUser user;
 
@@ -58,7 +65,11 @@ class CandidateProfileIntegrationTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("radartech-logo-transparent.png")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("radartech-logo-dark.png")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("data-theme=\"light\"")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("theme-toggle")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("theme-toggle")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "https://umami.dsc.rodrigor.com/script.js")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "eee2189e-e175-4c4e-b44d-0fd48757ddbd")));
     }
 
     @Test
@@ -140,6 +151,42 @@ class CandidateProfileIntegrationTest {
         var noAssets = SecurityMockMvcRequestPostProcessors.user(withoutAssets.getEmail()).roles("USER");
         mockMvc.perform(get("/minha-conta/foto").with(noAssets)).andExpect(status().isNotFound());
         mockMvc.perform(get("/minha-conta/curriculo").with(noAssets)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void userReceivesCareerAdviceFromLiteLlmAndActionIsAudited() throws Exception {
+        when(aiCareerService.generateCareerAdvice(any(AppUser.class), anyList(), eq("Como melhorar meu perfil?")))
+                .thenReturn("Destaque seus projetos Java e resultados mensuráveis.");
+
+        mockMvc.perform(post("/minha-conta/assistente")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("question", "Como melhorar meu perfil?"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/minha-conta#assistente-ia"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash()
+                        .attribute("aiAnswer", "Destaque seus projetos Java e resultados mensuráveis."));
+
+        assertThat(auditLogRepository.search("AI_CAREER_ASSISTANT_USED", EMAIL, "APP_USER", null, null))
+                .hasSize(1);
+    }
+
+    @Test
+    void careerAssistantValidatesQuestionAndHandlesProviderFailure() throws Exception {
+        mockMvc.perform(post("/minha-conta/assistente")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("question", ""))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash()
+                        .attributeExists("aiError"));
+
+        when(aiCareerService.generateCareerAdvice(any(AppUser.class), anyList(), eq("Teste de falha")))
+                .thenThrow(new IllegalStateException("LiteLLM indisponível."));
+        mockMvc.perform(post("/minha-conta/assistente")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("question", "Teste de falha"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash()
+                        .attribute("aiError", "LiteLLM indisponível."));
     }
 
     private SecurityMockMvcRequestPostProcessors.UserRequestPostProcessor authenticatedUser() {

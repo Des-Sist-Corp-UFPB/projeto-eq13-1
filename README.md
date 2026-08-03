@@ -2,6 +2,20 @@
 
 Projeto desenvolvido para a disciplina de Desenvolvimento de Sistemas Corporativos da UFPB. O RadarTech PB é um portal para curadoria, busca e gerenciamento de vagas de tecnologia, com foco em estudantes, estagiários e profissionais júnior.
 
+## Atendimento da Avaliação 2
+
+Esta matriz aponta a implementação executável e a evidência verificável de cada requisito. O RadarTech PB vai além do CRUD de vagas.
+
+| Requisito | Situação | Implementação no código | Como verificar |
+| --- | --- | --- | --- |
+| **Aud — Auditoria** | ✅ Atendido | Entidade/tabela `audit_log`, migration Flyway, `AuditLogService`, handlers de autenticação e auditoria das ações de vagas, usuários, perfil, IA e Stripe. Consulta protegida em `/admin/auditoria`. | Executar os fluxos e consultar `/admin/auditoria`; testes em `ServiceBehaviorIntegrationTest`, `CandidateProfileIntegrationTest` e controllers. |
+| **Int — Integração externa** | ✅ Atendido | Google OAuth2 Client para login/cadastro e Stripe Checkout com webhook assinado. A assinatura só é ativada após `checkout.session.completed`. | Código em `RadarOAuth2UserService`, `BillingService`, `StripeWebhookService`; executar `mvn verify`. |
+| **Cob — Cobertura ≥ 85%** | ✅ Atendido | JaCoCo está ligado ao `mvn verify` com regra `COVEREDRATIO >= 0.85`; o build e o deploy falham abaixo desse valor. | `mvn verify` e `target/site/jacoco/index.html`; GitHub Actions executa a verificação antes da imagem Docker. |
+| **IA — uso de LLM** | ✅ Atendido | Assistente de carreira em `/minha-conta`, usando a API OpenAI-compatible do LiteLLM e o modelo configurável `gpt-4o-mini`. A utilização é auditada. | `AiCareerService`, formulário “Assistente de carreira” e `AiCareerServiceTest`. |
+| **HC — healthcheck no banco** | ✅ Atendido | `GET /ping` chama `DatabaseHealthService`, que executa `SELECT 1` no banco. Só retorna HTTP 200 com `database: up`; falhas retornam HTTP 503. | `curl http://localhost:8080/ping`, `DatabaseHealthServiceTest` e `PingControllerTest`. |
+| **Tel — Telemetria** | ✅ Atendido | A imagem Docker inclui o Java Agent do OpenTelemetry e exporta traces, métricas e logs via OTLP com `service.name=dsc-eq13`. | `docker/Dockerfile`, `docker-compose.yml` e Grafana Explore filtrando `service.name = dsc-eq13`. |
+| **Uma — Umami** | ✅ Atendido | Script oficial do Umami presente no fragmento comum do `<head>`, portanto carregado em todas as páginas. | `templates/fragments/layout.html` e painel Umami da equipe. |
+
 ## Visão Geral
 
 O sistema permite que visitantes consultem vagas reais de TI, filtrem oportunidades por modelo de trabalho e abram o link público da vaga original. Também existe uma área administrativa para moderação das vagas, acompanhamento das candidaturas internas, consulta de auditoria e visualização de indicadores.
@@ -19,6 +33,8 @@ As vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas e presen
 | Migrações | Flyway |
 | Build | Maven |
 | Testes | JUnit 5, MockMvc, Mockito, JaCoCo |
+| IA | LiteLLM, API OpenAI-compatible |
+| Observabilidade | OpenTelemetry (traces, métricas e logs) + Umami |
 | Infraestrutura | Docker + Docker Compose |
 | CI/CD | GitHub Actions + GHCR |
 
@@ -38,6 +54,8 @@ As vagas remotas podem ser de qualquer lugar do Brasil. Vagas híbridas e presen
 - Página "Minha conta".
 - Login administrativo.
 - Checkout de assinatura com Stripe para recursos administrativos de cobranca.
+- Assistente de carreira com IA, contextualizado pelo perfil do candidato.
+- Telemetria com OpenTelemetry e análise de acesso com Umami.
 - Painel administrativo com indicadores.
 - Gestão de vagas com busca e filtros.
 - Gestão de usuários.
@@ -122,16 +140,81 @@ Ao logar com Google:
 
 ## Cobranca com Stripe
 
-O painel administrativo possui um fluxo de checkout de assinatura usando Stripe Checkout. As credenciais e o identificador do preco mensal devem ser configurados apenas por variaveis de ambiente:
+O sistema possui um fluxo de assinatura usando Stripe Checkout. A criação do checkout deixa a assinatura como `PENDING`; ela só passa para `ACTIVE` quando o Stripe envia o evento assinado `checkout.session.completed`. Cancelamentos recebidos do provedor também atualizam o sistema e ambos os eventos são auditados.
+
+Configure no Stripe o webhook público:
+
+```text
+POST https://eq13.dsc.rodrigor.com/webhooks/stripe
+```
+
+Assine pelo menos os eventos `checkout.session.completed` e `customer.subscription.deleted`. As credenciais e o identificador do preço mensal devem ser configurados apenas por variáveis de ambiente:
 
 ```env
 STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_WEBHOOK_SECRET=<stripe-webhook-signing-secret>
 STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
-STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/admin/billing/sucesso
-STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/admin/billing/cancelado
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/divulgar/assinar/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/divulgar/assinar/cancelado
 ```
 
 Nunca versione chaves reais da Stripe. Sem `STRIPE_SECRET_KEY` e `STRIPE_MONTHLY_PRICE_ID`, o checkout fica indisponivel e o sistema informa a ausencia de configuracao.
+
+## IA com LiteLLM
+
+O assistente de carreira aparece em `/minha-conta`. Ele envia ao LiteLLM somente o contexto profissional necessário — nome, biografia e resumo das experiências — e não envia foto nem conteúdo do currículo PDF. A resposta é exibida como orientação, e o uso gera o evento de auditoria `AI_CAREER_ASSISTANT_USED`.
+
+```env
+LITELLM_ENABLED=true
+LITELLM_BASE_URL=https://llm.rodrigor.com
+LITELLM_API_KEY=<litellm-api-key>
+LITELLM_MODEL=gpt-4o-mini
+```
+
+O cliente usa `POST /v1/chat/completions`, formato compatível com a API da OpenAI. Nenhuma API key é armazenada no repositório.
+
+## Healthcheck com consulta ao banco
+
+`GET /ping` é público e consulta o banco de dados de verdade:
+
+```sql
+SELECT 1
+```
+
+Resposta saudável:
+
+```json
+{"status":"ok","service":"eq13","database":"up","timestamp":"..."}
+```
+
+Se a consulta falhar, o endpoint retorna HTTP `503` e `database: down`. O healthcheck do Docker usa exatamente essa rota; por isso o container só é considerado saudável quando aplicação e banco estão disponíveis.
+
+## Telemetria OpenTelemetry
+
+A imagem de produção contém `opentelemetry-javaagent`. O agente instrumenta automaticamente Spring MVC, JDBC, chamadas HTTP e outras bibliotecas, exportando traces, métricas e logs por OTLP.
+
+```env
+OTEL_SERVICE_NAME=dsc-eq13
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.dsc.rodrigor.com
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer <otel-ingest-token>
+OTEL_TRACES_EXPORTER=otlp
+OTEL_METRICS_EXPORTER=otlp
+OTEL_LOGS_EXPORTER=otlp
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=dsc
+```
+
+No Grafana/OTel Explore, filtre por:
+
+```text
+service.name = dsc-eq13
+```
+
+O token de ingestão deve ficar apenas nas variáveis do servidor.
+
+## Analytics com Umami
+
+O fragmento global `src/main/resources/templates/fragments/layout.html` contém o script Umami e o identificador do site fornecido para a equipe 13. Como o fragmento compõe o `<head>` de todas as páginas, visitas, páginas e referências são coletadas em toda a aplicação. As credenciais do painel não ficam no código.
 
 ## Auditoria
 
@@ -151,6 +234,8 @@ Eventos auditados incluem:
 - criação de vaga pelo admin;
 - publicação, pendência, arquivamento e remoção de vaga;
 - envio de candidatura interna.
+- uso do assistente de carreira via LiteLLM;
+- início de checkout, confirmação e cancelamento de assinatura via Stripe.
 
 Administradores podem consultar os logs em:
 
@@ -232,7 +317,7 @@ mvn verify
 
 O projeto usa JaCoCo e exige cobertura mínima integral de 85%, sem excluir os pacotes de domínio, DTOs ou segurança. O build falha caso a cobertura fique abaixo do mínimo configurado.
 
-**Cobertura total de linhas: 91,71%** (819 de 893 linhas cobertas).
+**Cobertura atual: 89,96% das linhas** (977 de 1.086), medida pelo JaCoCo em 02/08/2026. O valor aceito nunca pode ser inferior a **85% de linhas**, pois essa regra está no `pom.xml` e bloqueia o build quando não é cumprida.
 
 O relatório de cobertura está commitado na pasta `cobertura/` na raiz do projeto:
 

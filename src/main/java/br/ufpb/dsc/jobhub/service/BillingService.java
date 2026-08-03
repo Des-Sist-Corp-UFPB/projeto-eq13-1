@@ -89,7 +89,7 @@ public class BillingService {
         if (!Objects.equals(subscription.getCompany(), company)) {
             subscription = new Subscription(company, companyEmail, MONTHLY_PLAN_CODE);
         }
-        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), null);
+        subscription.markPending(null);
         subscription = subscriptionRepository.save(subscription);
 
         try {
@@ -101,11 +101,15 @@ public class BillingService {
                             .build())
                     .setSuccessUrl(successUrl + "?subscription=" + subscription.getId())
                     .setCancelUrl(cancelUrl + "?subscription=" + subscription.getId())
+                    .setSubscriptionData(SessionCreateParams.SubscriptionData.builder()
+                            .putMetadata("subscriptionId", String.valueOf(subscription.getId()))
+                            .putMetadata("companyEmail", companyEmail)
+                            .build())
                     .putMetadata("subscriptionId", String.valueOf(subscription.getId()))
                     .putMetadata("companyEmail", companyEmail)
                     .build();
             Session session = Session.create(params);
-            subscription.activate(subscription.getValidUntil(), session.getId());
+            subscription.markPending(session.getId());
             subscriptionRepository.save(subscription);
             return new CheckoutResult(subscription, session.getUrl());
         } catch (StripeException ex) {
@@ -119,5 +123,24 @@ public class BillingService {
     @Transactional
     public CheckoutResult createCheckoutSessionForUser(br.ufpb.dsc.jobhub.domain.AppUser user) {
         return createCheckoutSession(user.getName(), user.getEmail());
+    }
+
+    @Transactional
+    public Subscription activateAfterConfirmedPayment(Long subscriptionId, String externalReference) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Assinatura não encontrada"));
+        subscription.activate(Instant.now().plusSeconds(30L * 24 * 60 * 60), externalReference);
+        return subscriptionRepository.save(subscription);
+    }
+
+    @Transactional
+    public Subscription cancelFromProvider(Long subscriptionId, String externalReference) {
+        Subscription subscription = subscriptionId == null
+                ? subscriptionRepository.findByExternalReference(externalReference)
+                    .orElseThrow(() -> new IllegalArgumentException("Assinatura não encontrada"))
+                : subscriptionRepository.findById(subscriptionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Assinatura não encontrada"));
+        subscription.cancel();
+        return subscriptionRepository.save(subscription);
     }
 }

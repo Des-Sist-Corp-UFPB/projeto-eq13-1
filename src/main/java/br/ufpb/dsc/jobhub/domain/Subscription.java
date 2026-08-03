@@ -75,6 +75,12 @@ public class Subscription {
         this.externalReference = externalReference;
     }
 
+    public void markPending(String externalReference) {
+        this.status = SubscriptionStatus.PENDING;
+        this.validUntil = null;
+        this.externalReference = externalReference;
+    }
+
     public void cancel() {
         this.status = SubscriptionStatus.CANCELED;
     }

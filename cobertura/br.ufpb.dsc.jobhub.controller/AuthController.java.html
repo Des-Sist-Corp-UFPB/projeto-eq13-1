@@ -2,11 +2,13 @@
 
 import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.ThemePreference;
+import br.ufpb.dsc.jobhub.dto.AiCareerForm;
 import br.ufpb.dsc.jobhub.dto.ExperienceForm;
 import br.ufpb.dsc.jobhub.dto.ProfileUpdateForm;
 import br.ufpb.dsc.jobhub.dto.ProfileUpdateResult;
 import br.ufpb.dsc.jobhub.dto.RegistrationForm;
 import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.AiCareerService;
 import br.ufpb.dsc.jobhub.service.CandidateProfileService;
 import br.ufpb.dsc.jobhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,30 +41,32 @@ public class AuthController {
     private final UserService userService;
     private final CandidateProfileService profileService;
     private final AuditLogService auditLogService;
+    private final AiCareerService aiCareerService;
 
     public AuthController(UserService userService, CandidateProfileService profileService,
-<span class="fc" id="L44">                          AuditLogService auditLogService) {</span>
-<span class="fc" id="L45">        this.userService = userService;</span>
-<span class="fc" id="L46">        this.profileService = profileService;</span>
-<span class="fc" id="L47">        this.auditLogService = auditLogService;</span>
-<span class="fc" id="L48">    }</span>
+<span class="fc" id="L47">                          AuditLogService auditLogService, AiCareerService aiCareerService) {</span>
+<span class="fc" id="L48">        this.userService = userService;</span>
+<span class="fc" id="L49">        this.profileService = profileService;</span>
+<span class="fc" id="L50">        this.auditLogService = auditLogService;</span>
+<span class="fc" id="L51">        this.aiCareerService = aiCareerService;</span>
+<span class="fc" id="L52">    }</span>
 
     @GetMapping(&quot;/login&quot;)
     public String login(Authentication authentication) {
-<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (isAuthenticated(authentication)) {</span>
-<span class="fc" id="L53">            boolean admin = authentication.getAuthorities().stream()</span>
-<span class="fc" id="L54">                    .anyMatch(authority -&gt; authority.getAuthority().equals(&quot;ROLE_ADMIN&quot;));</span>
-<span class="fc bfc" id="L55" title="All 2 branches covered.">            return admin ? &quot;redirect:/admin&quot; : &quot;redirect:/minha-conta&quot;;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (isAuthenticated(authentication)) {</span>
+<span class="fc" id="L57">            boolean admin = authentication.getAuthorities().stream()</span>
+<span class="fc" id="L58">                    .anyMatch(authority -&gt; authority.getAuthority().equals(&quot;ROLE_ADMIN&quot;));</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            return admin ? &quot;redirect:/admin&quot; : &quot;redirect:/minha-conta&quot;;</span>
         }
-<span class="fc" id="L57">        return &quot;auth/login&quot;;</span>
+<span class="fc" id="L61">        return &quot;auth/login&quot;;</span>
     }
 
     @GetMapping(&quot;/cadastro&quot;)
     public String register(Model model) {
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
-<span class="fc" id="L63">            model.addAttribute(&quot;form&quot;, RegistrationForm.empty());</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
+<span class="fc" id="L67">            model.addAttribute(&quot;form&quot;, RegistrationForm.empty());</span>
         }
-<span class="fc" id="L65">        return &quot;auth/register&quot;;</span>
+<span class="fc" id="L69">        return &quot;auth/register&quot;;</span>
     }
 
     @PostMapping(&quot;/cadastro&quot;)
@@ -70,23 +74,27 @@ public class AuthController {
                            BindingResult bindingResult,
                            RedirectAttributes redirectAttributes,
                            HttpServletRequest request) {
-<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
-<span class="fc" id="L74">            return &quot;auth/register&quot;;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L78">            return &quot;auth/register&quot;;</span>
         }
         try {
-<span class="fc" id="L77">            AppUser user = userService.registerLocal(form);</span>
-<span class="fc" id="L78">            auditLogService.log(request, user, &quot;USER_REGISTER&quot;, &quot;APP_USER&quot;, user.getId(), &quot;Cadastro tradicional de usuário.&quot;);</span>
-<span class="fc" id="L79">            redirectAttributes.addFlashAttribute(&quot;registered&quot;, true);</span>
-<span class="fc" id="L80">            return &quot;redirect:/login&quot;;</span>
-<span class="fc" id="L81">        } catch (IllegalArgumentException ex) {</span>
-<span class="fc" id="L82">            bindingResult.reject(&quot;registration.error&quot;, ex.getMessage());</span>
-<span class="fc" id="L83">            return &quot;auth/register&quot;;</span>
+<span class="fc" id="L81">            AppUser user = userService.registerLocal(form);</span>
+<span class="fc" id="L82">            auditLogService.log(request, user, &quot;USER_REGISTER&quot;, &quot;APP_USER&quot;, user.getId(), &quot;Cadastro tradicional de usuário.&quot;);</span>
+<span class="fc" id="L83">            redirectAttributes.addFlashAttribute(&quot;registered&quot;, true);</span>
+<span class="fc" id="L84">            return &quot;redirect:/login&quot;;</span>
+<span class="fc" id="L85">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L86">            bindingResult.reject(&quot;registration.error&quot;, ex.getMessage());</span>
+<span class="fc" id="L87">            return &quot;auth/register&quot;;</span>
         }
     }
 
     @GetMapping(&quot;/minha-conta&quot;)
     public String profile(Authentication authentication, Model model) {
-<span class="fc" id="L89">        return profileView(currentUser(authentication), model);</span>
+<span class="fc" id="L93">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L95">            return &quot;redirect:/login?error&quot;;</span>
+        }
+<span class="fc" id="L97">        return profileView(user, model);</span>
     }
 
     @PostMapping(value = &quot;/minha-conta&quot;, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -98,27 +106,30 @@ public class AuthController {
                                 HttpServletRequest request,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
-<span class="fc" id="L101">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
-<span class="nc" id="L103">            return profileView(user, model);</span>
+<span class="fc" id="L109">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L111">            return &quot;redirect:/login?error&quot;;</span>
+        }
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
+<span class="nc" id="L114">            return profileView(user, model);</span>
         }
         try {
-<span class="fc" id="L106">            ProfileUpdateResult result = profileService.update(user, form, photo, resume);</span>
-<span class="fc" id="L107">            auditLogService.log(request, user, &quot;PROFILE_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
+<span class="fc" id="L117">            ProfileUpdateResult result = profileService.update(user, form, photo, resume);</span>
+<span class="fc" id="L118">            auditLogService.log(request, user, &quot;PROFILE_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
                     &quot;Perfil do candidato atualizado.&quot;);
-<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            if (result.photoUpdated()) {</span>
-<span class="fc" id="L110">                auditLogService.log(request, user, &quot;PROFILE_PHOTO_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            if (result.photoUpdated()) {</span>
+<span class="fc" id="L121">                auditLogService.log(request, user, &quot;PROFILE_PHOTO_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
                         &quot;Foto do perfil atualizada.&quot;);
             }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">            if (result.resumeUpdated()) {</span>
-<span class="fc" id="L114">                auditLogService.log(request, user, &quot;PROFILE_RESUME_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">            if (result.resumeUpdated()) {</span>
+<span class="fc" id="L125">                auditLogService.log(request, user, &quot;PROFILE_RESUME_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
                         &quot;Currículo PDF atualizado.&quot;);
             }
-<span class="fc" id="L117">            redirectAttributes.addFlashAttribute(&quot;profileSaved&quot;, true);</span>
-<span class="fc" id="L118">            return &quot;redirect:/minha-conta&quot;;</span>
-<span class="fc" id="L119">        } catch (IllegalArgumentException ex) {</span>
-<span class="fc" id="L120">            bindingResult.reject(&quot;profile.file&quot;, ex.getMessage());</span>
-<span class="fc" id="L121">            return profileView(user, model);</span>
+<span class="fc" id="L128">            redirectAttributes.addFlashAttribute(&quot;profileSaved&quot;, true);</span>
+<span class="fc" id="L129">            return &quot;redirect:/minha-conta&quot;;</span>
+<span class="fc" id="L130">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L131">            bindingResult.reject(&quot;profile.file&quot;, ex.getMessage());</span>
+<span class="fc" id="L132">            return profileView(user, model);</span>
         }
     }
 
@@ -129,99 +140,144 @@ public class AuthController {
                                 HttpServletRequest request,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
-<span class="fc" id="L132">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
-<span class="nc" id="L134">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
-<span class="nc" id="L135">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
-<span class="nc" id="L136">            return profileView(user, model);</span>
+<span class="fc" id="L143">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L145">            return &quot;redirect:/login?error&quot;;</span>
+        }
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
+<span class="nc" id="L148">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
+<span class="nc" id="L149">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
+<span class="nc" id="L150">            return profileView(user, model);</span>
         }
         try {
-<span class="fc" id="L139">            var experience = profileService.addExperience(user, form);</span>
-<span class="fc" id="L140">            auditLogService.log(request, user, &quot;PROFILE_EXPERIENCE_ADDED&quot;, &quot;CANDIDATE_EXPERIENCE&quot;,</span>
-<span class="fc" id="L141">                    experience.getId(), &quot;Experiência profissional adicionada ao perfil.&quot;);</span>
-<span class="fc" id="L142">            redirectAttributes.addFlashAttribute(&quot;experienceSaved&quot;, true);</span>
-<span class="fc" id="L143">            return &quot;redirect:/minha-conta#experiencias&quot;;</span>
-<span class="fc" id="L144">        } catch (IllegalArgumentException ex) {</span>
-<span class="fc" id="L145">            bindingResult.reject(&quot;experience.period&quot;, ex.getMessage());</span>
-<span class="fc" id="L146">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
-<span class="fc" id="L147">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
-<span class="fc" id="L148">            return profileView(user, model);</span>
+<span class="fc" id="L153">            var experience = profileService.addExperience(user, form);</span>
+<span class="fc" id="L154">            auditLogService.log(request, user, &quot;PROFILE_EXPERIENCE_ADDED&quot;, &quot;CANDIDATE_EXPERIENCE&quot;,</span>
+<span class="fc" id="L155">                    experience.getId(), &quot;Experiência profissional adicionada ao perfil.&quot;);</span>
+<span class="fc" id="L156">            redirectAttributes.addFlashAttribute(&quot;experienceSaved&quot;, true);</span>
+<span class="fc" id="L157">            return &quot;redirect:/minha-conta#experiencias&quot;;</span>
+<span class="fc" id="L158">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L159">            bindingResult.reject(&quot;experience.period&quot;, ex.getMessage());</span>
+<span class="fc" id="L160">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
+<span class="fc" id="L161">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
+<span class="fc" id="L162">            return profileView(user, model);</span>
         }
     }
 
     @PostMapping(&quot;/minha-conta/experiencias/{id}/remover&quot;)
     public String removeExperience(@PathVariable Long id, Authentication authentication,
                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
-<span class="fc" id="L155">        AppUser user = currentUser(authentication);</span>
-<span class="fc" id="L156">        var experience = profileService.removeExperience(user, id);</span>
-<span class="fc" id="L157">        auditLogService.log(request, user, &quot;PROFILE_EXPERIENCE_REMOVED&quot;, &quot;CANDIDATE_EXPERIENCE&quot;,</span>
-<span class="fc" id="L158">                experience.getId(), &quot;Experiência profissional removida do perfil.&quot;);</span>
-<span class="fc" id="L159">        redirectAttributes.addFlashAttribute(&quot;experienceRemoved&quot;, true);</span>
-<span class="fc" id="L160">        return &quot;redirect:/minha-conta#experiencias&quot;;</span>
+<span class="fc" id="L169">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L171">            return &quot;redirect:/login?error&quot;;</span>
+        }
+<span class="fc" id="L173">        var experience = profileService.removeExperience(user, id);</span>
+<span class="fc" id="L174">        auditLogService.log(request, user, &quot;PROFILE_EXPERIENCE_REMOVED&quot;, &quot;CANDIDATE_EXPERIENCE&quot;,</span>
+<span class="fc" id="L175">                experience.getId(), &quot;Experiência profissional removida do perfil.&quot;);</span>
+<span class="fc" id="L176">        redirectAttributes.addFlashAttribute(&quot;experienceRemoved&quot;, true);</span>
+<span class="fc" id="L177">        return &quot;redirect:/minha-conta#experiencias&quot;;</span>
     }
 
     @PostMapping(&quot;/minha-conta/tema&quot;)
     public ResponseEntity&lt;Void&gt; changeTheme(@RequestParam String theme, Authentication authentication,
                                             HttpServletRequest request) {
-<span class="fc" id="L166">        AppUser user = currentUser(authentication);</span>
+<span class="fc" id="L183">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L185">            return ResponseEntity.status(401).build();</span>
+        }
         ThemePreference preference;
         try {
-<span class="fc" id="L169">            preference = ThemePreference.valueOf(theme.trim().toUpperCase(Locale.ROOT));</span>
-<span class="fc" id="L170">        } catch (IllegalArgumentException ex) {</span>
-<span class="fc" id="L171">            return ResponseEntity.badRequest().build();</span>
-<span class="fc" id="L172">        }</span>
-<span class="fc" id="L173">        profileService.changeTheme(user, preference);</span>
-<span class="fc" id="L174">        auditLogService.log(request, user, &quot;PROFILE_THEME_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
-<span class="fc" id="L175">                &quot;Preferência de tema alterada para &quot; + preference.name() + &quot;.&quot;);</span>
-<span class="fc" id="L176">        return ResponseEntity.noContent().build();</span>
+<span class="fc" id="L189">            preference = ThemePreference.valueOf(theme.trim().toUpperCase(Locale.ROOT));</span>
+<span class="fc" id="L190">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L191">            return ResponseEntity.badRequest().build();</span>
+<span class="fc" id="L192">        }</span>
+<span class="fc" id="L193">        profileService.changeTheme(user, preference);</span>
+<span class="fc" id="L194">        auditLogService.log(request, user, &quot;PROFILE_THEME_UPDATED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
+<span class="fc" id="L195">                &quot;Preferência de tema alterada para &quot; + preference.name() + &quot;.&quot;);</span>
+<span class="fc" id="L196">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @PostMapping(&quot;/minha-conta/assistente&quot;)
+    public String careerAssistant(@Valid @ModelAttribute(&quot;aiCareerForm&quot;) AiCareerForm form,
+                                  BindingResult bindingResult,
+                                  Authentication authentication,
+                                  HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
+<span class="fc" id="L205">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L207">            return &quot;redirect:/login?error&quot;;</span>
+        }
+<span class="fc" id="L209">        redirectAttributes.addFlashAttribute(&quot;aiQuestion&quot;, form.question());</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L211">            redirectAttributes.addFlashAttribute(&quot;aiError&quot;,</span>
+<span class="fc" id="L212">                    bindingResult.getAllErrors().getFirst().getDefaultMessage());</span>
+<span class="fc" id="L213">            return &quot;redirect:/minha-conta#assistente-ia&quot;;</span>
+        }
+        try {
+<span class="fc" id="L216">            String answer = aiCareerService.generateCareerAdvice(user, profileService.experiences(user), form.question());</span>
+<span class="fc" id="L217">            auditLogService.log(request, user, &quot;AI_CAREER_ASSISTANT_USED&quot;, &quot;APP_USER&quot;, user.getId(),</span>
+                    &quot;Assistente de carreira via LiteLLM utilizado.&quot;);
+<span class="fc" id="L219">            redirectAttributes.addFlashAttribute(&quot;aiAnswer&quot;, answer);</span>
+<span class="fc" id="L220">        } catch (IllegalArgumentException | IllegalStateException ex) {</span>
+<span class="fc" id="L221">            redirectAttributes.addFlashAttribute(&quot;aiError&quot;, ex.getMessage());</span>
+<span class="fc" id="L222">        }</span>
+<span class="fc" id="L223">        return &quot;redirect:/minha-conta#assistente-ia&quot;;</span>
     }
 
     @GetMapping(&quot;/minha-conta/foto&quot;)
     public ResponseEntity&lt;byte[]&gt; photo(Authentication authentication) {
-<span class="fc" id="L181">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L182" title="1 of 4 branches missed.">        if (user.getPhotoContent() == null || user.getPhotoContentType() == null) {</span>
-<span class="fc" id="L183">            return ResponseEntity.notFound().build();</span>
+<span class="fc" id="L228">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L230">            return ResponseEntity.status(401).build();</span>
         }
-<span class="fc" id="L185">        return ResponseEntity.ok()</span>
-<span class="fc" id="L186">                .contentType(MediaType.parseMediaType(user.getPhotoContentType()))</span>
-<span class="fc" id="L187">                .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())</span>
-<span class="fc" id="L188">                .body(user.getPhotoContent());</span>
+<span class="pc bpc" id="L232" title="1 of 4 branches missed.">        if (user.getPhotoContent() == null || user.getPhotoContentType() == null) {</span>
+<span class="fc" id="L233">            return ResponseEntity.notFound().build();</span>
+        }
+<span class="fc" id="L235">        return ResponseEntity.ok()</span>
+<span class="fc" id="L236">                .contentType(MediaType.parseMediaType(user.getPhotoContentType()))</span>
+<span class="fc" id="L237">                .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())</span>
+<span class="fc" id="L238">                .body(user.getPhotoContent());</span>
     }
 
     @GetMapping(&quot;/minha-conta/curriculo&quot;)
     public ResponseEntity&lt;byte[]&gt; resume(Authentication authentication) {
-<span class="fc" id="L193">        AppUser user = currentUser(authentication);</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">        if (user.getResumeContent() == null) {</span>
-<span class="fc" id="L195">            return ResponseEntity.notFound().build();</span>
+<span class="fc" id="L243">        AppUser user = currentUser(authentication);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L245">            return ResponseEntity.status(401).build();</span>
         }
-<span class="fc" id="L197">        ContentDisposition disposition = ContentDisposition.attachment()</span>
-<span class="fc" id="L198">                .filename(user.getResumeFileName(), StandardCharsets.UTF_8)</span>
-<span class="fc" id="L199">                .build();</span>
-<span class="fc" id="L200">        return ResponseEntity.ok()</span>
-<span class="fc" id="L201">                .contentType(MediaType.APPLICATION_PDF)</span>
-<span class="fc" id="L202">                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())</span>
-<span class="fc" id="L203">                .body(user.getResumeContent());</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        if (user.getResumeContent() == null) {</span>
+<span class="fc" id="L248">            return ResponseEntity.notFound().build();</span>
+        }
+<span class="fc" id="L250">        ContentDisposition disposition = ContentDisposition.attachment()</span>
+<span class="fc" id="L251">                .filename(user.getResumeFileName(), StandardCharsets.UTF_8)</span>
+<span class="fc" id="L252">                .build();</span>
+<span class="fc" id="L253">        return ResponseEntity.ok()</span>
+<span class="fc" id="L254">                .contentType(MediaType.APPLICATION_PDF)</span>
+<span class="fc" id="L255">                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())</span>
+<span class="fc" id="L256">                .body(user.getResumeContent());</span>
     }
 
     private String profileView(AppUser user, Model model) {
-<span class="fc" id="L207">        model.addAttribute(&quot;user&quot;, user);</span>
-<span class="fc" id="L208">        model.addAttribute(&quot;experiences&quot;, profileService.experiences(user));</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;profileForm&quot;)) {</span>
-<span class="fc" id="L210">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
+<span class="fc" id="L260">        model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L261">        model.addAttribute(&quot;experiences&quot;, profileService.experiences(user));</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;profileForm&quot;)) {</span>
+<span class="fc" id="L263">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
         }
-<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;experienceForm&quot;)) {</span>
-<span class="fc" id="L213">            model.addAttribute(&quot;experienceForm&quot;, new ExperienceForm(null, null, null, null, null));</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;experienceForm&quot;)) {</span>
+<span class="fc" id="L266">            model.addAttribute(&quot;experienceForm&quot;, new ExperienceForm(null, null, null, null, null));</span>
         }
-<span class="fc" id="L215">        return &quot;auth/profile&quot;;</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">        if (!model.containsAttribute(&quot;aiCareerForm&quot;)) {</span>
+<span class="fc" id="L269">            model.addAttribute(&quot;aiCareerForm&quot;, new AiCareerForm(&quot;&quot;));</span>
+        }
+<span class="fc" id="L271">        return &quot;auth/profile&quot;;</span>
     }
 
     private AppUser currentUser(Authentication authentication) {
-<span class="fc" id="L219">        return userService.currentUser(authentication).orElseThrow();</span>
+<span class="fc" id="L275">        return userService.currentUser(authentication).orElse(null);</span>
     }
 
     private boolean isAuthenticated(Authentication authentication) {
-<span class="fc bfc" id="L223" title="All 2 branches covered.">        return authentication != null</span>
-<span class="pc bpc" id="L224" title="2 of 4 branches missed.">                &amp;&amp; authentication.isAuthenticated()</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">        return authentication != null</span>
+<span class="pc bpc" id="L280" title="2 of 4 branches missed.">                &amp;&amp; authentication.isAuthenticated()</span>
                 &amp;&amp; !(authentication instanceof AnonymousAuthenticationToken);
     }
 }
