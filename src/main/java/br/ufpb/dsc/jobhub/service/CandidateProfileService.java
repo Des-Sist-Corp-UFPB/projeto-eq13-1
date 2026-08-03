@@ -128,13 +128,14 @@ public class CandidateProfileService {
         if (content.length < 12) {
             return false;
         }
-        return switch (contentType) {
-            case "image/jpeg" -> content[0] == (byte) 0xFF && content[1] == (byte) 0xD8;
-            case "image/png" -> content[0] == (byte) 0x89 && content[1] == 0x50
+        if ("image/jpeg".equals(contentType)) {
+            return content[0] == (byte) 0xFF && content[1] == (byte) 0xD8;
+        }
+        if ("image/png".equals(contentType)) {
+            return content[0] == (byte) 0x89 && content[1] == 0x50
                     && content[2] == 0x4E && content[3] == 0x47;
-            case "image/webp" -> ascii(content, 0, 4).equals("RIFF") && ascii(content, 8, 4).equals("WEBP");
-            default -> false;
-        };
+        }
+        return ascii(content, 0, 4).equals("RIFF") && ascii(content, 8, 4).equals("WEBP");
     }
 
     private String ascii(byte[] content, int offset, int length) {

@@ -27,6 +27,14 @@ RUN chown app:app app.jar opentelemetry-javaagent.jar
 USER app
 EXPOSE 8080
 
+ENV SPRING_PROFILES_ACTIVE=prod \
+    OTEL_SERVICE_NAME=dsc-eq13 \
+    OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.dsc.rodrigor.com \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+    OTEL_TRACES_EXPORTER=otlp \
+    OTEL_METRICS_EXPORTER=otlp \
+    OTEL_LOGS_EXPORTER=otlp
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -fsS http://localhost:8080/ping >/dev/null || exit 1
 

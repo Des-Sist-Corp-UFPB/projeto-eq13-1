@@ -22,10 +22,10 @@ public class AuditLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
-<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (authentication != null) {</span>
-<span class="nc" id="L26">            auditLogService.log(request, authentication, &quot;LOGOUT&quot;, &quot;AUTH&quot;, null, &quot;Sessão encerrada.&quot;);</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (authentication != null) {</span>
+<span class="fc" id="L26">            auditLogService.log(request, authentication, &quot;LOGOUT&quot;, &quot;AUTH&quot;, null, &quot;Sessão encerrada.&quot;);</span>
         }
-<span class="nc" id="L28">        response.sendRedirect(&quot;/?logout&quot;);</span>
-<span class="nc" id="L29">    }</span>
+<span class="fc" id="L28">        response.sendRedirect(&quot;/?logout&quot;);</span>
+<span class="fc" id="L29">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

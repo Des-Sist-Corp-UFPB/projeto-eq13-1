@@ -3,7 +3,9 @@ package br.ufpb.dsc.jobhub.service;
 import br.ufpb.dsc.jobhub.domain.Subscription;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.time.Instant;
 import java.util.Map;
@@ -12,6 +14,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +56,44 @@ class StripeWebhookServiceTest {
     }
 
     @Test
+    void handleProcessesEventOnlyAfterStripeSignatureVerification() {
+        StripeWebhookService service = new StripeWebhookService(billingService, auditLogService, "whsec_test");
+        Event event = mock(Event.class, RETURNS_DEEP_STUBS);
+        when(event.getType()).thenReturn("unrelated.event");
+        when(event.getDataObjectDeserializer().getObject()).thenReturn(Optional.empty());
+
+        try (MockedStatic<Webhook> webhook = mockStatic(Webhook.class)) {
+            webhook.when(() -> Webhook.constructEvent("{}", "valid", "whsec_test")).thenReturn(event);
+            service.handle("{}", "valid");
+            webhook.verify(() -> Webhook.constructEvent("{}", "valid", "whsec_test"));
+        }
+    }
+
+    @Test
+    void validatesCheckoutMetadataAndUsesSessionIdWithoutStripeSubscription() {
+        StripeWebhookService service = new StripeWebhookService(billingService, auditLogService, "whsec_test");
+        Event event = mock(Event.class, RETURNS_DEEP_STUBS);
+        Session session = mock(Session.class);
+        Subscription subscription = activeSubscription("fallback@example.com");
+        when(event.getType()).thenReturn("checkout.session.completed");
+        when(event.getDataObjectDeserializer().getObject()).thenReturn(Optional.of(session));
+        when(session.getMetadata()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.processVerifiedEvent(event))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("identificador");
+
+        when(session.getMetadata()).thenReturn(Map.of("subscriptionId", "52"));
+        when(session.getSubscription()).thenReturn(null);
+        when(session.getId()).thenReturn("cs_fallback");
+        when(billingService.activateAfterConfirmedPayment(52L, "cs_fallback")).thenReturn(subscription);
+
+        service.processVerifiedEvent(event);
+
+        verify(billingService).activateAfterConfirmedPayment(52L, "cs_fallback");
+    }
+
+    @Test
     void cancelsSubscriptionFromProviderEventAndValidatesMetadata() {
         StripeWebhookService service = new StripeWebhookService(billingService, auditLogService, "whsec_test");
         Event event = mock(Event.class, RETURNS_DEEP_STUBS);
@@ -73,6 +114,12 @@ class StripeWebhookServiceTest {
         when(stripeSubscription.getMetadata()).thenReturn(Map.of("subscriptionId", "invalid"));
         assertThatThrownBy(() -> service.processVerifiedEvent(event))
                 .isInstanceOf(IllegalArgumentException.class);
+
+        when(stripeSubscription.getMetadata()).thenReturn(null);
+        when(stripeSubscription.getId()).thenReturn("sub_without_metadata");
+        when(billingService.cancelFromProvider(null, "sub_without_metadata")).thenReturn(subscription);
+        service.processVerifiedEvent(event);
+        verify(billingService).cancelFromProvider(null, "sub_without_metadata");
     }
 
     private Subscription activeSubscription(String email) {

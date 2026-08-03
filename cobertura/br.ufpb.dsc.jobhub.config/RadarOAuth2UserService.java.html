@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,38 +20,46 @@ import java.util.Map;
 @Service
 public class RadarOAuth2UserService implements OAuth2UserService&lt;OAuth2UserRequest, OAuth2User&gt; {
 
-<span class="fc" id="L22">    private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();</span>
+    private final OAuth2UserService&lt;OAuth2UserRequest, OAuth2User&gt; delegate;
     private final UserService userService;
     private final AuditLogService auditLogService;
 
-<span class="fc" id="L26">    public RadarOAuth2UserService(UserService userService, AuditLogService auditLogService) {</span>
-<span class="fc" id="L27">        this.userService = userService;</span>
-<span class="fc" id="L28">        this.auditLogService = auditLogService;</span>
-<span class="fc" id="L29">    }</span>
+    @Autowired
+    public RadarOAuth2UserService(UserService userService, AuditLogService auditLogService) {
+<span class="fc" id="L29">        this(userService, auditLogService, new DefaultOAuth2UserService());</span>
+<span class="fc" id="L30">    }</span>
+
+    RadarOAuth2UserService(UserService userService,
+                           AuditLogService auditLogService,
+<span class="fc" id="L34">                           OAuth2UserService&lt;OAuth2UserRequest, OAuth2User&gt; delegate) {</span>
+<span class="fc" id="L35">        this.userService = userService;</span>
+<span class="fc" id="L36">        this.auditLogService = auditLogService;</span>
+<span class="fc" id="L37">        this.delegate = delegate;</span>
+<span class="fc" id="L38">    }</span>
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-<span class="nc" id="L33">        OAuth2User oauthUser = delegate.loadUser(userRequest);</span>
-<span class="nc" id="L34">        Map&lt;String, Object&gt; attributes = oauthUser.getAttributes();</span>
-<span class="nc" id="L35">        String email = value(attributes, &quot;email&quot;);</span>
-<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (email == null || email.isBlank()) {</span>
-<span class="nc" id="L37">            throw new OAuth2AuthenticationException(&quot;Google não retornou um e-mail para autenticação.&quot;);</span>
+<span class="fc" id="L42">        OAuth2User oauthUser = delegate.loadUser(userRequest);</span>
+<span class="fc" id="L43">        Map&lt;String, Object&gt; attributes = oauthUser.getAttributes();</span>
+<span class="fc" id="L44">        String email = value(attributes, &quot;email&quot;);</span>
+<span class="fc bfc" id="L45" title="All 4 branches covered.">        if (email == null || email.isBlank()) {</span>
+<span class="fc" id="L46">            throw new OAuth2AuthenticationException(&quot;Google não retornou um e-mail para autenticação.&quot;);</span>
         }
-<span class="nc" id="L39">        GoogleUserProvision provision = userService.findOrCreateGoogleUser(email, value(attributes, &quot;name&quot;));</span>
-<span class="nc" id="L40">        AppUser appUser = provision.user();</span>
-<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (provision.created()) {</span>
-<span class="nc" id="L42">            auditLogService.logSystem(appUser.getEmail(), &quot;GOOGLE_REGISTER&quot;, &quot;APP_USER&quot;, appUser.getId(), &quot;Usuário criado via Google OAuth2.&quot;);</span>
+<span class="fc" id="L48">        GoogleUserProvision provision = userService.findOrCreateGoogleUser(email, value(attributes, &quot;name&quot;));</span>
+<span class="fc" id="L49">        AppUser appUser = provision.user();</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (provision.created()) {</span>
+<span class="fc" id="L51">            auditLogService.logSystem(appUser.getEmail(), &quot;GOOGLE_REGISTER&quot;, &quot;APP_USER&quot;, appUser.getId(), &quot;Usuário criado via Google OAuth2.&quot;);</span>
         }
-<span class="nc" id="L44">        return new DefaultOAuth2User(</span>
-<span class="nc" id="L45">                List.of(new SimpleGrantedAuthority(appUser.getRole().name())),</span>
+<span class="fc" id="L53">        return new DefaultOAuth2User(</span>
+<span class="fc" id="L54">                List.of(new SimpleGrantedAuthority(appUser.getRole().name())),</span>
                 attributes,
-<span class="nc bnc" id="L47" title="All 2 branches missed.">                attributes.containsKey(&quot;sub&quot;) ? &quot;sub&quot; : &quot;email&quot;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">                attributes.containsKey(&quot;sub&quot;) ? &quot;sub&quot; : &quot;email&quot;</span>
         );
     }
 
     private String value(Map&lt;String, Object&gt; attributes, String key) {
-<span class="nc" id="L52">        Object value = attributes.get(key);</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">        return value == null ? null : value.toString();</span>
+<span class="fc" id="L61">        Object value = attributes.get(key);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        return value == null ? null : value.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

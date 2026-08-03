@@ -22,8 +22,8 @@ public class AuditAuthenticationFailureHandler implements AuthenticationFailureH
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
             throws IOException, ServletException {
-<span class="nc" id="L25">        auditLogService.log(request, request.getParameter(&quot;username&quot;), &quot;LOGIN_FAILURE&quot;, &quot;AUTH&quot;, null, &quot;Falha no login tradicional.&quot;);</span>
-<span class="nc" id="L26">        response.sendRedirect(&quot;/login?error&quot;);</span>
-<span class="nc" id="L27">    }</span>
+<span class="fc" id="L25">        auditLogService.log(request, request.getParameter(&quot;username&quot;), &quot;LOGIN_FAILURE&quot;, &quot;AUTH&quot;, null, &quot;Falha no login tradicional.&quot;);</span>
+<span class="fc" id="L26">        response.sendRedirect(&quot;/login?error&quot;);</span>
+<span class="fc" id="L27">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

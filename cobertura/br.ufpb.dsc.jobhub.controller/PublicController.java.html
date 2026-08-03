@@ -104,16 +104,16 @@ public class PublicController {
     @GetMapping(&quot;/divulgar&quot;)
     public String publishJob(Model model, Authentication authentication,
                              RedirectAttributes redirectAttributes) {
-<span class="nc" id="L107">        AppUser user = currentUser(authentication);</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
-<span class="nc" id="L109">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
-<span class="nc" id="L110">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+<span class="fc" id="L107">        AppUser user = currentUser(authentication);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
+<span class="fc" id="L109">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
+<span class="fc" id="L110">            return &quot;redirect:/divulgar/assinar&quot;;</span>
         }
-<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
-<span class="nc" id="L113">            model.addAttribute(&quot;form&quot;, prefillForm(user));</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
+<span class="fc" id="L113">            model.addAttribute(&quot;form&quot;, prefillForm(user));</span>
         }
-<span class="nc" id="L115">        model.addAttribute(&quot;user&quot;, user);</span>
-<span class="nc" id="L116">        return &quot;jobs/post&quot;;</span>
+<span class="fc" id="L115">        model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L116">        return &quot;jobs/post&quot;;</span>
     }
 
     @PostMapping(&quot;/divulgar&quot;)
@@ -125,9 +125,9 @@ public class PublicController {
                             Model model) {
 <span class="fc" id="L126">        AppUser user = currentUser(authentication);</span>
         // Dupla verificação: bloqueia mesmo acesso direto via POST
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
-<span class="nc" id="L129">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
-<span class="nc" id="L130">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
+<span class="fc" id="L129">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
+<span class="fc" id="L130">            return &quot;redirect:/divulgar/assinar&quot;;</span>
         }
 <span class="fc bfc" id="L132" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
 <span class="fc" id="L133">            model.addAttribute(&quot;user&quot;, user);</span>
@@ -148,39 +148,39 @@ public class PublicController {
 
     @GetMapping(&quot;/divulgar/assinar&quot;)
     public String subscribe(Model model, Authentication authentication) {
-<span class="nc" id="L151">        AppUser user = currentUser(authentication);</span>
-<span class="nc" id="L152">        model.addAttribute(&quot;user&quot;, user);</span>
-<span class="nc" id="L153">        model.addAttribute(&quot;subscription&quot;, billingService.findByCompanyEmail(user.getEmail()));</span>
-<span class="nc" id="L154">        return &quot;jobs/subscribe&quot;;</span>
+<span class="fc" id="L151">        AppUser user = currentUser(authentication);</span>
+<span class="fc" id="L152">        model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L153">        model.addAttribute(&quot;subscription&quot;, billingService.findByCompanyEmail(user.getEmail()));</span>
+<span class="fc" id="L154">        return &quot;jobs/subscribe&quot;;</span>
     }
 
     @PostMapping(&quot;/divulgar/assinar/checkout&quot;)
     public String subscribeCheckout(Authentication authentication,
                                     HttpServletRequest request,
                                     RedirectAttributes redirectAttributes) {
-<span class="nc" id="L161">        AppUser user = currentUser(authentication);</span>
+<span class="fc" id="L161">        AppUser user = currentUser(authentication);</span>
         try {
-<span class="nc" id="L163">            BillingService.CheckoutResult result = billingService.createCheckoutSessionForUser(user);</span>
-<span class="nc" id="L164">            auditLogService.log(request, user, &quot;STRIPE_CHECKOUT_STARTED&quot;, &quot;SUBSCRIPTION&quot;,</span>
-<span class="nc" id="L165">                    result.subscription().getId(), &quot;Checkout de assinatura iniciado no Stripe.&quot;);</span>
-<span class="nc" id="L166">            return &quot;redirect:&quot; + result.checkoutUrl();</span>
-<span class="nc" id="L167">        } catch (IllegalStateException ex) {</span>
-<span class="nc" id="L168">            redirectAttributes.addFlashAttribute(&quot;billingError&quot;, ex.getMessage());</span>
-<span class="nc" id="L169">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+<span class="fc" id="L163">            BillingService.CheckoutResult result = billingService.createCheckoutSessionForUser(user);</span>
+<span class="fc" id="L164">            auditLogService.log(request, user, &quot;STRIPE_CHECKOUT_STARTED&quot;, &quot;SUBSCRIPTION&quot;,</span>
+<span class="fc" id="L165">                    result.subscription().getId(), &quot;Checkout de assinatura iniciado no Stripe.&quot;);</span>
+<span class="fc" id="L166">            return &quot;redirect:&quot; + result.checkoutUrl();</span>
+<span class="fc" id="L167">        } catch (IllegalStateException ex) {</span>
+<span class="fc" id="L168">            redirectAttributes.addFlashAttribute(&quot;billingError&quot;, ex.getMessage());</span>
+<span class="fc" id="L169">            return &quot;redirect:/divulgar/assinar&quot;;</span>
         }
     }
 
     @GetMapping(&quot;/divulgar/assinar/sucesso&quot;)
     public String subscriptionSuccess(Model model) {
-<span class="nc" id="L175">        model.addAttribute(&quot;billingMessage&quot;,</span>
+<span class="fc" id="L175">        model.addAttribute(&quot;billingMessage&quot;,</span>
                 &quot;Pagamento recebido. A assinatura será liberada assim que o webhook do Stripe confirmar a cobrança.&quot;);
-<span class="nc" id="L177">        return &quot;admin/billing-success&quot;;</span>
+<span class="fc" id="L177">        return &quot;admin/billing-success&quot;;</span>
     }
 
     @GetMapping(&quot;/divulgar/assinar/cancelado&quot;)
     public String subscriptionCanceled(Model model) {
-<span class="nc" id="L182">        model.addAttribute(&quot;billingMessage&quot;, &quot;Checkout cancelado. Nenhuma assinatura foi ativada.&quot;);</span>
-<span class="nc" id="L183">        return &quot;admin/billing-canceled&quot;;</span>
+<span class="fc" id="L182">        model.addAttribute(&quot;billingMessage&quot;, &quot;Checkout cancelado. Nenhuma assinatura foi ativada.&quot;);</span>
+<span class="fc" id="L183">        return &quot;admin/billing-canceled&quot;;</span>
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -190,8 +190,8 @@ public class PublicController {
     }
 
     private JobPostForm prefillForm(AppUser user) {
-<span class="nc" id="L193">        return new JobPostForm(</span>
-<span class="nc" id="L194">                &quot;&quot;, user.getName(), user.getEmail(),</span>
+<span class="fc" id="L193">        return new JobPostForm(</span>
+<span class="fc" id="L194">                &quot;&quot;, user.getName(), user.getEmail(),</span>
                 br.ufpb.dsc.jobhub.domain.JobLocationType.REMOTE, &quot;&quot;,
                 br.ufpb.dsc.jobhub.domain.Seniority.JUNIOR,
                 br.ufpb.dsc.jobhub.domain.ContractType.CLT,

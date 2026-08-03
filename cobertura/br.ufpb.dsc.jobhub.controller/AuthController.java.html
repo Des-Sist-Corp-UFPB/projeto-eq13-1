@@ -91,8 +91,8 @@ public class AuthController {
     @GetMapping(&quot;/minha-conta&quot;)
     public String profile(Authentication authentication, Model model) {
 <span class="fc" id="L93">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L95">            return &quot;redirect:/login?error&quot;;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L95">            return &quot;redirect:/login?error&quot;;</span>
         }
 <span class="fc" id="L97">        return profileView(user, model);</span>
     }
@@ -107,11 +107,11 @@ public class AuthController {
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
 <span class="fc" id="L109">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L111">            return &quot;redirect:/login?error&quot;;</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L111">            return &quot;redirect:/login?error&quot;;</span>
         }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
-<span class="nc" id="L114">            return profileView(user, model);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L114">            return profileView(user, model);</span>
         }
         try {
 <span class="fc" id="L117">            ProfileUpdateResult result = profileService.update(user, form, photo, resume);</span>
@@ -141,13 +141,13 @@ public class AuthController {
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
 <span class="fc" id="L143">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L145">            return &quot;redirect:/login?error&quot;;</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L145">            return &quot;redirect:/login?error&quot;;</span>
         }
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
-<span class="nc" id="L148">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
-<span class="nc" id="L149">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
-<span class="nc" id="L150">            return profileView(user, model);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L148">            model.addAttribute(&quot;profileForm&quot;, new ProfileUpdateForm(user.getName(), user.getBiography()));</span>
+<span class="fc" id="L149">            model.addAttribute(&quot;experienceHasErrors&quot;, true);</span>
+<span class="fc" id="L150">            return profileView(user, model);</span>
         }
         try {
 <span class="fc" id="L153">            var experience = profileService.addExperience(user, form);</span>
@@ -167,8 +167,8 @@ public class AuthController {
     public String removeExperience(@PathVariable Long id, Authentication authentication,
                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
 <span class="fc" id="L169">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L171">            return &quot;redirect:/login?error&quot;;</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L171">            return &quot;redirect:/login?error&quot;;</span>
         }
 <span class="fc" id="L173">        var experience = profileService.removeExperience(user, id);</span>
 <span class="fc" id="L174">        auditLogService.log(request, user, &quot;PROFILE_EXPERIENCE_REMOVED&quot;, &quot;CANDIDATE_EXPERIENCE&quot;,</span>
@@ -181,8 +181,8 @@ public class AuthController {
     public ResponseEntity&lt;Void&gt; changeTheme(@RequestParam String theme, Authentication authentication,
                                             HttpServletRequest request) {
 <span class="fc" id="L183">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L185">            return ResponseEntity.status(401).build();</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L185">            return ResponseEntity.status(401).build();</span>
         }
         ThemePreference preference;
         try {
@@ -203,8 +203,8 @@ public class AuthController {
                                   HttpServletRequest request,
                                   RedirectAttributes redirectAttributes) {
 <span class="fc" id="L205">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L207">            return &quot;redirect:/login?error&quot;;</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L207">            return &quot;redirect:/login?error&quot;;</span>
         }
 <span class="fc" id="L209">        redirectAttributes.addFlashAttribute(&quot;aiQuestion&quot;, form.question());</span>
 <span class="fc bfc" id="L210" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
@@ -226,8 +226,8 @@ public class AuthController {
     @GetMapping(&quot;/minha-conta/foto&quot;)
     public ResponseEntity&lt;byte[]&gt; photo(Authentication authentication) {
 <span class="fc" id="L228">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L230">            return ResponseEntity.status(401).build();</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L230">            return ResponseEntity.status(401).build();</span>
         }
 <span class="pc bpc" id="L232" title="1 of 4 branches missed.">        if (user.getPhotoContent() == null || user.getPhotoContentType() == null) {</span>
 <span class="fc" id="L233">            return ResponseEntity.notFound().build();</span>
@@ -241,8 +241,8 @@ public class AuthController {
     @GetMapping(&quot;/minha-conta/curriculo&quot;)
     public ResponseEntity&lt;byte[]&gt; resume(Authentication authentication) {
 <span class="fc" id="L243">        AppUser user = currentUser(authentication);</span>
-<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L245">            return ResponseEntity.status(401).build();</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L245">            return ResponseEntity.status(401).build();</span>
         }
 <span class="fc bfc" id="L247" title="All 2 branches covered.">        if (user.getResumeContent() == null) {</span>
 <span class="fc" id="L248">            return ResponseEntity.notFound().build();</span>

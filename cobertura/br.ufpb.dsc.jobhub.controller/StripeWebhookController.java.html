@@ -25,10 +25,10 @@ public class StripeWebhookController {
                                                        @RequestHeader(value = &quot;Stripe-Signature&quot;, required = false)
                                                        String signature) {
         try {
-<span class="nc" id="L28">            stripeWebhookService.handle(payload, signature);</span>
-<span class="nc" id="L29">            return ResponseEntity.ok(Map.of(&quot;status&quot;, &quot;processed&quot;));</span>
-<span class="nc" id="L30">        } catch (IllegalArgumentException ex) {</span>
-<span class="nc" id="L31">            return ResponseEntity.badRequest().body(Map.of(&quot;status&quot;, &quot;invalid&quot;));</span>
+<span class="fc" id="L28">            stripeWebhookService.handle(payload, signature);</span>
+<span class="fc" id="L29">            return ResponseEntity.ok(Map.of(&quot;status&quot;, &quot;processed&quot;));</span>
+<span class="fc" id="L30">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L31">            return ResponseEntity.badRequest().body(Map.of(&quot;status&quot;, &quot;invalid&quot;));</span>
 <span class="fc" id="L32">        } catch (IllegalStateException ex) {</span>
 <span class="fc" id="L33">            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)</span>
 <span class="fc" id="L34">                    .body(Map.of(&quot;status&quot;, &quot;not_configured&quot;));</span>

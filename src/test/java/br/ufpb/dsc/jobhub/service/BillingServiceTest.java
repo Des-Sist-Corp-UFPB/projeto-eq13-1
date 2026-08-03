@@ -2,6 +2,9 @@ package br.ufpb.dsc.jobhub.service;
 
 import br.ufpb.dsc.jobhub.domain.Subscription;
 import br.ufpb.dsc.jobhub.domain.SubscriptionStatus;
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.AuthProvider;
+import br.ufpb.dsc.jobhub.domain.UserRole;
 import br.ufpb.dsc.jobhub.repository.SubscriptionRepository;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -178,6 +181,29 @@ class BillingServiceTest {
             assertThat(result.subscription().getStatus()).isEqualTo(SubscriptionStatus.PENDING);
             assertThat(result.subscription().getExternalReference()).isEqualTo("cs_test_new");
             sessions.verify(() -> Session.create(any(SessionCreateParams.class)));
+        }
+    }
+
+    @Test
+    void createsCheckoutForAuthenticatedUserIdentity() throws Exception {
+        Session stripeSession = mock(Session.class);
+        BillingService service = serviceWithStripeConfig();
+        AppUser user = new AppUser("Pessoa Empresa", "empresa.user@example.com", "empresa.user",
+                "hash", UserRole.ROLE_USER, AuthProvider.LOCAL);
+        when(subscriptionRepository.findByCompanyEmailIgnoreCase("empresa.user@example.com"))
+                .thenReturn(Optional.empty());
+        when(subscriptionRepository.save(any(Subscription.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(stripeSession.getUrl()).thenReturn("https://checkout.stripe.test/user");
+        when(stripeSession.getId()).thenReturn("cs_user");
+
+        try (MockedStatic<Session> sessions = mockStatic(Session.class)) {
+            sessions.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(stripeSession);
+
+            BillingService.CheckoutResult result = service.createCheckoutSessionForUser(user);
+
+            assertThat(result.subscription().getCompany()).isEqualTo("Pessoa Empresa");
+            assertThat(result.subscription().getCompanyEmail()).isEqualTo("empresa.user@example.com");
         }
     }
 

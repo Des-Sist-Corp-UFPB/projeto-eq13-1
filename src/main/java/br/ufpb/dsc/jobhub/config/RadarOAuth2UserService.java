@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,13 +20,21 @@ import java.util.Map;
 @Service
 public class RadarOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate;
     private final UserService userService;
     private final AuditLogService auditLogService;
 
+    @Autowired
     public RadarOAuth2UserService(UserService userService, AuditLogService auditLogService) {
+        this(userService, auditLogService, new DefaultOAuth2UserService());
+    }
+
+    RadarOAuth2UserService(UserService userService,
+                           AuditLogService auditLogService,
+                           OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate) {
         this.userService = userService;
         this.auditLogService = auditLogService;
+        this.delegate = delegate;
     }
 
     @Override

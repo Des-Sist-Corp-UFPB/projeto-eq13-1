@@ -22,12 +22,12 @@ public class AuditOAuth2SuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
-<span class="nc" id="L25">        auditLogService.log(request, authentication, &quot;GOOGLE_LOGIN_SUCCESS&quot;, &quot;AUTH&quot;, null, &quot;Login via Google OAuth2 realizado com sucesso.&quot;);</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        response.sendRedirect(hasRole(authentication, &quot;ROLE_ADMIN&quot;) ? &quot;/admin&quot; : &quot;/minha-conta&quot;);</span>
-<span class="nc" id="L27">    }</span>
+<span class="fc" id="L25">        auditLogService.log(request, authentication, &quot;GOOGLE_LOGIN_SUCCESS&quot;, &quot;AUTH&quot;, null, &quot;Login via Google OAuth2 realizado com sucesso.&quot;);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        response.sendRedirect(hasRole(authentication, &quot;ROLE_ADMIN&quot;) ? &quot;/admin&quot; : &quot;/minha-conta&quot;);</span>
+<span class="fc" id="L27">    }</span>
 
     private boolean hasRole(Authentication authentication, String role) {
-<span class="nc" id="L30">        return authentication.getAuthorities().stream().anyMatch(authority -&gt; authority.getAuthority().equals(role));</span>
+<span class="fc" id="L30">        return authentication.getAuthorities().stream().anyMatch(authority -&gt; authority.getAuthority().equals(role));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

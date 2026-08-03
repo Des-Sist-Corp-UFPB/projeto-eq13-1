@@ -105,8 +105,8 @@ public class CandidateProfileService {
 <span class="fc bfc" id="L105" title="All 2 branches covered.">        if (!&quot;application/pdf&quot;.equals(normalizeContentType(resume.getContentType()))) {</span>
 <span class="fc" id="L106">            throw new IllegalArgumentException(&quot;O currículo deve estar em formato PDF.&quot;);</span>
         }
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        if (resume.getSize() &gt; MAX_RESUME_SIZE) {</span>
-<span class="nc" id="L109">            throw new IllegalArgumentException(&quot;O currículo deve ter no máximo 5 MB.&quot;);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (resume.getSize() &gt; MAX_RESUME_SIZE) {</span>
+<span class="fc" id="L109">            throw new IllegalArgumentException(&quot;O currículo deve ter no máximo 5 MB.&quot;);</span>
         }
 <span class="fc" id="L111">        byte[] content = bytes(resume, &quot;Não foi possível processar o currículo.&quot;);</span>
 <span class="pc bpc" id="L112" title="1 of 4 branches missed.">        if (content.length &lt; 5 || !new String(content, 0, 5, StandardCharsets.US_ASCII).equals(&quot;%PDF-&quot;)) {</span>
@@ -125,37 +125,38 @@ public class CandidateProfileService {
     }
 
     private boolean matchesImageSignature(byte[] content, String contentType) {
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        if (content.length &lt; 12) {</span>
-<span class="nc" id="L129">            return false;</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (content.length &lt; 12) {</span>
+<span class="fc" id="L129">            return false;</span>
         }
-<span class="pc bpc" id="L131" title="3 of 4 branches missed.">        return switch (contentType) {</span>
-<span class="nc bnc" id="L132" title="All 4 branches missed.">            case &quot;image/jpeg&quot; -&gt; content[0] == (byte) 0xFF &amp;&amp; content[1] == (byte) 0xD8;</span>
-<span class="pc bpc" id="L133" title="3 of 8 branches missed.">            case &quot;image/png&quot; -&gt; content[0] == (byte) 0x89 &amp;&amp; content[1] == 0x50</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (&quot;image/jpeg&quot;.equals(contentType)) {</span>
+<span class="pc bpc" id="L132" title="2 of 4 branches missed.">            return content[0] == (byte) 0xFF &amp;&amp; content[1] == (byte) 0xD8;</span>
+        }
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (&quot;image/png&quot;.equals(contentType)) {</span>
+<span class="pc bpc" id="L135" title="3 of 8 branches missed.">            return content[0] == (byte) 0x89 &amp;&amp; content[1] == 0x50</span>
                     &amp;&amp; content[2] == 0x4E &amp;&amp; content[3] == 0x47;
-<span class="nc bnc" id="L135" title="All 4 branches missed.">            case &quot;image/webp&quot; -&gt; ascii(content, 0, 4).equals(&quot;RIFF&quot;) &amp;&amp; ascii(content, 8, 4).equals(&quot;WEBP&quot;);</span>
-<span class="nc" id="L136">            default -&gt; false;</span>
-        };
+        }
+<span class="pc bpc" id="L138" title="2 of 4 branches missed.">        return ascii(content, 0, 4).equals(&quot;RIFF&quot;) &amp;&amp; ascii(content, 8, 4).equals(&quot;WEBP&quot;);</span>
     }
 
     private String ascii(byte[] content, int offset, int length) {
-<span class="nc" id="L141">        return new String(content, offset, length, StandardCharsets.US_ASCII);</span>
+<span class="fc" id="L142">        return new String(content, offset, length, StandardCharsets.US_ASCII);</span>
     }
 
     private String safeFileName(String originalFileName) {
-<span class="pc bpc" id="L145" title="2 of 4 branches missed.">        if (originalFileName == null || originalFileName.isBlank()) {</span>
-<span class="nc" id="L146">            return &quot;curriculo.pdf&quot;;</span>
+<span class="pc bpc" id="L146" title="1 of 4 branches missed.">        if (originalFileName == null || originalFileName.isBlank()) {</span>
+<span class="fc" id="L147">            return &quot;curriculo.pdf&quot;;</span>
         }
-<span class="fc" id="L148">        String normalized = originalFileName.replace('\\', '/');</span>
-<span class="fc" id="L149">        String fileName = normalized.substring(normalized.lastIndexOf('/') + 1).trim();</span>
-<span class="fc bfc" id="L150" title="All 2 branches covered.">        return fileName.toLowerCase(Locale.ROOT).endsWith(&quot;.pdf&quot;) ? fileName : fileName + &quot;.pdf&quot;;</span>
+<span class="fc" id="L149">        String normalized = originalFileName.replace('\\', '/');</span>
+<span class="fc" id="L150">        String fileName = normalized.substring(normalized.lastIndexOf('/') + 1).trim();</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        return fileName.toLowerCase(Locale.ROOT).endsWith(&quot;.pdf&quot;) ? fileName : fileName + &quot;.pdf&quot;;</span>
     }
 
     private String normalizeContentType(String contentType) {
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        return contentType == null ? &quot;&quot; : contentType.toLowerCase(Locale.ROOT).trim();</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        return contentType == null ? &quot;&quot; : contentType.toLowerCase(Locale.ROOT).trim();</span>
     }
 
     private String trimToNull(String value) {
-<span class="fc bfc" id="L158" title="All 4 branches covered.">        return value == null || value.isBlank() ? null : value.trim();</span>
+<span class="fc bfc" id="L159" title="All 4 branches covered.">        return value == null || value.isBlank() ? null : value.trim();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

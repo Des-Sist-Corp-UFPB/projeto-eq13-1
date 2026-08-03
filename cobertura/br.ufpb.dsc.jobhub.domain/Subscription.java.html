@@ -62,11 +62,11 @@ public class Subscription {
 
     @PreUpdate
     void onUpdate() {
-<span class="nc" id="L65">        updatedAt = Instant.now();</span>
-<span class="nc" id="L66">    }</span>
+<span class="fc" id="L65">        updatedAt = Instant.now();</span>
+<span class="fc" id="L66">    }</span>
 
     public boolean isActive() {
-<span class="pc bpc" id="L69" title="2 of 6 branches missed.">        return status == SubscriptionStatus.ACTIVE &amp;&amp; (validUntil == null || validUntil.isAfter(Instant.now()));</span>
+<span class="fc bfc" id="L69" title="All 6 branches covered.">        return status == SubscriptionStatus.ACTIVE &amp;&amp; (validUntil == null || validUntil.isAfter(Instant.now()));</span>
     }
 
     public void activate(Instant validUntil, String externalReference) {
@@ -110,11 +110,11 @@ public class Subscription {
     }
 
     public Instant getCreatedAt() {
-<span class="nc" id="L113">        return createdAt;</span>
+<span class="fc" id="L113">        return createdAt;</span>
     }
 
     public Instant getUpdatedAt() {
-<span class="nc" id="L117">        return updatedAt;</span>
+<span class="fc" id="L117">        return updatedAt;</span>
     }
 
     public Instant getValidUntil() {

@@ -91,6 +91,44 @@ class CandidateProfileServiceTest {
     }
 
     @Test
+    void rejectsShortPhotoAndOversizedResume() {
+        var shortPhoto = new MockMultipartFile("photo", "foto.webp", "image/webp", "RIFF".getBytes());
+        assertThatThrownBy(() -> service.update(user, new ProfileUpdateForm("Pessoa", null), shortPhoto, null))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        var largeResume = new MockMultipartFile("resume", "curriculo.pdf", "application/pdf",
+                new byte[(int) CandidateProfileService.MAX_RESUME_SIZE + 1]);
+        assertThatThrownBy(() -> service.update(user, new ProfileUpdateForm("Pessoa", null), null, largeResume))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("5 MB");
+    }
+
+    @Test
+    void acceptsWebpAndUsesSafeDefaultResumeName() {
+        byte[] webp = new byte[]{'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'E', 'B', 'P'};
+        var photo = new MockMultipartFile("photo", "foto.webp", "image/webp", webp);
+        var resume = new MockMultipartFile("resume", null, "application/pdf", "%PDF-1.7".getBytes());
+
+        var result = service.update(user, new ProfileUpdateForm("Pessoa", null), photo, resume);
+
+        assertThat(result.photoUpdated()).isTrue();
+        assertThat(result.resumeUpdated()).isTrue();
+        assertThat(user.getPhotoContentType()).isEqualTo("image/webp");
+        assertThat(user.getResumeFileName()).isEqualTo("curriculo.pdf");
+    }
+
+    @Test
+    void acceptsJpegByItsBinarySignature() {
+        byte[] jpeg = new byte[]{(byte) 0xFF, (byte) 0xD8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        var photo = new MockMultipartFile("photo", "foto.jpg", "image/jpeg", jpeg);
+
+        var result = service.update(user, new ProfileUpdateForm("Pessoa", null), photo, null);
+
+        assertThat(result.photoUpdated()).isTrue();
+        assertThat(user.getPhotoContentType()).isEqualTo("image/jpeg");
+    }
+
+    @Test
     void wrapsFileReadFailuresAsValidationErrors() throws IOException {
         MultipartFile photo = mock(MultipartFile.class);
         when(photo.isEmpty()).thenReturn(false);
