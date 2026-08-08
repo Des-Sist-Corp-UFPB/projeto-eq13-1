@@ -1,0 +1,239 @@
+{
+    "metrics": {
+        "data_received": {
+            "count": 44611005,
+            "rate": 405006.5467275045
+        },
+        "vus_max": {
+            "max": 10,
+            "value": 10,
+            "min": 10
+        },
+        "http_req_duration": {
+            "avg": 2.734782218934904,
+            "min": 0,
+            "med": 2.0132,
+            "max": 270.0352,
+            "p(90)": 5.816350000000002,
+            "p(95)": 7.256125,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 6760,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_sending": {
+            "med": 0,
+            "max": 2.0185,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.005969186390532544,
+            "min": 0
+        },
+        "group_duration": {
+            "p(95)": 7.68751,
+            "avg": 3.2052017413355913,
+            "min": 0,
+            "med": 2.6585,
+            "max": 270.0352,
+            "p(90)": 6.135700000000002
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 2.734782218934904,
+            "min": 0,
+            "med": 2.0132,
+            "max": 270.0352,
+            "p(90)": 5.816350000000002,
+            "p(95)": 7.256125
+        },
+        "http_req_connecting": {
+            "max": 4.0125,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.00420430473372781,
+            "min": 0,
+            "med": 0
+        },
+        "iteration_duration": {
+            "avg": 1023.2752517159764,
+            "min": 1011.2749,
+            "med": 1020.7745,
+            "max": 1503.8234,
+            "p(90)": 1032.56958,
+            "p(95)": 1037.66372
+        },
+        "http_req_blocked": {
+            "avg": 0.008053032544378698,
+            "min": 0,
+            "med": 0,
+            "max": 8.1526,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "rate": 7.671437394982277,
+            "count": 845
+        },
+        "data_sent": {
+            "count": 832325,
+            "rate": 7556.365834057543
+        },
+        "http_reqs": {
+            "count": 6760,
+            "rate": 61.37149915985822
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 10
+        },
+        "checks": {
+            "passes": 5915,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_waiting": {
+            "p(95)": 6.80797999999998,
+            "avg": 2.5464279437869792,
+            "min": 0,
+            "med": 1.8108,
+            "max": 262.4808,
+            "p(90)": 5.499150000000001
+        },
+        "http_req_receiving": {
+            "med": 0,
+            "max": 12.2309,
+            "p(90)": 0.5944,
+            "p(95)": 0.7382649999999991,
+            "avg": 0.18238508875739606,
+            "min": 0
+        }
+    },
+    "root_group": {
+        "checks": {},
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+                "healthcheck": {
+                    "name": "healthcheck",
+                    "path": "::healthcheck",
+                    "id": "0dddbdf87b5e7e91cdb57578e8d7118f",
+                    "groups": {},
+                    "checks": {
+                            "ping status 200": {
+                                "passes": 845,
+                                "fails": 0,
+                                "name": "ping status 200",
+                                "path": "::healthcheck::ping status 200",
+                                "id": "195537b4363f131fb0152aa4c14e7594"
+                            }
+                        }
+                },
+                "pagina-inicial": {
+                    "path": "::pagina-inicial",
+                    "id": "a85db48c41ab6934faa074101295640e",
+                    "groups": {},
+                    "checks": {
+                            "home status 200": {
+                                "name": "home status 200",
+                                "path": "::pagina-inicial::home status 200",
+                                "id": "39df09257e237e8ac0b0fea9c3f98d53",
+                                "passes": 845,
+                                "fails": 0
+                            }
+                        },
+                    "name": "pagina-inicial"
+                },
+                "listagem-vagas": {
+                    "groups": {},
+                    "checks": {
+                            "vagas status 200": {
+                                "name": "vagas status 200",
+                                "path": "::listagem-vagas::vagas status 200",
+                                "id": "a764db24b98ad14b33b13500d9c4b564",
+                                "passes": 845,
+                                "fails": 0
+                            }
+                        },
+                    "name": "listagem-vagas",
+                    "path": "::listagem-vagas",
+                    "id": "f2c11060f83f28681c857517cf2582d7"
+                },
+                "busca-vagas": {
+                    "checks": {
+                        "busca status 200": {
+                            "name": "busca status 200",
+                            "path": "::busca-vagas::busca status 200",
+                            "id": "2e02fc4e21031200df3ff4d54fb5614c",
+                            "passes": 845,
+                            "fails": 0
+                        }
+                    },
+                    "name": "busca-vagas",
+                    "path": "::busca-vagas",
+                    "id": "e4be023680a8bc854965bcaeb2f8c1ea",
+                    "groups": {}
+                },
+                "login-page": {
+                    "checks": {
+                        "login status 200": {
+                            "id": "1eb9a2026aabd3d25bd4a51f71a26e6b",
+                            "passes": 845,
+                            "fails": 0,
+                            "name": "login status 200",
+                            "path": "::login-page::login status 200"
+                        }
+                    },
+                    "name": "login-page",
+                    "path": "::login-page",
+                    "id": "e3f667f2b48985c9d3fc8937be3441ab",
+                    "groups": {}
+                },
+                "cadastro-page": {
+                    "id": "53783e5545efa563c6674aad0723566f",
+                    "groups": {},
+                    "checks": {
+                            "cadastro status 200": {
+                                "name": "cadastro status 200",
+                                "path": "::cadastro-page::cadastro status 200",
+                                "id": "79940059ffaedd93faa861286512f090",
+                                "passes": 845,
+                                "fails": 0
+                            }
+                        },
+                    "name": "cadastro-page",
+                    "path": "::cadastro-page"
+                },
+                "divulgar-page": {
+                    "id": "e9190105437b9c356de240d309bb3d68",
+                    "groups": {},
+                    "checks": {
+                            "divulgar status 200": {
+                                "name": "divulgar status 200",
+                                "path": "::divulgar-page::divulgar status 200",
+                                "id": "cdf06bfef7373e8c6b44662302188b47",
+                                "passes": 845,
+                                "fails": 0
+                            }
+                        },
+                    "name": "divulgar-page",
+                    "path": "::divulgar-page"
+                }
+            }
+    }
+}
