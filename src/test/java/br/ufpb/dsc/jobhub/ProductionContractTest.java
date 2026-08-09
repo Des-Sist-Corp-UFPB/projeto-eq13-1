@@ -57,6 +57,9 @@ class ProductionContractTest {
                 .contains("radartech-hero-office.webp")
                 .contains("[data-theme=\"dark\"] .hero")
                 .contains(".hero-search-field select option")
+                .contains("width: min(780px, calc(100vw - 48px))")
+                .contains(".hero-search-field:first-of-type")
+                .contains(".hero-search-field:nth-of-type(2)")
                 .contains("#c3d1dc")
                 .contains("@media (max-width: 767px)");
         assertThat(jobDetail)
