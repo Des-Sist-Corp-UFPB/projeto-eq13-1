@@ -84,12 +84,6 @@ textarea:focus-visible,
 html[data-theme="dark"] .theme-logo-light { display: none; }
 html[data-theme="dark"] .theme-logo-dark { display: block; }
 
-@media (prefers-color-scheme: dark) {
-    html[data-theme="system"] .theme-logo-light { display: none; }
-    html[data-theme="system"] .theme-logo-dark { display: block; }
-}
-
-.theme-icon-light, .theme-icon-dark, .theme-icon-system { display: none; }
+.theme-icon-light, .theme-icon-dark { display: none; }
 html[data-theme="light"] .theme-icon-light { display: block; }
 html[data-theme="dark"] .theme-icon-dark { display: block; }
-html[data-theme="system"] .theme-icon-system { display: block; }

@@ -39,7 +39,10 @@ class ProductionContractTest {
                 .contains("/css/app.css")
                 .contains("type=\"module\"")
                 .contains("umami.dsc.rodrigor.com/script.js")
-                .contains("data-theme-choice=\"system\"")
+                .contains("class=\"theme-toggle\"")
+                .contains("theme-icon-light")
+                .contains("theme-icon-dark")
+                .doesNotContain("data-theme-choice", "theme-menu-panel", "theme-icon-system", "Automático")
                 .doesNotContain("RadarTech PB", "JobHub PB");
         assertThat(home)
                 .contains("name=\"q\"")
@@ -53,6 +56,13 @@ class ProductionContractTest {
                 .contains("@import url('./tokens.css')")
                 .contains("@import url('./pages/home.css')")
                 .contains("@import url('./pages/admin.css')");
+
+        String themeJs = Files.readString(resources.resolve(Path.of("static", "js", "modules", "theme.js")));
+        assertThat(themeJs)
+                .contains("nextTheme")
+                .contains("Ativar tema claro")
+                .contains("Ativar tema escuro")
+                .doesNotContain("theme-menu-panel", "data-theme-choice", "Tema automático");
 
         List<Path> templates;
         try (var paths = Files.walk(resources.resolve("templates"))) {

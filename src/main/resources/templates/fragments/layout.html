@@ -14,7 +14,7 @@
         (() => {
             const root = document.documentElement;
             if (root.dataset.authenticated !== 'true') {
-                root.dataset.theme = localStorage.getItem('radartech-theme') || root.dataset.theme || 'light';
+                root.dataset.theme = localStorage.getItem('radartech-theme') === 'dark' ? 'dark' : 'light';
             }
         })();
     </script>
@@ -50,29 +50,12 @@
             </nav>
 
             <div class="site-nav-actions" id="site-nav-actions">
-                <div class="dropdown" id="theme-menu">
-                    <button type="button" id="theme-toggle" class="btn-icon-only" aria-haspopup="true" aria-expanded="false" aria-controls="theme-menu-panel" title="Alterar tema"
-                            th:attr="data-save-url=${viewer != null ? '/minha-conta/tema' : null}">
-                        <svg class="icon theme-icon-system" aria-hidden="true"><use href="/images/icons.svg#icon-monitor"></use></svg>
-                        <svg class="icon theme-icon-light" aria-hidden="true"><use href="/images/icons.svg#icon-sun"></use></svg>
-                        <svg class="icon theme-icon-dark" aria-hidden="true"><use href="/images/icons.svg#icon-moon"></use></svg>
-                        <span class="sr-only">Alterar tema</span>
-                    </button>
-                    <div class="dropdown-panel" id="theme-menu-panel" role="menu">
-                        <button type="button" role="menuitem" data-theme-choice="system">
-                            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-monitor"></use></svg>
-                            <span>Automático</span>
-                        </button>
-                        <button type="button" role="menuitem" data-theme-choice="light">
-                            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-sun"></use></svg>
-                            <span>Claro</span>
-                        </button>
-                        <button type="button" role="menuitem" data-theme-choice="dark">
-                            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-moon"></use></svg>
-                            <span>Escuro</span>
-                        </button>
-                    </div>
-                </div>
+                <button type="button" id="theme-toggle" class="theme-toggle" title="Ativar tema escuro"
+                        th:attr="data-save-url=${viewer != null ? '/minha-conta/tema' : null}">
+                    <svg class="icon theme-icon-light" aria-hidden="true"><use href="/images/icons.svg#icon-sun"></use></svg>
+                    <svg class="icon theme-icon-dark" aria-hidden="true"><use href="/images/icons.svg#icon-moon"></use></svg>
+                    <span class="sr-only">Ativar tema escuro</span>
+                </button>
 
                 <div class="u-hide-mobile u-flex u-items-center u-gap-3">
                     <a th:if="${viewer == null}" class="btn btn-ghost" th:href="@{/login}">Entrar</a>
