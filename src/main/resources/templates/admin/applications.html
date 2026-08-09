@@ -1,26 +1,38 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: shell('Candidaturas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
-<main class="section container">
+<html th:replace="~{fragments/layout :: shell('Candidaturas', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="container admin-shell">
     <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+
     <div class="page-header">
-        <div><h1>Candidaturas</h1><p class="muted">Pessoas interessadas nas vagas publicadas.</p></div>
+        <div>
+            <h1>Candidaturas</h1>
+            <p class="u-muted">Pessoas interessadas nas vagas publicadas.</p>
+        </div>
     </div>
-    <section class="table-panel">
-        <table>
+
+    <div class="table-wrap">
+        <table class="data-table">
             <thead>
             <tr><th>Candidato</th><th>Conta</th><th>Vaga</th><th>Contato</th><th>Mensagem</th></tr>
             </thead>
             <tbody>
             <tr th:each="candidateApplication : ${applications}">
-                <td><strong th:text="${candidateApplication.applicantName}">Nome</strong><br><span class="muted" th:text="${#temporals.format(candidateApplication.createdAt, 'dd/MM/yyyy HH:mm')}">Data</span></td>
+                <td>
+                    <strong th:text="${candidateApplication.applicantName}">Nome</strong><br>
+                    <span class="u-muted u-text-small" th:text="${#temporals.format(candidateApplication.createdAt, 'dd/MM/yyyy HH:mm')}">Data</span>
+                </td>
                 <td th:text="${candidateApplication.applicantUser != null ? candidateApplication.applicantUser.email : 'Visitante'}">Conta</td>
                 <td th:text="${candidateApplication.job.title}">Vaga</td>
-                <td><a th:href="|mailto:${candidateApplication.applicantEmail}|" th:text="${candidateApplication.applicantEmail}">email</a><br><a th:if="${candidateApplication.linkedinUrl != null && !candidateApplication.linkedinUrl.isBlank()}" th:href="${candidateApplication.linkedinUrl}" target="_blank" rel="noopener">Perfil</a></td>
+                <td>
+                    <a th:href="|mailto:${candidateApplication.applicantEmail}|" th:text="${candidateApplication.applicantEmail}">email</a><br>
+                    <a th:if="${candidateApplication.linkedinUrl != null && !candidateApplication.linkedinUrl.isBlank()}" th:href="${candidateApplication.linkedinUrl}" target="_blank" rel="noopener">Perfil</a>
+                </td>
                 <td th:text="${candidateApplication.message}">Mensagem</td>
             </tr>
             </tbody>
         </table>
-    </section>
-</main>
+    </div>
+    <div th:if="${#lists.isEmpty(applications)}" class="u-mt-6"
+         th:replace="~{fragments/empty-state :: state('file-text', 'Nenhuma candidatura recebida ainda.', 'Quando alguém se candidatar a uma vaga interna, ela aparecerá aqui.')}"></div>
+</div>
 </html>
-

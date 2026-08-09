@@ -1,7 +1,27 @@
-<nav class="admin-nav" th:fragment="adminNav" aria-label="Navegação administrativa" xmlns:th="http://www.thymeleaf.org">
-    <a th:href="@{/admin}">Dashboard</a>
-    <a th:href="@{/admin/vagas}">Vagas</a>
-    <a th:href="@{/admin/candidaturas}">Candidaturas</a>
-    <a th:href="@{/admin/auditoria}">Auditoria</a>
-    <a th:href="@{/admin/usuarios}">Usuários</a>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="admin-nav" th:fragment="adminNav" aria-label="Navegação administrativa">
+    <a th:href="@{/admin}">
+        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-chart"></use></svg>
+        <span>Dashboard</span>
+    </a>
+    <a th:href="@{/admin/vagas}">
+        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-briefcase"></use></svg>
+        <span>Vagas</span>
+    </a>
+    <a th:href="@{/admin/candidaturas}">
+        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-file-text"></use></svg>
+        <span>Candidaturas</span>
+    </a>
+    <a th:href="@{/admin/auditoria}">
+        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-shield"></use></svg>
+        <span>Auditoria</span>
+    </a>
+    <a th:href="@{/admin/usuarios}">
+        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-user"></use></svg>
+        <span>Usuários</span>
+    </a>
 </nav>
+</body>
+</html>

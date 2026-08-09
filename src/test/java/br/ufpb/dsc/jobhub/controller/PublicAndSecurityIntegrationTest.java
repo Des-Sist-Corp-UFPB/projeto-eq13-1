@@ -56,7 +56,7 @@ class PublicAndSecurityIntegrationTest {
             JobPosting job = new JobPosting(
                     "Pessoa Desenvolvedora Full Stack Junior",
                     "Zenvia",
-                    "curadoria@radartechpb.dev",
+                    "curadoria@radartech.dev",
                     JobLocationType.REMOTE,
                     null,
                     Seniority.JUNIOR,
@@ -208,21 +208,21 @@ class PublicAndSecurityIntegrationTest {
 
     @Test
     void invalidPublicJobSubmissionReturnsForm() throws Exception {
-        userRepository.save(new br.ufpb.dsc.jobhub.domain.AppUser("Suporte PB", "rh@suportepb.com", "suportepb", "senha", br.ufpb.dsc.jobhub.domain.UserRole.ROLE_USER, br.ufpb.dsc.jobhub.domain.AuthProvider.LOCAL));
-        billingService.startMonthlySubscription("Suporte PB", "rh@suportepb.com");
+        userRepository.save(new br.ufpb.dsc.jobhub.domain.AppUser("Suporte Tech", "rh@suportetech.com", "suportetech", "senha", br.ufpb.dsc.jobhub.domain.UserRole.ROLE_USER, br.ufpb.dsc.jobhub.domain.AuthProvider.LOCAL));
+        billingService.startMonthlySubscription("Suporte Tech", "rh@suportetech.com");
 
         mockMvc.perform(post("/divulgar")
-                        .with(user("rh@suportepb.com").roles("USER"))
+                        .with(user("rh@suportetech.com").roles("USER"))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("jobs/post"));
 
         mockMvc.perform(post("/divulgar")
-                        .with(user("rh@suportepb.com").roles("USER"))
+                        .with(user("rh@suportetech.com").roles("USER"))
                         .with(csrf())
                         .param("title", "Estagio em Suporte")
-                        .param("company", "Suporte PB")
-                        .param("companyEmail", "rh@suportepb.com")
+                        .param("company", "Suporte Tech")
+                        .param("companyEmail", "rh@suportetech.com")
                         .param("locationType", "HYBRID_PB")
                         .param("seniority", "INTERNSHIP")
                         .param("contractType", "INTERNSHIP")
@@ -303,7 +303,7 @@ class PublicAndSecurityIntegrationTest {
         mockMvc.perform(post("/admin/vagas/nova")
                         .with(csrf())
                         .param("title", "Analista Junior")
-                        .param("company", "Admin PB")
+                        .param("company", "Admin Tech")
                         .param("companyEmail", "rh@adminpb.com")
                         .param("locationType", "PRESENTIAL_PB")
                         .param("city", "Joao Pessoa")
@@ -324,7 +324,7 @@ class PublicAndSecurityIntegrationTest {
         mockMvc.perform(post("/admin/vagas/nova")
                         .with(csrf())
                         .param("title", "Analista Hibrido")
-                        .param("company", "Admin PB")
+                        .param("company", "Admin Tech")
                         .param("companyEmail", "rh@adminpb.com")
                         .param("locationType", "HYBRID_PB")
                         .param("seniority", "JUNIOR")

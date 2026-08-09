@@ -1,55 +1,49 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: shell('Vagas', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
-<main class="section container">
+<html th:replace="~{fragments/layout :: shell('Vagas', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="container page-section">
     <div class="page-header">
         <div>
-            <span class="eyebrow">RadarTech PB</span>
+            <span class="eyebrow">Radar Tech</span>
             <h1>Vagas reais de TI</h1>
-            <p class="muted">Busque por cargo, empresa ou tecnologia. Remotas valem para todo o Brasil; híbridas e presenciais são focadas na Paraíba.</p>
+            <p class="u-muted">Busque por cargo, empresa ou tecnologia. Remotas valem para todo o Brasil; híbridas e presenciais são focadas na Paraíba.</p>
         </div>
-        <a class="btn primary" th:href="@{/divulgar}">Divulgar vaga</a>
+        <a class="btn btn-primary" th:href="@{/divulgar}">
+            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-plus"></use></svg>
+            <span>Divulgar vaga</span>
+        </a>
     </div>
 
-    <form class="filter-bar" th:action="@{/vagas}" method="get">
-        <input class="input" type="search" name="q" placeholder="Ex: Java, suporte, estágio, React..." th:value="${q}">
-        <select class="select" name="location">
+    <form class="filter-bar" th:action="@{/vagas}" method="get" role="search">
+        <label for="jobs-search-q" class="sr-only">Cargo, empresa ou tecnologia</label>
+        <div class="filter-search-field">
+            <input id="jobs-search-q" class="input" type="search" name="q" placeholder="Ex: Java, suporte, estágio, React..." th:value="${q}">
+            <button type="button" class="btn-icon-only filter-search-clear" data-search-clear="#jobs-search-q"
+                    aria-label="Limpar busca">
+                <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-close"></use></svg>
+            </button>
+        </div>
+        <label for="jobs-search-location" class="sr-only">Modelo de trabalho</label>
+        <select id="jobs-search-location" class="select" name="location">
             <option value="">Todos os modelos</option>
             <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:selected="${selectedLocation == type.name()}" th:text="${type.label}"></option>
         </select>
-        <button class="btn primary" type="submit">Filtrar</button>
-        <a class="btn ghost" th:if="${(q != null && !q.isBlank()) || (selectedLocation != null && !selectedLocation.isBlank())}" th:href="@{/vagas}">Limpar</a>
+        <button class="btn btn-primary" type="submit">
+            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-filter"></use></svg>
+            <span>Filtrar</span>
+        </button>
+        <a class="btn btn-ghost" th:if="${(q != null && !q.isBlank()) || (selectedLocation != null && !selectedLocation.isBlank())}" th:href="@{/vagas}">Limpar filtros</a>
     </form>
 
-    <div class="grid" th:if="${#lists.isEmpty(jobs)}">
-        <div class="panel empty-state">
-            <strong>Nenhuma vaga encontrada com esses filtros.</strong>
-            <p class="muted">Tente buscar por outra tecnologia, empresa ou modelo de trabalho.</p>
-            <a class="btn small" th:href="@{/vagas}">Ver todas</a>
-        </div>
-    </div>
+    <p class="jobs-count" th:unless="${#lists.isEmpty(jobs)}"
+       th:text="${#lists.size(jobs)} + (${#lists.size(jobs)} == 1 ? ' vaga encontrada' : ' vagas encontradas')">0 vagas encontradas</p>
 
-    <div class="grid two">
-        <article class="job-card" th:each="job : ${jobs}">
-            <div class="meta">
-                <span class="badge blue" th:text="${job.locationType.label}">Remota</span>
-                <span class="badge gray" th:text="${job.seniority.label}">Pleno</span>
-                <span class="badge green" th:text="${job.contractType.label}">CLT</span>
-            </div>
-            <h2 th:text="${job.title}">Título</h2>
-            <p class="company-line">
-                <strong th:text="${job.company}">Empresa</strong>
-                <span class="muted" th:if="${job.city != null && !job.city.isBlank()}" th:text="|em ${job.city}|"></span>
-            </p>
-            <p class="salary-line" th:if="${job.salaryRange != null && !job.salaryRange.isBlank()}" th:text="${job.salaryRange}">Faixa salarial</p>
-            <p class="muted" th:text="${#strings.abbreviate(job.description, 180)}">Descrição</p>
-            <span class="job-date" th:text="|Publicada em ${#temporals.format(job.createdAt, 'dd/MM')}|">Publicada recentemente</span>
-            <div class="card-footer">
-                <a class="btn primary" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
-                <a class="btn" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}" th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se</a>
-                <span class="muted views" th:text="${job.views} + ' visualizações'">0 visualizações</span>
-            </div>
-        </article>
+    <div th:if="${#lists.isEmpty(jobs)}"
+         th:replace="~{fragments/empty-state :: state('search', 'Nenhuma vaga encontrada com esses filtros.', 'Tente buscar por outra tecnologia, empresa ou modelo de trabalho.')}"></div>
+
+    <div class="job-grid" th:unless="${#lists.isEmpty(jobs)}">
+        <th:block th:each="job : ${jobs}">
+            <th:block th:replace="~{fragments/job-card :: card(job=${job})}"></th:block>
+        </th:block>
     </div>
-</main>
+</div>
 </html>
-

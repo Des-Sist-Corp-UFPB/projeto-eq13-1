@@ -1,6 +1,6 @@
-# RadarTech PB
+# Radar Tech
 
-O RadarTech PB é uma plataforma de oportunidades de tecnologia voltada à Paraíba. O produto conecta candidatos, empresas e curadores de vagas em uma experiência única: descoberta de oportunidades, candidatura interna, perfil profissional, divulgação patrocinada e moderação administrativa.
+O Radar Tech é uma plataforma de oportunidades de tecnologia que conecta candidatos, empresas e curadores de vagas em uma experiência única: descoberta de oportunidades, candidatura interna, perfil profissional, divulgação patrocinada e moderação administrativa.
 
 A aplicação está disponível em [https://eq13.dsc.rodrigor.com](https://eq13.dsc.rodrigor.com).
 
@@ -12,7 +12,19 @@ O sistema foi projetado em torno de três jornadas:
 - **Empresas e divulgadores** autenticados contratam um plano pelo Stripe e enviam oportunidades para moderação.
 - **Administradores** acompanham indicadores, moderam vagas, consultam candidaturas, usuários e a trilha de auditoria.
 
-Isso transforma o RadarTech em uma plataforma de recrutamento e curadoria, não apenas em um cadastro de vagas. Autenticação, autorização por papéis, pagamentos, IA, auditoria persistente, armazenamento de perfil, observabilidade e análise de uso fazem parte do fluxo do produto.
+Isso transforma o Radar Tech em uma plataforma de recrutamento e curadoria completa. Autenticação, autorização por papéis, pagamentos, IA, auditoria persistente, armazenamento de perfil, observabilidade e análise de uso fazem parte do fluxo do produto.
+
+## Experiência visual
+
+O frontend usa um design system próprio em azul-marinho e turquesa, com bastante espaço em branco, tipografia profissional, cards consistentes e componentes responsivos. A mesma identidade cobre home, busca e detalhes de vagas, autenticação, perfil profissional, assinatura e toda a administração.
+
+- hero corporativo com busca real por cargo, tecnologia, empresa e modelo de trabalho;
+- cabeçalho responsivo com menu móvel, conta, administração e publicação de vagas;
+- componentes reutilizáveis para vagas, formulários, filtros, indicadores, tabelas e estados vazios;
+- temas claro, escuro e automático, respeitando a preferência do sistema;
+- ícones SVG locais e imagens WebP otimizadas;
+- navegação por teclado, foco visível, labels e atributos ARIA;
+- CSS modular e JavaScript ES Modules, sem framework ou etapa adicional de build.
 
 ## Principais funcionalidades
 
@@ -218,22 +230,28 @@ Pré-requisitos:
 - Java 21;
 - Maven 3.9 ou superior.
 
-Execução:
+Primeiro, inicie o PostgreSQL local:
+
+```bash
+docker compose -f docker/docker-compose.dev.yml up -d
+```
+
+Em seguida, execute a aplicação:
 
 ```bash
 mvn spring-boot:run
 ```
 
-O perfil de desenvolvimento usa H2 por padrão. Depois, acesse:
+O perfil de desenvolvimento usa PostgreSQL; o H2 fica isolado no perfil automatizado de testes. Depois, acesse:
 
 - aplicação: `http://localhost:8080`;
-- console H2: `http://localhost:8080/h2-console`;
 - healthcheck: `http://localhost:8080/ping`.
 
-Para executar com Docker em desenvolvimento:
+Para acompanhar ou encerrar somente o banco local:
 
 ```bash
-docker compose -f docker/docker-compose.dev.yml up --build
+docker compose -f docker/docker-compose.dev.yml logs -f postgres
+docker compose -f docker/docker-compose.dev.yml down
 ```
 
 ## Configuração segura
@@ -288,6 +306,19 @@ Uma cópia do último relatório validado também fica em [`cobertura/index.html
 O pipeline exige 100% de cobertura de linhas. A suíte alcança essa meta com testes de comportamento — sem testes vazios ou exclusões artificiais. Cobertura de linhas não substitui análise de riscos, testes de integração ou revisão de código, mas impede que novos caminhos sejam adicionados sem verificação automatizada.
 
 O GitHub Actions executa `mvn verify` antes de construir e publicar a imagem. Se teste, cobertura ou compilação falhar, não há deploy.
+
+### Evidências dos requisitos de qualidade
+
+| Requisito | Implementação verificável |
+|---|---|
+| Auditoria | Entidade e migration `audit_log`, `AuditLogService`, eventos de autenticação, perfil, candidatura, vagas, Stripe e IA, consulta em `/admin/auditoria` |
+| Integração externa | Google OAuth2, Stripe Checkout/webhooks assinados e LiteLLM |
+| Cobertura ≥85% | JaCoCo executado no `mvn verify`, com gate atual de 100% das linhas |
+| IA | Assistente de carreira via LiteLLM, com tratamento de indisponibilidade |
+| Healthcheck com banco | `/ping` executa consulta real pelo `DatabaseHealthService` e informa `database: up` |
+| Telemetria e analytics | OpenTelemetry Java Agent com `service.name=dsc-eq13` e Umami no layout compartilhado |
+
+Essas evidências são exercitadas pela suíte automatizada e pelo workflow de deploy; não dependem apenas da documentação.
 
 ## Rotas úteis
 

@@ -122,7 +122,7 @@ class AdminControllerIntegrationTest {
                         .with(user(" ").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"))
-                .andExpect(model().attribute("billingCompany", "RadarTech PB"))
+                .andExpect(model().attribute("billingCompany", "Radar Tech"))
                 .andExpect(model().attribute("billingCompanyEmail", "admin@radartech.local"));
     }
 }

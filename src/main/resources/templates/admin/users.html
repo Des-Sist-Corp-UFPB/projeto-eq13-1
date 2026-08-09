@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: shell('Usuários', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
-<main class="section container">
+<html th:replace="~{fragments/layout :: shell('Usuários', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="container admin-shell">
     <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+
     <div class="page-header">
-        <div><h1>Usuários</h1><p class="muted">Contas cadastradas por formulário, Google ou inicialização administrativa.</p></div>
+        <div>
+            <h1>Usuários</h1>
+            <p class="u-muted">Contas cadastradas por formulário, Google ou inicialização administrativa.</p>
+        </div>
     </div>
-    <section class="table-panel">
-        <table>
+
+    <div class="table-wrap">
+        <table class="data-table">
             <thead>
             <tr><th>Nome</th><th>E-mail</th><th>Usuário</th><th>Perfil</th><th>Origem</th><th>Criado em</th></tr>
             </thead>
@@ -15,12 +20,14 @@
                 <td><strong th:text="${user.name}">Nome</strong></td>
                 <td th:text="${user.email}">email</td>
                 <td th:text="${user.username ?: '-'}">usuario</td>
-                <td><span class="badge" th:text="${user.role.label}">Perfil</span></td>
+                <td><span class="badge badge-navy" th:text="${user.role.label}">Perfil</span></td>
                 <td th:text="${user.provider}">LOCAL</td>
                 <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}">Data</td>
             </tr>
             </tbody>
         </table>
-    </section>
-</main>
+    </div>
+    <div th:if="${#lists.isEmpty(users)}" class="u-mt-6"
+         th:replace="~{fragments/empty-state :: state('user', 'Nenhum usuário cadastrado.', 'Novas contas aparecerão aqui assim que forem criadas.')}"></div>
+</div>
 </html>

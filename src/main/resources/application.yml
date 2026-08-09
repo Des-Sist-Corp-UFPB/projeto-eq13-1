@@ -1,6 +1,6 @@
 spring:
   application:
-    name: radartech-pb
+    name: radar-tech
   profiles:
     default: dev
   security:

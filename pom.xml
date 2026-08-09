@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>br.ufpb.dsc</groupId>
-    <artifactId>jobhub-pb</artifactId>
+    <artifactId>radar-tech</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>jobhub-pb</name>
+    <name>Radar Tech</name>
     <description>Portal de vagas de tecnologia remotas e presenciais na Paraíba</description>
 
     <properties>

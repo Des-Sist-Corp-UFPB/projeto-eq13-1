@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<article class="job-card" th:fragment="card(job)">
+    <div class="job-card__header">
+        <span class="job-card__avatar" aria-hidden="true"
+              th:text="${job.company != null && !job.company.isBlank() ? #strings.substring(job.company, 0, 1) : 'R'}">R</span>
+        <div class="job-card__title-group">
+            <h3><a th:href="@{/vagas/{id}(id=${job.id})}" th:text="${job.title}">Título da vaga</a></h3>
+            <div class="job-card__meta">
+                <span>
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-building"></use></svg>
+                    <span th:text="${job.company}">Empresa</span>
+                </span>
+                <span th:if="${job.city != null && !job.city.isBlank()}">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-map-pin"></use></svg>
+                    <span th:text="${job.city}">Cidade</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="job-card__badges">
+        <span class="badge badge-teal" th:text="${job.locationType.label}">Remota</span>
+        <span class="badge badge-navy" th:text="${job.seniority.label}">Pleno</span>
+        <span class="badge" th:if="${job.contractType != null}" th:text="${job.contractType.label}">CLT</span>
+        <span class="badge badge-info" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}">
+            <svg class="icon icon--xs" aria-hidden="true"><use href="/images/icons.svg#icon-external-link"></use></svg>
+            Candidatura externa
+        </span>
+    </div>
+
+    <p class="job-card__description" th:if="${job.description != null}" th:text="${#strings.abbreviate(job.description, 140)}">Descrição da vaga.</p>
+
+    <p class="job-card__salary" th:if="${job.salaryRange != null && !job.salaryRange.isBlank()}" th:text="${job.salaryRange}">Faixa salarial</p>
+
+    <div class="job-card__footer">
+        <span class="job-card__date">
+            <span th:if="${job.createdAt != null}">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="/images/icons.svg#icon-clock"></use></svg>
+                <span th:text="|Publicada em ${#temporals.format(job.createdAt, 'dd/MM/yyyy')}|">Publicada recentemente</span>
+            </span>
+            <span>
+                <svg class="icon icon--sm" aria-hidden="true"><use href="/images/icons.svg#icon-eye"></use></svg>
+                <span th:text="${job.views} + ' visualizações'">0 visualizações</span>
+            </span>
+        </span>
+        <div class="u-flex u-gap-2">
+            <a class="btn btn-outline btn-small" th:href="@{/vagas/{id}(id=${job.id})}">Ver detalhes</a>
+            <a class="btn btn-primary btn-small" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}"
+               th:href="${job.applyUrl}" target="_blank" rel="noopener">Candidatar-se</a>
+        </div>
+    </div>
+</article>
+</body>
+</html>

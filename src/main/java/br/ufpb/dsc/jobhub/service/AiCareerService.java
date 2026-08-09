@@ -14,7 +14,7 @@ import java.util.Map;
 public class AiCareerService {
 
     private static final String SYSTEM_PROMPT = """
-            Você é o assistente de carreira do RadarTech PB. Responda em português do Brasil,
+            Você é o assistente de carreira do Radar Tech. Responda em português do Brasil,
             com orientações curtas, respeitosas e práticas. Use apenas o contexto profissional
             fornecido. Não invente experiências, qualificações, empresas ou vagas.
             """;

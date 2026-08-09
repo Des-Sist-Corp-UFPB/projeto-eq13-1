@@ -1,6 +1,6 @@
 # Ideia de Servidor MCP — EQ13
 
-**Domínio:** RadarTech PB — portal de vagas de TI (JobPosting, CandidateApplication, OAuth2, auditoria)  
+**Domínio:** Radar Tech — plataforma de oportunidades de tecnologia (JobPosting, CandidateApplication, OAuth2, auditoria)
 **Data:** 2026-07-01
 
 ## O que é

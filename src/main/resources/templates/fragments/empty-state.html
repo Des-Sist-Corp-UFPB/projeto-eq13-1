@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="empty-state" th:fragment="state(icon, title, description)">
+    <svg class="icon" aria-hidden="true"><use th:attr="href='/images/icons.svg#icon-' + ${icon}"></use></svg>
+    <strong th:text="${title}">Nada por aqui ainda</strong>
+    <p class="u-muted" th:text="${description}">Quando houver conteúdo, ele aparecerá aqui.</p>
+</div>
+</body>
+</html>

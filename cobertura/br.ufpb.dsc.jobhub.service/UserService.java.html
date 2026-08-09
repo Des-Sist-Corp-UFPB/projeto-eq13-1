@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jobhub-pb</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Radar Tech</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.service;
 
 import br.ufpb.dsc.jobhub.domain.AppUser;
 import br.ufpb.dsc.jobhub.domain.AuthProvider;
@@ -105,7 +105,7 @@ public class UserService implements UserDetailsService {
 <span class="fc" id="L105">        return userRepository.save(user);</span>
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional&lt;AppUser&gt; currentUser(Authentication authentication) {
 <span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (authentication == null || !authentication.isAuthenticated()) {</span>
 <span class="fc" id="L111">            return Optional.empty();</span>
@@ -114,57 +114,63 @@ public class UserService implements UserDetailsService {
 <span class="fc bfc" id="L114" title="All 2 branches covered.">        if (principal instanceof OAuth2User oauth2User) {</span>
 <span class="fc" id="L115">            Object email = oauth2User.getAttribute(&quot;email&quot;);</span>
 <span class="pc bpc" id="L116" title="1 of 2 branches missed.">            if (email != null) {</span>
-<span class="fc" id="L117">                return userRepository.findByEmailIgnoreCase(email.toString());</span>
+<span class="fc" id="L117">                return userRepository.findByEmailIgnoreCase(email.toString())</span>
+<span class="fc" id="L118">                        .or(() -&gt; Optional.of(findOrCreateGoogleUser(email.toString(), valueAsString(oauth2User, &quot;name&quot;)).user()));</span>
             }
         }
-<span class="fc" id="L120">        return findByLogin(authentication.getName());</span>
+<span class="fc" id="L121">        return findByLogin(authentication.getName());</span>
     }
 
     @Transactional(readOnly = true)
     public List&lt;AppUser&gt; allUsers() {
-<span class="fc" id="L125">        return userRepository.findAllByOrderByCreatedAtDesc();</span>
+<span class="fc" id="L126">        return userRepository.findAllByOrderByCreatedAtDesc();</span>
     }
 
     @Transactional(readOnly = true)
     public long countUsers() {
-<span class="fc" id="L130">        return userRepository.count();</span>
+<span class="fc" id="L131">        return userRepository.count();</span>
     }
 
     @Transactional(readOnly = true)
     public Optional&lt;AppUser&gt; findByLogin(String login) {
-<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        String normalized = login == null ? &quot;&quot; : login.trim();</span>
-<span class="fc bfc" id="L136" title="All 2 branches covered.">        if (normalized.isBlank()) {</span>
-<span class="fc" id="L137">            return Optional.empty();</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        String normalized = login == null ? &quot;&quot; : login.trim();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        if (normalized.isBlank()) {</span>
+<span class="fc" id="L138">            return Optional.empty();</span>
         }
-<span class="fc" id="L139">        return userRepository.findByUsernameIgnoreCase(normalized)</span>
-<span class="fc" id="L140">                .or(() -&gt; userRepository.findByEmailIgnoreCase(normalized));</span>
+<span class="fc" id="L140">        return userRepository.findByUsernameIgnoreCase(normalized)</span>
+<span class="fc" id="L141">                .or(() -&gt; userRepository.findByEmailIgnoreCase(normalized));</span>
     }
 
     public UserDetails toUserDetails(AppUser user) {
-<span class="fc" id="L144">        return User.builder()</span>
-<span class="fc" id="L145">                .username(user.getEmail())</span>
-<span class="fc" id="L146">                .password(user.getPasswordHash())</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">                .disabled(!user.isEnabled())</span>
-<span class="fc" id="L148">                .authorities(new SimpleGrantedAuthority(user.getRole().name()))</span>
-<span class="fc" id="L149">                .build();</span>
+<span class="fc" id="L145">        return User.builder()</span>
+<span class="fc" id="L146">                .username(user.getEmail())</span>
+<span class="fc" id="L147">                .password(user.getPasswordHash())</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">                .disabled(!user.isEnabled())</span>
+<span class="fc" id="L149">                .authorities(new SimpleGrantedAuthority(user.getRole().name()))</span>
+<span class="fc" id="L150">                .build();</span>
     }
 
     private String normalizeEmail(String email) {
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        return email == null ? &quot;&quot; : email.trim().toLowerCase(Locale.ROOT);</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        return email == null ? &quot;&quot; : email.trim().toLowerCase(Locale.ROOT);</span>
     }
 
     private String normalizeUsername(String username) {
-<span class="pc bpc" id="L157" title="1 of 4 branches missed.">        if (username == null || username.isBlank()) {</span>
-<span class="fc" id="L158">            return null;</span>
+<span class="pc bpc" id="L158" title="1 of 4 branches missed.">        if (username == null || username.isBlank()) {</span>
+<span class="fc" id="L159">            return null;</span>
         }
-<span class="fc" id="L160">        return username.trim().toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L161">        return username.trim().toLowerCase(Locale.ROOT);</span>
     }
 
     private String normalizeName(String name, String email) {
-<span class="pc bpc" id="L164" title="1 of 4 branches missed.">        if (name != null &amp;&amp; !name.isBlank()) {</span>
-<span class="fc" id="L165">            return name.trim();</span>
+<span class="pc bpc" id="L165" title="1 of 4 branches missed.">        if (name != null &amp;&amp; !name.isBlank()) {</span>
+<span class="fc" id="L166">            return name.trim();</span>
         }
-<span class="fc" id="L167">        return email;</span>
+<span class="fc" id="L168">        return email;</span>
+    }
+
+    private String valueAsString(OAuth2User oauth2User, String attribute) {
+<span class="fc" id="L172">        Object value = oauth2User.getAttribute(attribute);</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        return value == null ? null : value.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

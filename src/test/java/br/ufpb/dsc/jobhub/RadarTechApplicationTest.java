@@ -6,15 +6,15 @@ import org.springframework.boot.SpringApplication;
 
 import static org.mockito.Mockito.mockStatic;
 
-class JobhubApplicationTest {
+class RadarTechApplicationTest {
 
     @Test
     void delegatesStartupToSpringBoot() {
         String[] args = {"--spring.profiles.active=test"};
 
         try (MockedStatic<SpringApplication> spring = mockStatic(SpringApplication.class)) {
-            JobhubApplication.main(args);
-            spring.verify(() -> SpringApplication.run(JobhubApplication.class, args));
+            RadarTechApplication.main(args);
+            spring.verify(() -> SpringApplication.run(RadarTechApplication.class, args));
         }
     }
 }

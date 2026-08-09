@@ -1,0 +1,163 @@
+/*
+ * pages/admin.css
+ * Estilos exclusivos da área administrativa: navegação admin, cards
+ * de estatística, painel de billing e ações em linha nas tabelas.
+ */
+
+.admin-shell {
+    padding-block: var(--space-8);
+}
+
+/* ── Navegação administrativa ──────────────────────────────────────── */
+
+.admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    margin-bottom: var(--space-8);
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.admin-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.admin-nav a:hover {
+    background: var(--color-surface-secondary);
+    color: var(--color-text-primary);
+}
+
+.admin-nav a[aria-current="page"] {
+    background: var(--color-navy-900);
+    color: #fff;
+}
+
+/* ── Estatísticas ──────────────────────────────────────────────────── */
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.stat-card span {
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-muted);
+}
+
+.stat-card strong {
+    font-size: 1.75rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-navy-900);
+}
+
+[data-theme="dark"] .stat-card strong {
+    color: var(--color-text-primary);
+}
+
+/* ── Billing (dashboard) ───────────────────────────────────────────── */
+
+.admin-billing-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+}
+
+.admin-billing-form .input {
+    max-width: 220px;
+}
+
+/* ── Vagas/candidaturas recentes (dashboard) ──────────────────────── */
+
+.dashboard-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+}
+
+.mini-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.mini-card {
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.mini-card h3 {
+    font-size: var(--font-size-body);
+    margin-bottom: var(--space-1);
+}
+
+/* ── Ações em linha nas tabelas ────────────────────────────────────── */
+
+.row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.row-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.page-header--compact {
+    margin-bottom: var(--space-4);
+}
+
+.admin-form-card {
+    max-width: 760px;
+}
+
+/* ── Responsivo ────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 639px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+}

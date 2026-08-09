@@ -1,46 +1,85 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: shell('Nova vaga', ~{::main})}" xmlns:th="http://www.thymeleaf.org">
-<main class="section container">
+<html th:replace="~{fragments/layout :: shell('Nova vaga', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="container admin-shell">
     <th:block th:replace="~{fragments/admin-nav :: adminNav}"></th:block>
+
     <div class="page-header">
-        <div><h1>Nova vaga</h1><p class="muted">Crie uma vaga diretamente como publicada.</p></div>
-        <a class="btn" th:href="@{/admin/vagas}">Voltar</a>
+        <div>
+            <h1>Nova vaga</h1>
+            <p class="u-muted">Crie uma vaga diretamente como publicada.</p>
+        </div>
+        <a class="btn btn-outline" th:href="@{/admin/vagas}">Voltar</a>
     </div>
-    <section class="panel">
-        <form th:action="@{/admin/vagas/nova}" th:object="${form}" method="post" class="grid">
+
+    <section class="card admin-form-card">
+        <form class="js-loading-submit" th:action="@{/admin/vagas/nova}" th:object="${form}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <div class="alert" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Erro</div>
-            <div class="grid two">
-                <label>Cargo <input class="input" th:field="*{title}"></label>
-                <label>Empresa <input class="input" th:field="*{company}"></label>
+            <div class="alert alert-error u-mb-4" th:if="${#fields.hasGlobalErrors()}" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Erro</div>
+
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label for="af-title">Cargo</label>
+                    <input id="af-title" class="input" th:field="*{title}">
+                </div>
+                <div class="form-field">
+                    <label for="af-company">Empresa</label>
+                    <input id="af-company" class="input" th:field="*{company}">
+                </div>
             </div>
-            <label>E-mail da empresa <input class="input" th:field="*{companyEmail}"></label>
-            <div class="grid two">
-                <label>Modelo
-                    <select class="select" th:field="*{locationType}">
+
+            <div class="form-field">
+                <label for="af-email">E-mail da empresa</label>
+                <input id="af-email" class="input" th:field="*{companyEmail}">
+            </div>
+
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label for="af-location">Modelo</label>
+                    <select id="af-location" class="select" th:field="*{locationType}" data-location-field>
                         <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:text="${type.label}"></option>
                     </select>
-                </label>
-                <label>Cidade <input class="input" th:field="*{city}" placeholder="Obrigatória para híbrida/presencial"></label>
+                </div>
+                <div class="form-field" data-city-field>
+                    <label for="af-city">Cidade</label>
+                    <input id="af-city" class="input" th:field="*{city}" placeholder="Obrigatória para híbrida/presencial">
+                    <span class="form-field__hint" data-city-hint>Obrigatório para vagas híbridas ou presenciais.</span>
+                </div>
             </div>
-            <div class="grid two">
-                <label>Senioridade
-                    <select class="select" th:field="*{seniority}">
+
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label for="af-seniority">Senioridade</label>
+                    <select id="af-seniority" class="select" th:field="*{seniority}">
                         <option th:each="item : ${seniorities}" th:value="${item.name()}" th:text="${item.label}"></option>
                     </select>
-                </label>
-                <label>Contrato
-                    <select class="select" th:field="*{contractType}">
+                </div>
+                <div class="form-field">
+                    <label for="af-contract">Contrato</label>
+                    <select id="af-contract" class="select" th:field="*{contractType}">
                         <option th:each="item : ${contractTypes}" th:value="${item.name()}" th:text="${item.label}"></option>
                     </select>
-                </label>
+                </div>
             </div>
-            <label>Faixa salarial <input class="input" th:field="*{salaryRange}"></label>
-            <label>Descrição <textarea class="textarea" th:field="*{description}"></textarea></label>
-            <label>Requisitos <textarea class="textarea" th:field="*{requirements}"></textarea></label>
-            <label>Link externo <input class="input" th:field="*{applyUrl}"></label>
-            <button class="btn primary" type="submit">Publicar vaga</button>
+
+            <div class="form-field">
+                <label for="af-salary">Faixa salarial</label>
+                <input id="af-salary" class="input" th:field="*{salaryRange}">
+            </div>
+            <div class="form-field">
+                <label for="af-description">Descrição</label>
+                <textarea id="af-description" class="textarea" th:field="*{description}"></textarea>
+            </div>
+            <div class="form-field">
+                <label for="af-requirements">Requisitos</label>
+                <textarea id="af-requirements" class="textarea" th:field="*{requirements}"></textarea>
+            </div>
+            <div class="form-field">
+                <label for="af-apply-url">Link externo</label>
+                <input id="af-apply-url" class="input" th:field="*{applyUrl}">
+            </div>
+
+            <button class="btn btn-primary" type="submit">Publicar vaga</button>
         </form>
     </section>
-</main>
+</div>
 </html>

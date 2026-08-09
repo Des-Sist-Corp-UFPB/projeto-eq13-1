@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/jobhub_dev}
-    username: ${SPRING_DATASOURCE_USERNAME:jobhub}
-    password: ${SPRING_DATASOURCE_PASSWORD:jobhub123}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/radar_tech_dev}
+    username: ${SPRING_DATASOURCE_USERNAME:radar_tech}
+    password: ${SPRING_DATASOURCE_PASSWORD:radar_tech_dev}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

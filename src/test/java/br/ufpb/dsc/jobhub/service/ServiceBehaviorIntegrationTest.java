@@ -64,7 +64,7 @@ class ServiceBehaviorIntegrationTest {
             JobPosting junior = new JobPosting(
                     "Pessoa Desenvolvedora Full Stack Junior",
                     "Zenvia",
-                    "curadoria@radartechpb.dev",
+                    "curadoria@radartech.dev",
                     JobLocationType.REMOTE,
                     null,
                     Seniority.JUNIOR,
@@ -80,7 +80,7 @@ class ServiceBehaviorIntegrationTest {
         if (jobPostingRepository.searchPublished("Estagio", JobLocationType.REMOTE).isEmpty()) {
             JobPosting internship = new JobPosting(
                     "Estagio em Desenvolvimento de Software",
-                    "EdTech PB",
+                    "EdTech Brasil",
                     "estagios@edtechpb.dev",
                     JobLocationType.REMOTE,
                     null,
@@ -248,7 +248,7 @@ class ServiceBehaviorIntegrationTest {
         assertThat(jobService.searchAdmin(null, "status-invalido", "location-invalida")).isNotEmpty();
 
         JobPostForm hybridWithCity = new JobPostForm(
-                "Dev Hibrido", "Empresa PB", "rh3@empresa.com", JobLocationType.HYBRID_PB, " Campina Grande ",
+                "Dev Hibrido", "Empresa Tech", "rh3@empresa.com", JobLocationType.HYBRID_PB, " Campina Grande ",
                 JUNIOR, CLT, "Nao informado", "Descricao longa o suficiente para validar a criacao da vaga hibrida.",
                 "Java e SQL", "https://example.com/hibrido"
         );

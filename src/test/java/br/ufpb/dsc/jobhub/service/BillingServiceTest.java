@@ -28,7 +28,7 @@ class BillingServiceTest {
 
     @Test
     void checksActiveSubscriptionsAndFindsByCompanyEmail() {
-        Subscription subscription = new Subscription("Empresa PB", "billing@example.com", "monthly-basic");
+        Subscription subscription = new Subscription("Empresa Tech", "billing@example.com", "monthly-basic");
         subscription.activate(Instant.now().plusSeconds(3600), "cs_test_active");
         BillingService service = serviceWithStripeConfig();
 
@@ -41,7 +41,7 @@ class BillingServiceTest {
 
     @Test
     void expiredOrMissingSubscriptionsAreNotActive() {
-        Subscription expired = new Subscription("Empresa PB", "expired@example.com", "monthly-basic");
+        Subscription expired = new Subscription("Empresa Tech", "expired@example.com", "monthly-basic");
         expired.activate(Instant.now().minusSeconds(60), "cs_test_expired");
         BillingService service = serviceWithStripeConfig();
 
@@ -78,7 +78,7 @@ class BillingServiceTest {
 
     @Test
     void cancelsExistingSubscriptionAndRejectsMissingOne() {
-        Subscription subscription = new Subscription("Empresa PB", "cancel@example.com", "monthly-basic");
+        Subscription subscription = new Subscription("Empresa Tech", "cancel@example.com", "monthly-basic");
         subscription.activate(Instant.now().plusSeconds(3600), "cs_test_cancel");
         BillingService service = serviceWithStripeConfig();
 

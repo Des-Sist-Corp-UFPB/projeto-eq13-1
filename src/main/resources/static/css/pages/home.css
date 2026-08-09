@@ -1,0 +1,290 @@
+/*
+ * pages/home.css
+ * Estilos exclusivos da página inicial: hero, busca principal,
+ * cards de categoria e lista de oportunidades em destaque.
+ */
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+
+.hero {
+    position: relative;
+    min-height: 650px;
+    display: flex;
+    align-items: center;
+    background-image:
+        linear-gradient(90deg, rgba(244, 247, 250, 0.97) 0%, rgba(244, 247, 250, 0.86) 32%, rgba(244, 247, 250, 0.35) 58%, rgba(244, 247, 250, 0.08) 78%),
+        linear-gradient(0deg, rgba(244, 247, 250, 0.95) 0%, rgba(244, 247, 250, 0) 30%),
+        url('/images/radartech-hero-office.webp');
+    background-size: cover;
+    background-position: right 30% center;
+    padding-block: var(--space-16);
+}
+
+[data-theme="dark"] .hero {
+    background-image:
+        linear-gradient(90deg, rgba(8, 17, 31, 0.96) 0%, rgba(8, 17, 31, 0.86) 32%, rgba(8, 17, 31, 0.45) 58%, rgba(8, 17, 31, 0.12) 78%),
+        linear-gradient(0deg, rgba(8, 17, 31, 0.94) 0%, rgba(8, 17, 31, 0) 30%),
+        url('/images/radartech-hero-office.webp');
+}
+
+.hero-inner {
+    position: relative;
+    width: 100%;
+}
+
+.hero-content {
+    max-width: 620px;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-teal-600);
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: var(--space-4);
+}
+
+.hero-title {
+    font-size: var(--font-size-h1);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.05;
+    color: var(--color-navy-900);
+    margin-bottom: var(--space-5);
+}
+
+[data-theme="dark"] .hero-title {
+    color: var(--color-text-primary);
+}
+
+.hero-title .highlight {
+    color: var(--color-teal-500);
+}
+
+.hero-text {
+    font-size: var(--font-size-body-lg);
+    color: var(--color-text-secondary);
+    max-width: 52ch;
+    margin-bottom: var(--space-8);
+}
+
+/* Barra de busca */
+
+.hero-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 780px;
+    height: 66px;
+    padding: var(--space-2);
+    padding-left: var(--space-4);
+    background: var(--color-surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+}
+
+.hero-search-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--color-text-muted);
+}
+
+.hero-search-field svg {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+}
+
+.hero-search-field input,
+.hero-search-field select {
+    border: none;
+    background: transparent;
+    height: 100%;
+    padding: 0;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-body);
+    min-width: 0;
+}
+
+.hero-search-field input:focus-visible,
+.hero-search-field select:focus-visible {
+    box-shadow: none;
+}
+
+.hero-search-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--color-border);
+    flex-shrink: 0;
+}
+
+.hero-search .btn-primary {
+    flex-shrink: 0;
+    height: 50px;
+}
+
+/* Cards de categoria */
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+    margin-top: var(--space-10);
+    max-width: 1040px;
+}
+
+.category-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 82px;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.category-card-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--color-teal-50);
+    color: var(--color-teal-600);
+    flex-shrink: 0;
+}
+
+.category-card-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.category-card-body strong {
+    display: block;
+    color: var(--color-navy-900);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-body);
+}
+
+[data-theme="dark"] .category-card-body strong {
+    color: var(--color-text-primary);
+}
+
+.category-card-arrow {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.category-card:hover .category-card-arrow {
+    color: var(--color-teal-500);
+    transform: translate(2px, -2px);
+}
+
+/* ── Oportunidades em destaque ────────────────────────────────────── */
+
+.featured-section {
+    padding-block: var(--space-16);
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+}
+
+.section-heading h2 {
+    margin-bottom: var(--space-2);
+}
+
+.section-heading p {
+    max-width: 60ch;
+}
+
+.job-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+}
+
+/* ── Responsivo ────────────────────────────────────────────────────── */
+
+@media (max-width: 1279px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: none;
+    }
+}
+
+@media (max-width: 1023px) {
+    .hero {
+        min-height: 560px;
+        background-position: 65% center;
+    }
+
+    .job-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero {
+        padding-block: var(--space-10);
+        background-image:
+            linear-gradient(180deg, rgba(244, 247, 250, 0.97) 0%, rgba(244, 247, 250, 0.9) 55%, rgba(244, 247, 250, 0.55) 100%),
+            url('/images/radartech-hero-office-mobile.webp');
+        background-position: top center;
+    }
+
+    [data-theme="dark"] .hero {
+        background-image:
+            linear-gradient(180deg, rgba(8, 17, 31, 0.97) 0%, rgba(8, 17, 31, 0.9) 55%, rgba(8, 17, 31, 0.6) 100%),
+            url('/images/radartech-hero-office-mobile.webp');
+    }
+
+    .hero-content {
+        max-width: none;
+    }
+
+    .hero-search {
+        flex-direction: column;
+        height: auto;
+        align-items: stretch;
+        padding: var(--space-3);
+    }
+
+    .hero-search-field {
+        height: 48px;
+    }
+
+    .hero-search-divider {
+        display: none;
+    }
+
+    .hero-search .btn-primary {
+        width: 100%;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

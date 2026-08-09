@@ -229,7 +229,7 @@ public class AdminController {
     private String defaultCompanyName(Authentication authentication) {
         String login = authentication == null ? null : authentication.getName();
         if (login == null || login.isBlank()) {
-            return "RadarTech PB";
+            return "Radar Tech";
         }
         return login;
     }
