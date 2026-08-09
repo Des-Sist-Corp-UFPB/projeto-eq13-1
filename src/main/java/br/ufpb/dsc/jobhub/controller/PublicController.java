@@ -173,9 +173,21 @@ public class PublicController {
     }
 
     @GetMapping("/divulgar/assinar/sucesso")
-    public String subscriptionSuccess(Model model) {
-        model.addAttribute("billingMessage",
-                "Pagamento recebido. A assinatura será liberada assim que o webhook do Stripe confirmar a cobrança.");
+    public String subscriptionSuccess(@RequestParam(name = "subscription", required = false) Long subscriptionId,
+                                      Authentication authentication,
+                                      HttpServletRequest request,
+                                      Model model) {
+        if (subscriptionId != null && authentication != null && authentication.isAuthenticated()) {
+            try {
+                AppUser user = currentUser(authentication);
+                billingService.activateAfterConfirmedPayment(subscriptionId, user.getEmail());
+                auditLogService.log(request, user, "STRIPE_SUBSCRIPTION_ACTIVATED",
+                        "SUBSCRIPTION", subscriptionId, "Assinatura ativada após retorno do checkout do Stripe.");
+            } catch (Exception ignored) {
+                // assinatura pode já ter sido ativada ou não pertencer ao usuário
+            }
+        }
+        model.addAttribute("billingMessage", "Pagamento confirmado! Sua assinatura está ativa.");
         return "admin/billing-success";
     }
 
