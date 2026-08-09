@@ -1,0 +1,330 @@
+/*
+ * pages/jobs.css
+ * Estilos exclusivos das páginas de listagem, detalhe e divulgação
+ * de vagas. page-header e filter-bar (genéricos) vivem em components.css.
+ */
+
+.jobs-count {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+    margin-bottom: var(--space-6);
+}
+
+/* ── Detalhe da vaga ───────────────────────────────────────────────── */
+
+.job-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-small);
+    margin-bottom: var(--space-6);
+}
+
+.job-detail-back:hover {
+    color: var(--color-navy-900);
+}
+
+[data-theme="dark"] .job-detail-back:hover {
+    color: var(--color-text-primary);
+}
+
+.job-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    align-items: start;
+    gap: var(--space-8);
+}
+
+.job-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+
+.job-detail-header .job-card__avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 1.5rem;
+    border-radius: var(--radius-lg);
+}
+
+.job-detail-header h1 {
+    margin-bottom: var(--space-2);
+}
+
+.job-detail-company-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-4);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-body);
+}
+
+.job-detail-company-line strong {
+    color: var(--color-text-primary);
+}
+
+.job-detail-company-line span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.job-detail-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-5) 0;
+}
+
+.job-detail-body h2 {
+    font-size: var(--font-size-h3);
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+}
+
+.job-detail-body p {
+    white-space: pre-line;
+    color: var(--color-text-secondary);
+}
+
+.job-detail-salary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-body-lg);
+    color: var(--color-navy-900);
+}
+
+[data-theme="dark"] .job-detail-salary {
+    color: var(--color-text-primary);
+}
+
+.job-sidebar {
+    position: sticky;
+    top: calc(72px + var(--space-6));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.job-sidebar h2 {
+    font-size: var(--font-size-h3);
+    margin-bottom: var(--space-2);
+}
+
+.application-resume {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .875rem;
+    border: 1px solid color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+}
+
+.application-resume > .icon {
+    flex: 0 0 auto;
+    color: var(--color-success);
+}
+
+.application-resume div,
+.application-resume small {
+    display: grid;
+    gap: .15rem;
+}
+
+.application-resume span,
+.application-resume small {
+    color: var(--color-text-muted);
+}
+
+.application-resume--missing {
+    border-color: var(--color-border);
+    background: var(--color-surface-secondary);
+}
+
+.application-resume--missing > .icon {
+    color: var(--color-text-muted);
+}
+
+.related-jobs {
+    padding: var(--space-5);
+}
+
+.related-jobs__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.related-jobs__heading h2 {
+    margin: var(--space-1) 0 0;
+}
+
+.related-jobs__heading > .icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-teal-600);
+}
+
+.related-jobs__list {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.related-job {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 18px;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-secondary);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.related-job:hover {
+    border-color: var(--color-teal-500);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.related-job:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+}
+
+.related-job__avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--color-navy-800), var(--color-teal-500));
+    color: #fff;
+    font-weight: var(--font-weight-bold);
+}
+
+.related-job__content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.related-job__content strong,
+.related-job__company {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.related-job__content strong {
+    font-size: var(--font-size-small);
+    line-height: 1.35;
+}
+
+.related-job__company {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-label);
+}
+
+.related-job__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-top: var(--space-1);
+}
+
+.related-job__badges .badge {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.68rem;
+}
+
+.related-job__arrow {
+    color: var(--color-teal-600);
+    transform: rotate(45deg);
+    transition: transform var(--transition-fast);
+}
+
+.related-job:hover .related-job__arrow {
+    transform: rotate(45deg) translateY(-2px);
+}
+
+.related-jobs__empty p {
+    margin-bottom: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-small);
+}
+
+@media (max-width: 1023px) {
+    .job-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .job-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 639px) {
+    .job-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ── Divulgar vaga ─────────────────────────────────────────────────── */
+
+.post-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    align-items: start;
+    gap: var(--space-8);
+}
+
+.post-intro-card {
+    position: sticky;
+    top: calc(72px + var(--space-6));
+}
+
+.post-account-note {
+    margin-top: var(--space-6);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.post-account-note p {
+    font-size: var(--font-size-small);
+    margin: 0;
+    color: var(--color-text-secondary);
+}
+
+.post-account-note p + p {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-label);
+}
+
+@media (max-width: 1023px) {
+    .post-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .post-intro-card {
+        position: static;
+    }
+}

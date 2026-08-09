@@ -1,0 +1,348 @@
+package br.ufpb.dsc.jobhub.controller;
+
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.ThemePreference;
+import br.ufpb.dsc.jobhub.dto.AiCareerForm;
+import br.ufpb.dsc.jobhub.dto.ExperienceForm;
+import br.ufpb.dsc.jobhub.dto.ProfileUpdateForm;
+import br.ufpb.dsc.jobhub.dto.ProfileUpdateResult;
+import br.ufpb.dsc.jobhub.dto.RegistrationForm;
+import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.AiCareerService;
+import br.ufpb.dsc.jobhub.service.CandidateProfileService;
+import br.ufpb.dsc.jobhub.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Locale;
+
+@Controller
+public class AuthController {
+
+    private final UserService userService;
+    private final CandidateProfileService profileService;
+    private final AuditLogService auditLogService;
+    private final AiCareerService aiCareerService;
+
+    public AuthController(UserService userService, CandidateProfileService profileService,
+                          AuditLogService auditLogService, AiCareerService aiCareerService) {
+        this.userService = userService;
+        this.profileService = profileService;
+        this.auditLogService = auditLogService;
+        this.aiCareerService = aiCareerService;
+    }
+
+    @GetMapping("/login")
+    public String login(Authentication authentication) {
+        if (isAuthenticated(authentication)) {
+            Object principal = authentication.getPrincipal();
+            if (!(principal instanceof OAuth2User) || currentUser(authentication) != null) {
+                boolean admin = authentication.getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+                return admin ? "redirect:/admin" : "redirect:/minha-conta";
+            }
+        }
+        return "auth/login";
+    }
+
+    @GetMapping("/cadastro")
+    public String register(Model model) {
+        if (!model.containsAttribute("form")) {
+            model.addAttribute("form", RegistrationForm.empty());
+        }
+        return "auth/register";
+    }
+
+    @PostMapping("/cadastro")
+    public String register(@Valid @ModelAttribute("form") RegistrationForm form,
+                           BindingResult bindingResult,
+                           RedirectAttributes redirectAttributes,
+                           HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            return "auth/register";
+        }
+        try {
+            AppUser user = userService.registerLocal(form);
+            auditLogService.log(request, user, "USER_REGISTER", "APP_USER", user.getId(), "Cadastro tradicional de usuário.");
+            redirectAttributes.addFlashAttribute("registered", true);
+            return "redirect:/login";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.reject("registration.error", ex.getMessage());
+            return "auth/register";
+        }
+    }
+
+    @GetMapping("/minha-conta")
+    public String profile(Authentication authentication, Model model) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        return profileView(user, model);
+    }
+
+    @PostMapping(value = "/minha-conta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String updateProfile(@Valid @ModelAttribute("profileForm") ProfileUpdateForm form,
+                                BindingResult bindingResult,
+                                @RequestParam(required = false) MultipartFile photo,
+                                @RequestParam(required = false) MultipartFile resume,
+                                Authentication authentication,
+                                HttpServletRequest request,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        if (bindingResult.hasErrors()) {
+            return profileView(user, model);
+        }
+        try {
+            ProfileUpdateResult result = profileService.update(user, form, photo, resume);
+            auditLogService.log(request, user, "PROFILE_UPDATED", "APP_USER", user.getId(),
+                    "Perfil do candidato atualizado.");
+            if (result.photoUpdated()) {
+                auditLogService.log(request, user, "PROFILE_PHOTO_UPDATED", "APP_USER", user.getId(),
+                        "Foto do perfil atualizada.");
+            }
+            if (result.resumeUpdated()) {
+                auditLogService.log(request, user, "PROFILE_RESUME_UPDATED", "APP_USER", user.getId(),
+                        "Currículo PDF atualizado.");
+            }
+            redirectAttributes.addFlashAttribute("profileSaved", true);
+            return "redirect:/minha-conta";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.reject("profile.file", ex.getMessage());
+            return profileView(user, model);
+        }
+    }
+
+    @PostMapping("/minha-conta/experiencias")
+    public String addExperience(@Valid @ModelAttribute("experienceForm") ExperienceForm form,
+                                BindingResult bindingResult,
+                                Authentication authentication,
+                                HttpServletRequest request,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("profileForm", new ProfileUpdateForm(user.getName(), user.getBiography()));
+            model.addAttribute("experienceHasErrors", true);
+            return profileView(user, model);
+        }
+        try {
+            var experience = profileService.addExperience(user, form);
+            auditLogService.log(request, user, "PROFILE_EXPERIENCE_ADDED", "CANDIDATE_EXPERIENCE",
+                    experience.getId(), "Experiência profissional adicionada ao perfil.");
+            redirectAttributes.addFlashAttribute("experienceSaved", true);
+            return "redirect:/minha-conta#experiencias";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.reject("experience.period", ex.getMessage());
+            model.addAttribute("profileForm", new ProfileUpdateForm(user.getName(), user.getBiography()));
+            model.addAttribute("experienceHasErrors", true);
+            return profileView(user, model);
+        }
+    }
+
+    @PostMapping("/minha-conta/experiencias/{id}/remover")
+    public String removeExperience(@PathVariable Long id, Authentication authentication,
+                                   HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        var experience = profileService.removeExperience(user, id);
+        auditLogService.log(request, user, "PROFILE_EXPERIENCE_REMOVED", "CANDIDATE_EXPERIENCE",
+                experience.getId(), "Experiência profissional removida do perfil.");
+        redirectAttributes.addFlashAttribute("experienceRemoved", true);
+        return "redirect:/minha-conta#experiencias";
+    }
+
+    @PostMapping("/minha-conta/tema")
+    public ResponseEntity<Void> changeTheme(@RequestParam String theme, Authentication authentication,
+                                            HttpServletRequest request) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        ThemePreference preference;
+        try {
+            preference = ThemePreference.valueOf(theme.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+        profileService.changeTheme(user, preference);
+        auditLogService.log(request, user, "PROFILE_THEME_UPDATED", "APP_USER", user.getId(),
+                "Preferência de tema alterada para " + preference.name() + ".");
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/minha-conta/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String updatePhoto(@RequestParam(required = false) MultipartFile photo,
+                              @RequestParam(defaultValue = "50") int positionX,
+                              @RequestParam(defaultValue = "50") int positionY,
+                              Authentication authentication,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        try {
+            boolean fileUpdated = profileService.updatePhoto(user, photo, positionX, positionY);
+            auditLogService.log(request, user, "PROFILE_PHOTO_UPDATED", "APP_USER", user.getId(),
+                    fileUpdated ? "Foto do perfil e enquadramento atualizados."
+                            : "Enquadramento da foto do perfil atualizado.");
+            redirectAttributes.addFlashAttribute("profileSaved", true);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("mediaError", ex.getMessage());
+        }
+        return "redirect:/minha-conta";
+    }
+
+    @PostMapping(value = "/minha-conta/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String updateCover(@RequestParam(required = false) MultipartFile cover,
+                              @RequestParam(defaultValue = "50") int positionX,
+                              @RequestParam(defaultValue = "50") int positionY,
+                              Authentication authentication,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        try {
+            boolean fileUpdated = profileService.updateCover(user, cover, positionX, positionY);
+            auditLogService.log(request, user, "PROFILE_COVER_UPDATED", "APP_USER", user.getId(),
+                    fileUpdated ? "Capa do perfil e enquadramento atualizados."
+                            : "Enquadramento da capa do perfil atualizado.");
+            redirectAttributes.addFlashAttribute("profileSaved", true);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("mediaError", ex.getMessage());
+        }
+        return "redirect:/minha-conta";
+    }
+
+    @PostMapping("/minha-conta/assistente")
+    public String careerAssistant(@Valid @ModelAttribute("aiCareerForm") AiCareerForm form,
+                                  BindingResult bindingResult,
+                                  Authentication authentication,
+                                  HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        redirectAttributes.addFlashAttribute("aiQuestion", form.question());
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("aiError",
+                    bindingResult.getAllErrors().getFirst().getDefaultMessage());
+            return "redirect:/minha-conta#assistente-ia";
+        }
+        try {
+            String answer = aiCareerService.generateCareerAdvice(user, profileService.experiences(user), form.question());
+            auditLogService.log(request, user, "AI_CAREER_ASSISTANT_USED", "APP_USER", user.getId(),
+                    "Assistente de carreira via LiteLLM utilizado.");
+            redirectAttributes.addFlashAttribute("aiAnswer", answer);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("aiError", ex.getMessage());
+        }
+        return "redirect:/minha-conta#assistente-ia";
+    }
+
+    @GetMapping("/minha-conta/foto")
+    public ResponseEntity<byte[]> photo(Authentication authentication) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (user.getPhotoContent() == null || user.getPhotoContentType() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(user.getPhotoContentType()))
+                .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())
+                .body(user.getPhotoContent());
+    }
+
+    @GetMapping("/minha-conta/capa")
+    public ResponseEntity<byte[]> cover(Authentication authentication) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (user.getCoverContent() == null || user.getCoverContentType() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(user.getCoverContentType()))
+                .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())
+                .body(user.getCoverContent());
+    }
+
+    @GetMapping("/minha-conta/curriculo")
+    public ResponseEntity<byte[]> resume(Authentication authentication) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (user.getResumeContent() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(user.getResumeFileName(), StandardCharsets.UTF_8)
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(user.getResumeContent());
+    }
+
+    private String profileView(AppUser user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("experiences", profileService.experiences(user));
+        if (!model.containsAttribute("profileForm")) {
+            model.addAttribute("profileForm", new ProfileUpdateForm(user.getName(), user.getBiography()));
+        }
+        if (!model.containsAttribute("experienceForm")) {
+            model.addAttribute("experienceForm", new ExperienceForm(null, null, null, null, null));
+        }
+        if (!model.containsAttribute("aiCareerForm")) {
+            model.addAttribute("aiCareerForm", new AiCareerForm(""));
+        }
+        return "auth/profile";
+    }
+
+    private AppUser currentUser(Authentication authentication) {
+        return userService.currentUser(authentication).orElse(null);
+    }
+
+    private boolean isAuthenticated(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
+    }
+}

@@ -1,343 +1,394 @@
-# Sistema Mercado — Projeto Base DSC/UFPB
+# Radar Tech
 
-Projeto base (boilerplate) para a disciplina **Desenvolvimento de Sistemas Corporativos**.
+O Radar Tech é uma plataforma de oportunidades de tecnologia que conecta candidatos, empresas e curadores de vagas em uma experiência única: descoberta de oportunidades, candidatura interna, perfil profissional, divulgação patrocinada e moderação administrativa.
 
-**Professor**: Rodrigo Rebouças | **UFPB — Campus IV**
+A aplicação está disponível em [https://eq13.dsc.rodrigor.com](https://eq13.dsc.rodrigor.com).
 
----
+## Apresentação do Radar Tech
 
-## Tecnologias
+Assista à apresentação do projeto: [Vídeo de apresentação do Radar Tech](https://drive.google.com/file/d/1IWvFHQ62R8cogHEVkb3j2afCXS3nOIQ-/view?usp=sharing).
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Backend | Java 21 + Spring Boot 3.4.5 |
-| Templates | Thymeleaf + HTMX 2.0 |
-| Frontend | Bootstrap 5.3 |
-| Banco | PostgreSQL 16 |
-| Migrações | Flyway 11 |
-| Segurança | Spring Security 6 |
-| Build | Maven 3.9 |
-| CI/CD | GitHub Actions |
+## O produto
 
----
+O sistema foi projetado em torno de três jornadas:
 
-## Guia de Instalação para Alunos
+- **Candidatos** pesquisam vagas, criam conta, personalizam o perfil, registram experiências, enviam currículo em PDF, candidatam-se e usam um assistente de carreira.
+- **Empresas e divulgadores** autenticados contratam um plano pelo Stripe e enviam oportunidades para moderação.
+- **Administradores** acompanham indicadores, moderam vagas, consultam candidaturas com os currículos anexados, usuários e a trilha de auditoria.
 
-### Passo 1 — Instale o Java 21
+Isso transforma o Radar Tech em uma plataforma de recrutamento e curadoria completa. Autenticação, autorização por papéis, pagamentos, IA, auditoria persistente, armazenamento de perfil, observabilidade e análise de uso fazem parte do fluxo do produto.
 
-O projeto requer Java 21. Recomendamos o **Eclipse Temurin** (distribuição gratuita da Adoptium).
+## Experiência visual
 
-**Windows / macOS / Linux:**
-1. Acesse https://adoptium.net/temurin/releases/?version=21
-2. Baixe o instalador para seu sistema operacional
-3. Execute o instalador e siga as instruções
+O frontend usa um design system próprio em azul-marinho e turquesa, com bastante espaço em branco, tipografia profissional, cards consistentes e componentes responsivos. A mesma identidade cobre home, busca e detalhes de vagas, autenticação, perfil profissional, assinatura e toda a administração.
 
-**Verificar se está correto:**
+- hero corporativo com busca real por cargo, tecnologia, empresa e modelo de trabalho;
+- cabeçalho responsivo com menu móvel, conta, administração e publicação de vagas;
+- componentes reutilizáveis para vagas, formulários, filtros, indicadores, tabelas e estados vazios;
+- alternância direta entre temas claro e escuro, preservada em recarregamentos e sincronizada entre abas;
+- ícones SVG locais e imagens WebP otimizadas;
+- navegação por teclado, foco visível, labels e atributos ARIA;
+- CSS modular e JavaScript ES Modules, sem framework ou etapa adicional de build.
+
+## Principais funcionalidades
+
+### Descoberta e candidatura
+
+- home com oportunidades em destaque;
+- listagem pública com pesquisa e filtros;
+- curadoria de oportunidades com data e link de candidatura verificáveis;
+- detalhes e contador de visualizações;
+- sugestões laterais de outras vagas publicadas, com navegação interna pelo Radar Tech;
+- vagas remotas, híbridas e presenciais na Paraíba;
+- candidatura interna, associada à conta quando o candidato está autenticado;
+- divulgação de vagas mediante assinatura ativa.
+
+### Curadoria de vagas
+
+O catálogo público foi atualizado pela migration `V13__refresh_verified_tech_jobs_august.sql` com oportunidades de tecnologia publicadas entre **03/08/2026 e 07/08/2026**. A seleção combina anúncios públicos do LinkedIn e da Remotar com páginas de candidatura das empresas em Gupy, InHire, Recrutei, Sólides e Zoho Recruit.
+
+Cada item mantém o link original, a data da fonte e uma descrição resumida. Links sem data confirmável, vagas repetidas e anúncios indisponíveis são descartados. As oportunidades anteriores não são apagadas: ficam arquivadas, preservando histórico, candidaturas e auditoria. A atualização registra `JOB_CATALOG_ARCHIVED` e `JOB_CURATED` em `audit_log`.
+
+### Conta e perfil profissional
+
+- cadastro e login tradicional com senha BCrypt;
+- login e cadastro automático por Google OAuth2;
+- papéis `ROLE_USER` e `ROLE_ADMIN`;
+- perfil com nome, biografia, foto reposicionável, capa personalizada e currículo PDF;
+- histórico de experiências profissionais;
+- preferência persistida de tema claro ou escuro no navegador e na conta;
+- assistente de carreira integrado ao LiteLLM.
+
+Arquivos de perfil são validados por tamanho, tipo MIME e assinatura binária. A foto é alterada diretamente no avatar e a capa no cabeçalho do perfil, ambas com prévia e ajuste de enquadramento. Fotos aceitas: JPEG, PNG e WebP, até 3 MB; capas nos mesmos formatos, até 5 MB. Currículos: PDF válido, até 5 MB.
+
+### Administração e governança
+
+- dashboard com indicadores de vagas, candidaturas e usuários;
+- busca e filtros por status, modelo de trabalho, cargo e empresa;
+- publicação, retorno para pendência, arquivamento e remoção;
+- consulta de candidaturas e usuários;
+- auditoria administrativa com filtros por ação, ator, entidade e período.
+
+A área administrativa fica em `/admin` e exige `ROLE_ADMIN`. Usuários comuns recebem acesso negado mesmo quando autenticados.
+
+## Arquitetura
+
+O projeto preserva uma arquitetura Spring MVC em camadas:
+
+```text
+HTTP / Thymeleaf
+       ↓
+Controllers e Spring Security
+       ↓
+Serviços e regras de negócio
+       ↓
+Spring Data JPA
+       ↓
+PostgreSQL + Flyway
+```
+
+Tecnologias principais:
+
+- Java 21 e Spring Boot;
+- Spring MVC, Thymeleaf e Spring Security;
+- OAuth2 Client para Google;
+- PostgreSQL em produção e H2 nos testes;
+- Flyway para evolução segura do banco;
+- Stripe Checkout e webhooks assinados;
+- LiteLLM com API compatível com OpenAI;
+- OpenTelemetry Java Agent e Umami;
+- JUnit 5, MockMvc, Mockito e JaCoCo;
+- Docker e GitHub Actions.
+
+## Autenticação
+
+### Login tradicional
+
+Acesse `/login` e informe usuário ou e-mail e senha. Novos usuários podem usar `/cadastro`. As senhas nunca são armazenadas em texto puro: o sistema usa BCrypt.
+
+### Recuperação de senha
+
+O link **Esqueceu sua senha?** abre `/esqueci-senha`. O sistema responde de forma genérica para não revelar quais e-mails possuem conta. Para endereços cadastrados, é criado um token aleatório de uso único, armazenado no banco somente como hash SHA-256 e válido por 30 minutos. A nova senha é gravada com BCrypt e todos os tokens ativos do usuário são invalidados.
+
+O envio utiliza SMTP pelo Spring Mail. Configure no ambiente de produção:
+
+```text
+PASSWORD_RESET_EMAIL_ENABLED=true
+APP_PUBLIC_URL=https://eq13.dsc.rodrigor.com
+MAIL_HOST=<servidor-smtp>
+MAIL_PORT=587
+MAIL_USERNAME=<usuario-smtp>
+MAIL_PASSWORD=<senha-smtp>
+MAIL_FROM=<remetente-verificado>
+MAIL_SMTP_AUTH=true
+MAIL_STARTTLS_ENABLE=true
+PASSWORD_RESET_TTL_MINUTES=30
+```
+
+Sem essas variáveis, o restante da aplicação continua funcionando, mas nenhum link é enviado. Solicitações e redefinições concluídas geram os eventos `PASSWORD_RESET_REQUESTED` e `PASSWORD_RESET_COMPLETED` na auditoria.
+
+No ambiente de desenvolvimento existe um administrador inicial:
+
+```text
+usuário: admin
+senha: admin123
+```
+
+Essa senha é apenas local. Em produção, `ADMIN_PASSWORD` deve ser fornecida fora do repositório. Sem ela, uma conta já existente continua disponível, mas o sistema não cria administrador nem altera sua senha. Ao configurá-la, o bootstrap cria a conta ausente ou rotaciona a senha da conta administrativa existente.
+
+### Google OAuth2
+
+O botão **Continuar com Google** aparece tanto no login quanto no cadastro. No primeiro acesso, o e-mail recebido do Google cria uma conta `ROLE_USER`; em acessos posteriores a conta existente é reutilizada. Uma conta administrativa já existente conserva `ROLE_ADMIN`.
+
+Variáveis necessárias:
+
+```text
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+```
+
+Callbacks autorizados no Google Cloud Console:
+
+```text
+http://localhost:8080/login/oauth2/code/google
+https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+```
+
+Em desenvolvimento, `GOOGLE_REDIRECT_URI_DEV` pode substituir o callback local. Em produção, a imagem inicia obrigatoriamente com o perfil `prod` e usa:
+
+```text
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+```
+
+Esse contrato também possui teste automatizado para impedir regressão para `localhost` no deploy.
+
+## Integrações externas
+
+### Stripe
+
+O Stripe cuida da assinatura para divulgação de vagas. O sistema só ativa o plano depois de validar um webhook assinado; visitar a página de sucesso não concede acesso.
+
+```text
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_WEBHOOK_SECRET=<stripe-webhook-signing-secret>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+STRIPE_SUCCESS_URL=https://eq13.dsc.rodrigor.com/divulgar/assinar/sucesso
+STRIPE_CANCEL_URL=https://eq13.dsc.rodrigor.com/divulgar/assinar/cancelado
+```
+
+Endpoint de webhook:
+
+```text
+POST /webhooks/stripe
+```
+
+### Assistente de carreira com IA
+
+O perfil do candidato oferece orientações profissionais por meio do proxy LiteLLM da disciplina:
+
+```text
+LITELLM_ENABLED=true
+LITELLM_BASE_URL=https://llm.rodrigor.com
+LITELLM_API_KEY=<litellm-api-key>
+LITELLM_MODEL=gpt-4o-mini
+```
+
+Quando a integração está indisponível, a falha é tratada e apresentada ao usuário sem expor credenciais nem detalhes internos.
+
+## Auditoria
+
+Eventos relevantes são persistidos na tabela `audit_log`, incluindo:
+
+- sucesso e falha de login, OAuth2 e logout;
+- solicitação e conclusão de recuperação de senha;
+- cadastro e alterações do perfil;
+- foto, capa, enquadramento das imagens, currículo, experiências e preferência de tema;
+- uso do assistente de carreira;
+- candidaturas;
+- envio, criação e moderação de vagas;
+- início, ativação e cancelamento de assinatura Stripe.
+
+Cada registro pode guardar ator, ação, entidade, identificador, descrição, IP, navegador e data. Administradores consultam a trilha em `/admin/auditoria`.
+
+## Healthcheck, telemetria e analytics
+
+`GET /ping` é público e retorna HTTP 200 somente quando a aplicação consegue consultar o banco:
+
+```json
+{
+  "status": "ok",
+  "service": "eq13",
+  "database": "up",
+  "timestamp": "..."
+}
+```
+
+O `HEALTHCHECK` do container usa esse endpoint; portanto ele verifica aplicação e persistência, não uma resposta estática.
+
+A imagem inclui o OpenTelemetry Java Agent. Traces, métricas e logs usam `service.name=dsc-eq13`:
+
+```text
+OTEL_SERVICE_NAME=dsc-eq13
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.dsc.rodrigor.com
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer <otel-ingest-token>
+OTEL_TRACES_EXPORTER=otlp
+OTEL_METRICS_EXPORTER=otlp
+OTEL_LOGS_EXPORTER=otlp
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=dsc
+```
+
+No [painel OpenTelemetry/Grafana](https://otel.dsc.rodrigor.com), use o Explore e filtre por `service.name = dsc-eq13`. Credenciais do painel e token de ingestão pertencem ao ambiente de deploy e não são documentados no repositório.
+
+O Umami está carregado no layout compartilhado do Thymeleaf e mede visitas e páginas sem bloquear a navegação.
+
+## Banco de dados
+
+Produção usa PostgreSQL. Alterações estruturais são versionadas em `src/main/resources/db/migration` com Flyway; a aplicação usa `ddl-auto=validate`, evitando alterações destrutivas automáticas.
+
+Principais tabelas:
+
+- `app_user`;
+- `candidate_experience`;
+- `job_posting`;
+- `candidate_application`;
+- `subscription`;
+- `audit_log`.
+
+Nenhuma migration apaga dados existentes.
+
+## Executar localmente
+
+Pré-requisitos:
+
+- Java 21;
+- Maven 3.9 ou superior.
+
+Primeiro, inicie o PostgreSQL local:
+
 ```bash
-java -version
-# Esperado: openjdk version "21.x.x" ...
+docker compose -f docker/docker-compose.dev.yml up -d
 ```
 
-> **Dica para Windows:** durante a instalação, marque a opção *"Add to PATH"* e *"Set JAVA_HOME"*.
-
----
-
-### Passo 2 — Instale o Maven
-
-O Maven é a ferramenta de build do projeto.
-
-**macOS (com Homebrew):**
-```bash
-brew install maven
-```
-
-**Windows:**
-1. Acesse https://maven.apache.org/download.cgi
-2. Baixe o arquivo `apache-maven-3.x.x-bin.zip`
-3. Extraia para uma pasta (ex.: `C:\maven`)
-4. Adicione `C:\maven\bin` à variável de ambiente `PATH`
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt install maven
-```
-
-**Verificar:**
-```bash
-mvn -version
-# Esperado: Apache Maven 3.x.x
-```
-
----
-
-### Passo 3 — Instale o Docker Desktop
-
-O Docker sobe o banco de dados PostgreSQL sem precisar instalar nada manualmente.
-
-1. Acesse https://www.docker.com/products/docker-desktop/
-2. Baixe e instale o Docker Desktop para seu sistema
-3. Abra o Docker Desktop e aguarde ele inicializar (ícone na barra de tarefas)
-
-**Verificar:**
-```bash
-docker -v
-# Esperado: Docker version 27.x.x ...
-```
-
-> **Importante:** o Docker Desktop deve estar **em execução** sempre que você for rodar o projeto.
-
----
-
-### Passo 4 — Clone o repositório
+Em seguida, execute a aplicação:
 
 ```bash
-git clone <URL-DO-REPOSITÓRIO>
-cd base_projeto
-```
-
-> Substitua `<URL-DO-REPOSITÓRIO>` pela URL fornecida pelo professor.
-
----
-
-### Passo 5 — Execute o projeto
-
-Você tem duas opções. **Recomendamos a Opção A para a primeira execução.**
-
-#### Opção A: Tudo com Docker (mais simples)
-
-Um único comando sobe o banco, a aplicação e o Adminer (interface web do banco):
-
-```bash
-docker compose -f docker/docker-compose.dev.yml up --build
-```
-
-Aguarde as mensagens de inicialização. Quando aparecer algo como:
-```
-Started MercadoApplication in X.XXX seconds
-```
-...a aplicação está pronta.
-
-#### Opção B: Banco no Docker + aplicação local (recomendado para desenvolvimento)
-
-Esta opção permite editar o código e ver as mudanças mais rápido:
-
-```bash
-# Terminal 1 — sobe o banco de dados
-docker compose -f docker/docker-compose.dev.yml up postgres adminer
-
-# Terminal 2 — roda a aplicação (em outro terminal, na mesma pasta)
 mvn spring-boot:run
 ```
 
----
+O perfil de desenvolvimento usa PostgreSQL; o H2 fica isolado no perfil automatizado de testes. Depois, acesse:
 
-### Passo 6 — Acesse no browser
+- aplicação: `http://localhost:8080`;
+- healthcheck: `http://localhost:8080/ping`.
 
-| O que | Endereço |
-|-------|----------|
-| Aplicação | http://localhost:8080 |
-| Login | usuário: `admin` / senha: `admin123` |
-| Adminer (banco) | http://localhost:8888 |
-| Health check | http://localhost:8080/actuator/health |
-
----
-
-### Parando o projeto
+Para acompanhar ou encerrar somente o banco local:
 
 ```bash
-# Parar a aplicação: Ctrl+C no terminal onde está rodando
-
-# Parar os containers Docker:
+docker compose -f docker/docker-compose.dev.yml logs -f postgres
 docker compose -f docker/docker-compose.dev.yml down
 ```
 
----
+## Configuração segura
 
-## Solução de Problemas Comuns
+O repositório não versiona `.env`, variantes de `.env`, senhas, tokens nem chaves reais. Configure os valores no sistema operacional, no portal do servidor ou em GitHub Actions Secrets.
 
-### "Port 8080 already in use"
-Outra aplicação está usando a porta 8080. Para liberar:
-```bash
-# macOS / Linux
-lsof -ti:8080 | xargs kill
+Principais variáveis de produção:
 
-# Windows (PowerShell)
-netstat -ano | findstr :8080
-# Anote o PID da última coluna e execute:
-taskkill /PID <número-do-pid> /F
+```text
+SPRING_PROFILES_ACTIVE=prod
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/eq13
+SPRING_DATASOURCE_USERNAME=eq13
+SPRING_DATASOURCE_PASSWORD=<senha-real>
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<senha-admin>
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+PASSWORD_RESET_EMAIL_ENABLED=true
+APP_PUBLIC_URL=https://eq13.dsc.rodrigor.com
+MAIL_HOST=<servidor-smtp>
+MAIL_PORT=587
+MAIL_USERNAME=<usuario-smtp>
+MAIL_PASSWORD=<senha-smtp>
+MAIL_FROM=<remetente-verificado>
+STRIPE_SECRET_KEY=<stripe-secret-key>
+STRIPE_WEBHOOK_SECRET=<stripe-webhook-signing-secret>
+STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
+LITELLM_API_KEY=<litellm-api-key>
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer <otel-ingest-token>
+AWS_S3_ACCESS_KEY=<s3-access-key>
+AWS_S3_SECRET_KEY=<s3-secret-key>
 ```
 
-### "Cannot connect to the Docker daemon"
-O Docker Desktop não está em execução. Abra o aplicativo Docker Desktop e aguarde inicializar.
+## Testes e qualidade
 
-### "Connection refused" ao banco de dados
-O container do PostgreSQL ainda não subiu. Aguarde alguns segundos e tente novamente. Você pode verificar com:
-```bash
-docker compose -f docker/docker-compose.dev.yml ps
-# O container "mercado-postgres-dev" deve estar com status "healthy"
-```
+A suíte valida comportamento real em diferentes níveis:
 
-### Erro de compilação Java
-Verifique se o Java 21 está sendo usado pelo Maven:
-```bash
-mvn -version
-# A linha "Java version:" deve mostrar 21.x.x
-```
-Se mostrar outra versão, configure a variável `JAVA_HOME` apontando para o Java 21.
+- **JUnit 5:** regras de domínio e serviços;
+- **Mockito:** falhas e respostas de Google, Stripe, LiteLLM e dependências isoladas;
+- **MockMvc:** páginas públicas, formulários, segurança, papéis e área administrativa;
+- **Spring Boot Test:** integração com persistência, migrations e contexto;
+- **JaCoCo:** cobertura de linhas e falha automática do build abaixo de 100%.
 
-### Flyway: "Found non-empty schema(s) with no schema history table"
-O banco existe mas foi criado sem as migrations. Apague os dados e recomece:
-```bash
-docker compose -f docker/docker-compose.dev.yml down -v
-docker compose -f docker/docker-compose.dev.yml up postgres
-```
-
----
-
-## Testes
-
-```bash
-# Rodar todos os testes (requer Docker em execução — usa Testcontainers)
-mvn test
-
-# Rodar com relatório de cobertura (JaCoCo)
-mvn verify
-# Relatório: abra o arquivo target/site/jacoco/index.html no browser
-```
-
----
-
-## Análise de Segurança (SAST)
+Comando completo:
 
 ```bash
-# SpotBugs + FindSecBugs + OWASP Dependency Check
-mvn verify -Psecurity
-
-# Trivy: scan de vulnerabilidades no filesystem
-docker compose -f docker/docker-compose.dev.yml --profile scan up trivy
-
-# Verificar dependências desatualizadas
-mvn versions:display-dependency-updates -Pversions
+mvn clean verify
 ```
 
-Veja `docs/SECURITY.md` para detalhes.
+Relatório:
 
----
-
-## Configurando o Deploy Automático (GitHub Actions)
-
-O projeto inclui um pipeline de CI/CD em `.github/workflows/deploy.yml` que:
-- roda os testes automaticamente a cada `push` na branch `main`
-- executa análise de segurança (SAST) no código e nas dependências
-- constrói a imagem Docker de produção e faz o deploy no servidor da disciplina
-
-Para ativar o deploy, você precisa configurar **dois secrets** e uma **variável** no seu repositório GitHub.
-
----
-
-### Secret 1 — Chave SSH de deploy (`SSH_DEPLOY_KEY`)
-
-O servidor da disciplina (`dsc.rodrigor.com`) já está preparado para receber deploys.
-A chave SSH que autoriza o acesso está disponível na página da disciplina:
-
-**Acesse: https://gd.dsc.rodrigor.com** e copie a chave SSH privada disponibilizada pelo professor.
-
-Depois, adicione no seu repositório:
-
-1. No GitHub, acesse seu repositório → **Settings**
-2. No menu lateral: **Secrets and variables → Actions**
-3. Clique em **New repository secret**
-4. Nome: `SSH_DEPLOY_KEY`
-5. Valor: cole a chave privada copiada do portal (o texto completo, incluindo as linhas `-----BEGIN...` e `-----END...`)
-6. Clique em **Add secret**
-
----
-
-### Secret 2 — Chave da API do NVD (`NVD_API_KEY`)
-
-#### O que é o NVD?
-
-**NVD** significa *National Vulnerability Database* — é o banco de dados oficial do governo americano (NIST) que cataloga todas as vulnerabilidades de segurança conhecidas em softwares. Cada vulnerabilidade recebe um identificador chamado **CVE** (ex.: CVE-2024-12345) e uma nota de gravidade chamada **CVSS** (de 0 a 10).
-
-O **OWASP Dependency Check** (uma das ferramentas de segurança do projeto) consulta esse banco para verificar se as bibliotecas que o seu projeto usa possuem vulnerabilidades conhecidas.
-
-#### Por que preciso de uma chave?
-
-Sem a chave, o download do banco de dados NVD é muito lento (pode levar 20+ minutos no CI/CD, ou até falhar por timeout). Com a chave gratuita, o download é feito via API e leva menos de 2 minutos.
-
-#### Como obter (gratuito, leva ~1 minuto)
-
-1. Acesse https://nvd.nist.gov/developers/request-an-api-key
-2. Preencha seu e-mail institucional (use o e-mail da UFPB se possível)
-3. Marque a caixa de uso não-comercial
-4. Clique em **Submit**
-5. Acesse seu e-mail — você receberá a chave em segundos
-
-#### Adicionando ao repositório
-
-1. No GitHub: **Settings → Secrets and variables → Actions**
-2. Clique em **New repository secret**
-3. Nome: `NVD_API_KEY`
-4. Valor: cole a chave recebida por e-mail
-5. Clique em **Add secret**
-
-> **Sem a chave ainda?** O pipeline funciona mesmo sem ela, mas o OWASP Dependency Check
-> pode demorar muito ou falhar por timeout. Configure assim que possível.
-
----
-
-### Variável — Nome da imagem Docker (`APP_IMAGE`)
-
-O pipeline publica a imagem Docker no GitHub Container Registry (GHCR) com o nome do seu repositório. Você não precisa configurar isso manualmente — o workflow usa `${{ github.repository }}` para montar o nome automaticamente.
-
-Mas o arquivo `.env` no servidor precisa saber qual imagem usar. O script de deploy atualiza isso automaticamente na primeira execução.
-
----
-
-### Verificando se o deploy funcionou
-
-Após configurar os secrets e fazer um `push` na branch `main`:
-
-1. No GitHub, clique na aba **Actions**
-2. Você verá o workflow **"Build & Deploy"** em execução
-3. Ele tem 3 etapas: **Testes e SAST → Build e push → Deploy em produção**
-4. Se tudo der certo, a aplicação estará disponível em `https://dsc.rodrigor.com`
-
-Se alguma etapa falhar, clique nela para ver os logs detalhados.
-
----
-
-## Estrutura do Projeto
-
-```
-base_projeto/
-├── .github/workflows/
-│   └── deploy.yml           # Pipeline CI/CD (GitHub Actions)
-├── src/main/java/br/ufpb/dsc/mercado/
-│   ├── config/              # Configurações (Security, GlobalModelAttributes, etc.)
-│   ├── controller/          # Controllers HTTP + HTMX
-│   ├── domain/              # Entidades JPA
-│   ├── dto/                 # Data Transfer Objects (Records)
-│   ├── exception/           # Exceções de domínio
-│   ├── repository/          # Interfaces Spring Data JPA
-│   └── service/             # Lógica de negócio
-├── src/main/resources/
-│   ├── db/migration/        # Scripts Flyway (V1__, V2__, ...)
-│   └── templates/           # Templates Thymeleaf
-├── docker/                  # Dockerfiles + docker-compose
-├── docs/                    # Documentação técnica
-├── CLAUDE.md                # Memória para Claude Code
-└── pom.xml
+```text
+target/site/jacoco/index.html
 ```
 
----
+Uma cópia do último relatório validado também fica em [`cobertura/index.html`](cobertura/index.html) para inspeção direta no repositório.
 
-## Para Alunos: Adaptando o Boilerplate
+O pipeline exige 100% de cobertura de linhas. A suíte alcança essa meta com testes de comportamento — sem testes vazios ou exclusões artificiais. Cobertura de linhas não substitui análise de riscos, testes de integração ou revisão de código, mas impede que novos caminhos sejam adicionados sem verificação automatizada.
 
-1. **Renomear** a entidade `Produto` para sua entidade principal
-2. **Criar migration** Flyway com a nova estrutura da tabela (`src/main/resources/db/migration/V2__...sql`)
-3. **Atualizar** Repository, Service, Controller e templates seguindo os mesmos padrões
-4. **Manter** a estrutura de pacotes e convenções (ver `docs/CONVENTIONS.md`)
-5. **Nunca editar** migrations já aplicadas — sempre criar uma nova (`V3__`, `V4__`, ...)
+O GitHub Actions executa `mvn verify` antes de construir e publicar a imagem. Se teste, cobertura ou compilação falhar, não há deploy.
 
-> Dúvidas? Consulte a documentação em `docs/` ou o professor.
+### Evidências dos requisitos de qualidade
+
+| Requisito | Implementação verificável |
+|---|---|
+| Auditoria | Entidade e migration `audit_log`, `AuditLogService`, eventos de autenticação, perfil, candidatura, vagas, Stripe e IA, consulta em `/admin/auditoria` |
+| Integração externa | Google OAuth2, Stripe Checkout/webhooks assinados e LiteLLM |
+| Cobertura ≥85% | JaCoCo executado no `mvn verify`, com gate atual de 100% das linhas |
+| IA | Assistente de carreira via LiteLLM, com tratamento de indisponibilidade |
+| Healthcheck com banco | `/ping` executa consulta real pelo `DatabaseHealthService` e informa `database: up` |
+| Telemetria e analytics | OpenTelemetry Java Agent com `service.name=dsc-eq13` e Umami no layout compartilhado |
+
+Essas evidências são exercitadas pela suíte automatizada e pelo workflow de deploy; não dependem apenas da documentação.
+
+## Rotas úteis
+
+| Rota | Acesso | Finalidade |
+|---|---|---|
+| `/` | público | página inicial |
+| `/vagas` | público | pesquisa e filtros |
+| `/vagas/{id}` | público | detalhes e candidatura |
+| `/login` | público | login tradicional ou Google |
+| `/cadastro` | público | criação de conta |
+| `/esqueci-senha` | público | solicitação segura de recuperação |
+| `/redefinir-senha` | público + token | definição de nova senha |
+| `/minha-conta` | autenticado | perfil profissional e IA |
+| `/divulgar` | autenticado + assinatura | envio de vaga |
+| `/admin` | `ROLE_ADMIN` | dashboard |
+| `/admin/vagas` | `ROLE_ADMIN` | moderação |
+| `/admin/candidaturas` | `ROLE_ADMIN` | candidaturas |
+| `/admin/auditoria` | `ROLE_ADMIN` | trilha de auditoria |
+| `/admin/usuarios` | `ROLE_ADMIN` | usuários |
+| `/ping` | público | saúde da aplicação e banco |
+
+## Deploy
+
+Pushes na branch `main` disparam:
+
+1. compilação, testes e cobertura;
+2. criação da imagem Docker;
+3. publicação no GitHub Container Registry;
+4. atualização do container no servidor;
+5. verificação contínua pelo `/ping`.
+
+A aplicação escuta internamente em `8080` e é publicada no servidor da disciplina em `127.0.0.1:8113`.

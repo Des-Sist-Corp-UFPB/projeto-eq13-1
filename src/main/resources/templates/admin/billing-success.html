@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Billing concluído', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="billing-result-shell">
+    <section class="card card-elevated billing-result-card">
+        <span class="billing-result-icon is-success" aria-hidden="true">
+            <svg class="icon icon--lg" aria-hidden="true"><use href="/images/icons.svg#icon-check"></use></svg>
+        </span>
+        <span class="badge badge-success u-mb-4">Checkout</span>
+        <h1>Assinatura iniciada</h1>
+        <p class="u-muted" th:text="${billingMessage}">Assinatura iniciada com sucesso.</p>
+        <a class="btn btn-primary" th:href="@{/admin}">Voltar ao dashboard</a>
+    </section>
+</div>
+</html>

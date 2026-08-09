@@ -1,0 +1,43 @@
+/*
+ * utilities.css
+ * Pequenos utilitários de layout usados pontualmente nas páginas.
+ * Evitar crescer este arquivo com regras que deveriam ser componentes.
+ */
+
+.u-flex { display: flex; }
+.u-flex-col { display: flex; flex-direction: column; }
+.u-items-center { align-items: center; }
+.u-justify-between { justify-content: space-between; }
+.u-gap-2 { gap: var(--space-2); }
+.u-gap-3 { gap: var(--space-3); }
+.u-gap-4 { gap: var(--space-4); }
+.u-gap-6 { gap: var(--space-6); }
+
+.u-muted { color: var(--color-text-secondary); }
+.u-text-small { font-size: var(--font-size-small); }
+.u-text-center { text-align: center; }
+
+.u-mt-4 { margin-top: var(--space-4); }
+.u-mt-6 { margin-top: var(--space-6); }
+.u-mt-8 { margin-top: var(--space-8); }
+.u-mb-4 { margin-bottom: var(--space-4); }
+.u-mb-6 { margin-bottom: var(--space-6); }
+
+.page-section { padding-block: var(--space-10); }
+.mobile-logout { padding-block: var(--space-4); }
+.icon--xs { width: 13px; height: 13px; }
+.icon--sm { width: 14px; height: 14px; }
+.icon--md { width: 16px; height: 16px; }
+.icon--lg { width: 32px; height: 32px; }
+.icon--back { width: 16px; height: 16px; transform: rotate(225deg); }
+.text-normal { text-transform: none; }
+
+.u-hidden { display: none !important; }
+
+@media (max-width: 767px) {
+    .u-hide-mobile { display: none !important; }
+}
+
+@media (min-width: 768px) {
+    .u-hide-desktop { display: none !important; }
+}

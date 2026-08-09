@@ -1,0 +1,21 @@
+/*
+ * app.css
+ * Ponto de entrada do CSS do Radar Tech. Importa os demais
+ * arquivos na ordem correta: tokens -> reset -> base -> layout ->
+ * components -> páginas -> utilities.
+ */
+
+@import url('./tokens.css');
+@import url('./reset.css');
+@import url('./base.css');
+@import url('./layout.css');
+@import url('./components.css');
+
+@import url('./pages/home.css');
+@import url('./pages/jobs.css');
+@import url('./pages/auth.css');
+@import url('./pages/profile.css');
+@import url('./pages/billing.css');
+@import url('./pages/admin.css');
+
+@import url('./utilities.css');

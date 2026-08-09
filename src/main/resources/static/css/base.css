@@ -1,0 +1,89 @@
+/*
+ * base.css
+ * Estilos de base para elementos HTML nativos: tipografia, cores de
+ * texto, links, foco visível e utilitários de acessibilidade.
+ */
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+h1, h2, h3, h4 {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    line-height: 1.15;
+}
+
+h1 { font-size: var(--font-size-h1); }
+h2 { font-size: var(--font-size-h2); }
+h3 { font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); }
+
+p {
+    color: var(--color-text-secondary);
+    overflow-wrap: anywhere;
+}
+
+small {
+    font-size: var(--font-size-small);
+}
+
+label {
+    font-size: var(--font-size-label);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+a {
+    transition: color var(--transition-fast);
+}
+
+svg {
+    flex-shrink: 0;
+}
+
+/* Foco visível consistente em toda a aplicação */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-sm);
+}
+
+/* Texto acessível apenas para leitores de tela */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+/* Alternância de logotipo e ícone de tema conforme data-theme */
+.theme-logo-dark { display: none; }
+html[data-theme="dark"] .theme-logo-light { display: none; }
+html[data-theme="dark"] .theme-logo-dark { display: block; }
+
+.theme-icon-light, .theme-icon-dark { display: none; }
+html[data-theme="light"] .theme-icon-light { display: block; }
+html[data-theme="dark"] .theme-icon-dark { display: block; }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR" th:fragment="shell(title, content)" xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-theme=${viewer != null ? #strings.toLowerCase(viewer.themePreference.name()) : 'light'},data-authenticated=${viewer != null}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' | Radar Tech'">Radar Tech</title>
+    <link rel="icon" type="image/png" th:href="@{/images/radartech-logo-transparent.png}">
+    <link rel="apple-touch-icon" th:href="@{/images/radartech-logo-transparent.png}">
+    <meta name="theme-color" content="#0B132B">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <script>
+        (() => {
+            const root = document.documentElement;
+            try {
+                const savedTheme = localStorage.getItem('radartech-theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    root.dataset.theme = savedTheme;
+                }
+            } catch (_) {
+                // Mantém a preferência fornecida pelo servidor quando o armazenamento está indisponível.
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script defer src="https://umami.dsc.rodrigor.com/script.js" data-website-id="eee2189e-e175-4c4e-b44d-0fd48757ddbd"></script>
+</head>
+<body>
+<div class="site-shell">
+    <header class="site-header" id="site-header">
+        <div class="site-header-inner">
+            <a class="site-brand" th:href="@{/}" aria-label="Radar Tech - página inicial">
+                <span class="site-brand-mark" aria-hidden="true">
+                    <img class="theme-logo-light" th:src="@{/images/radartech-logo-transparent.png}" alt="">
+                    <img class="theme-logo-dark" th:src="@{/images/radartech-logo-dark.png}" alt="">
+                </span>
+                <span class="site-brand-copy">
+                    <strong>Radar Tech</strong>
+                    <small>Carreiras em tecnologia</small>
+                </span>
+            </a>
+
+            <nav class="site-nav-links" id="site-nav-links" aria-label="Navegação principal">
+                <a th:href="@{/vagas}">Buscar vagas</a>
+                <a th:href="@{/divulgar}">Para empresas</a>
+                <a th:href="@{${viewer != null} ? '/minha-conta#assistente-ia' : '/login'}">Recursos</a>
+                <a class="u-hide-desktop" th:if="${viewer != null && viewer.role.name() == 'ROLE_ADMIN'}" th:href="@{/admin}">Administração</a>
+                <a class="u-hide-desktop" th:if="${viewer != null}" th:href="@{/minha-conta}">Minha conta</a>
+                <a class="u-hide-desktop" th:if="${viewer == null}" th:href="@{/login}">Entrar</a>
+                <a class="u-hide-desktop" th:if="${viewer == null}" th:href="@{/cadastro}">Criar conta</a>
+                <form class="u-hide-desktop" th:if="${viewer != null}" th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn-ghost mobile-logout">Sair</button>
+                </form>
+            </nav>
+
+            <div class="site-nav-actions" id="site-nav-actions">
+                <button type="button" id="theme-toggle" class="theme-toggle" title="Ativar tema escuro"
+                        th:attr="data-save-url=${viewer != null ? '/minha-conta/tema' : null}">
+                    <svg class="icon theme-icon-light" aria-hidden="true"><use href="/images/icons.svg#icon-sun"></use></svg>
+                    <svg class="icon theme-icon-dark" aria-hidden="true"><use href="/images/icons.svg#icon-moon"></use></svg>
+                    <span class="sr-only">Ativar tema escuro</span>
+                </button>
+
+                <div class="u-hide-mobile u-flex u-items-center u-gap-3">
+                    <a th:if="${viewer == null}" class="btn btn-ghost" th:href="@{/login}">Entrar</a>
+                    <a th:if="${viewer == null}" class="btn btn-outline" th:href="@{/cadastro}">Criar conta</a>
+
+                    <div class="dropdown" id="profile-menu" th:if="${viewer != null}">
+                        <button type="button" class="nav-profile" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu-panel">
+                            <span class="nav-avatar">
+                                <img th:if="${viewer.photoContent != null}"
+                                     th:src="@{/minha-conta/foto(v=${viewer.updatedAt.toEpochMilli()})}"
+                                     data-positioned-media
+                                     th:attr="data-position-x=${viewer.photoPositionX},data-position-y=${viewer.photoPositionY}" alt="">
+                                <span th:unless="${viewer.photoContent != null}"
+                                      th:text="${viewer.name != null && !viewer.name.isBlank() ? #strings.substring(viewer.name, 0, 1) : 'U'}">U</span>
+                            </span>
+                            <span th:text="${viewer.name}">Minha conta</span>
+                            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-chevron-down"></use></svg>
+                        </button>
+                        <div class="dropdown-panel" id="profile-menu-panel" role="menu">
+                            <a role="menuitem" th:href="@{/minha-conta}">
+                                <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-user"></use></svg>
+                                <span>Minha conta</span>
+                            </a>
+                            <a role="menuitem" th:if="${viewer.role.name() == 'ROLE_ADMIN'}" th:href="@{/admin}">
+                                <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-shield"></use></svg>
+                                <span>Administração</span>
+                            </a>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" role="menuitem">
+                                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-logout"></use></svg>
+                                    <span>Sair</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <a class="btn btn-primary" th:href="@{/divulgar}">
+                        <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-plus"></use></svg>
+                        <span>Publicar vaga</span>
+                    </a>
+                </div>
+            </div>
+
+            <button type="button" class="nav-hamburger" id="nav-hamburger" aria-expanded="false" aria-controls="site-nav-links" aria-label="Abrir menu de navegação">
+                <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-menu"></use></svg>
+            </button>
+        </div>
+        <div class="mobile-panel-scrim" id="nav-scrim"></div>
+    </header>
+
+    <main class="site-main">
+        <th:block th:replace="${content}"></th:block>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container site-footer-inner">
+            <div class="site-footer-brand">
+                <strong>Radar Tech</strong>
+                <span>Conectando talentos a oportunidades de tecnologia na Paraíba e no Brasil.</span>
+            </div>
+            <nav class="site-footer-links" aria-label="Links do rodapé">
+                <a th:href="@{/vagas}">Buscar vagas</a>
+                <a th:href="@{/divulgar}">Para empresas</a>
+                <a th:href="@{${viewer != null} ? '/minha-conta#assistente-ia' : '/login'}">Recursos</a>
+                <a th:href="@{/divulgar}">Publicar vaga</a>
+            </nav>
+            <div class="site-footer-meta">&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span> Radar Tech. Todos os direitos reservados.</div>
+        </div>
+    </footer>
+</div>
+<script type="module" th:src="@{/js/app.js}"></script>
+</body>
+</html>

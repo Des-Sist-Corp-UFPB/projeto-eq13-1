@@ -1,18 +1,65 @@
 spring:
   application:
-    name: mercado
+    name: radar-tech
   profiles:
-    active: dev
+    default: dev
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:<google-client-id>}
+            client-secret: ${GOOGLE_CLIENT_SECRET:<google-client-secret>}
+            redirect-uri: ${GOOGLE_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}
+            scope:
+              - openid
+              - profile
+              - email
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 9MB
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:true}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
-# Actuator - monitoramento da aplicação
-# Acesse: http://localhost:8080/actuator/health
+app:
+  password-reset:
+    email-enabled: ${PASSWORD_RESET_EMAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@radartech.dev}
+    public-url: ${APP_PUBLIC_URL:http://localhost:8080}
+    ttl-minutes: ${PASSWORD_RESET_TTL_MINUTES:30}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  monthly-price-id: ${STRIPE_MONTHLY_PRICE_ID:}
+  success-url: ${STRIPE_SUCCESS_URL:http://localhost:8080/divulgar/assinar/sucesso}
+  cancel-url: ${STRIPE_CANCEL_URL:http://localhost:8080/divulgar/assinar/cancelado}
+
+ai:
+  litellm:
+    enabled: ${LITELLM_ENABLED:true}
+    base-url: ${LITELLM_BASE_URL:https://llm.rodrigor.com}
+    api-key: ${LITELLM_API_KEY:}
+    model: ${LITELLM_MODEL:gpt-4o-mini}
+
 management:
   endpoints:
     web:
       exposure:
-        # Expõe apenas os endpoints necessários (não exponha todos em produção!)
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      # Detalhes do health só são exibidos para usuários autenticados
       show-details: when-authorized

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Início', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div>
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-content">
+            <span class="hero-eyebrow">Radar de oportunidades tech</span>
+            <h1 class="hero-title">Sua carreira em tecnologia começa <span class="highlight">aqui.</span></h1>
+            <p class="hero-text">Encontre oportunidades em tecnologia selecionadas para estudantes, profissionais e empresas que estão construindo o futuro.</p>
+
+            <form class="hero-search" th:action="@{/vagas}" method="get" role="search">
+                <label for="hero-search-q" class="sr-only">Cargo, tecnologia ou empresa</label>
+                <div class="hero-search-field">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-search"></use></svg>
+                    <input id="hero-search-q" type="search" name="q" placeholder="Cargo, tecnologia ou empresa">
+                </div>
+                <div class="hero-search-divider" aria-hidden="true"></div>
+                <label for="hero-search-location" class="sr-only">Modelo de trabalho</label>
+                <div class="hero-search-field">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-map-pin"></use></svg>
+                    <select id="hero-search-location" name="location">
+                        <option value="">Todos os modelos</option>
+                        <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:text="${type.label}"></option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" type="submit">Buscar vagas</button>
+            </form>
+
+            <nav class="category-grid" aria-label="Categorias de vagas">
+                <a class="category-card" th:href="@{/vagas(q='desenvolvimento')}">
+                    <span class="category-card-icon" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#icon-code"></use></svg></span>
+                    <span class="category-card-body"><strong>Desenvolvimento de Software</strong></span>
+                    <svg class="icon category-card-arrow" aria-hidden="true"><use href="/images/icons.svg#icon-arrow-up-right"></use></svg>
+                </a>
+                <a class="category-card" th:href="@{/vagas(q='produto')}">
+                    <span class="category-card-icon" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#icon-boxes"></use></svg></span>
+                    <span class="category-card-body"><strong>Gestão de Produtos</strong></span>
+                    <svg class="icon category-card-arrow" aria-hidden="true"><use href="/images/icons.svg#icon-arrow-up-right"></use></svg>
+                </a>
+                <a class="category-card" th:href="@{/vagas(q='dados')}">
+                    <span class="category-card-icon" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#icon-chart"></use></svg></span>
+                    <span class="category-card-body"><strong>Dados e Analytics</strong></span>
+                    <svg class="icon category-card-arrow" aria-hidden="true"><use href="/images/icons.svg#icon-arrow-up-right"></use></svg>
+                </a>
+                <a class="category-card" th:href="@{/vagas(q='UX')}">
+                    <span class="category-card-icon" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#icon-palette"></use></svg></span>
+                    <span class="category-card-body"><strong>UX/UI Design</strong></span>
+                    <svg class="icon category-card-arrow" aria-hidden="true"><use href="/images/icons.svg#icon-arrow-up-right"></use></svg>
+                </a>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="featured-section container">
+    <div class="section-heading">
+        <div>
+            <h2>Oportunidades em destaque</h2>
+            <p>Seleção atualizada com links públicos das empresas e plataformas de recrutamento.</p>
+        </div>
+        <a class="btn btn-outline" th:href="@{/vagas}">Ver todas as vagas</a>
+    </div>
+
+    <th:block th:if="${#lists.isEmpty(featuredJobs)}">
+        <div th:replace="~{fragments/empty-state :: state('briefcase', 'Nenhuma vaga publicada ainda.', 'Quando a curadoria publicar novas oportunidades, elas aparecerão aqui.')}"></div>
+    </th:block>
+
+    <div class="job-grid" th:unless="${#lists.isEmpty(featuredJobs)}">
+        <th:block th:each="job : ${featuredJobs}">
+            <th:block th:replace="~{fragments/job-card :: card(job=${job})}"></th:block>
+        </th:block>
+    </div>
+</section>
+</div>
+</html>

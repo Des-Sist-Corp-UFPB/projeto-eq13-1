@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StripeWebhookController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Radar Tech</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.controller</a> &gt; <span class="el_source">StripeWebhookController.java</span></div><h1>StripeWebhookController.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.controller;
+
+import br.ufpb.dsc.jobhub.service.StripeWebhookService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+public class StripeWebhookController {
+
+    private final StripeWebhookService stripeWebhookService;
+
+<span class="fc" id="L19">    public StripeWebhookController(StripeWebhookService stripeWebhookService) {</span>
+<span class="fc" id="L20">        this.stripeWebhookService = stripeWebhookService;</span>
+<span class="fc" id="L21">    }</span>
+
+    @PostMapping(value = &quot;/webhooks/stripe&quot;, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; receive(@RequestBody String payload,
+                                                       @RequestHeader(value = &quot;Stripe-Signature&quot;, required = false)
+                                                       String signature) {
+        try {
+<span class="fc" id="L28">            stripeWebhookService.handle(payload, signature);</span>
+<span class="fc" id="L29">            return ResponseEntity.ok(Map.of(&quot;status&quot;, &quot;processed&quot;));</span>
+<span class="fc" id="L30">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L31">            return ResponseEntity.badRequest().body(Map.of(&quot;status&quot;, &quot;invalid&quot;));</span>
+<span class="fc" id="L32">        } catch (IllegalStateException ex) {</span>
+<span class="fc" id="L33">            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)</span>
+<span class="fc" id="L34">                    .body(Map.of(&quot;status&quot;, &quot;not_configured&quot;));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

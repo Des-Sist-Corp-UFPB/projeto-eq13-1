@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: shell('Vagas', ~{::div})}" xmlns:th="http://www.thymeleaf.org">
+<div class="container page-section">
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Radar Tech</span>
+            <h1>Vagas reais de TI</h1>
+            <p class="u-muted">Busque por cargo, empresa ou tecnologia. Remotas valem para todo o Brasil; híbridas e presenciais são focadas na Paraíba.</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/divulgar}">
+            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-plus"></use></svg>
+            <span>Divulgar vaga</span>
+        </a>
+    </div>
+
+    <form class="filter-bar" th:action="@{/vagas}" method="get" role="search">
+        <label for="jobs-search-q" class="sr-only">Cargo, empresa ou tecnologia</label>
+        <div class="filter-search-field">
+            <input id="jobs-search-q" class="input" type="search" name="q" placeholder="Ex: Java, suporte, estágio, React..." th:value="${q}">
+            <button type="button" class="btn-icon-only filter-search-clear" data-search-clear="#jobs-search-q"
+                    aria-label="Limpar busca">
+                <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-close"></use></svg>
+            </button>
+        </div>
+        <label for="jobs-search-location" class="sr-only">Modelo de trabalho</label>
+        <select id="jobs-search-location" class="select" name="location">
+            <option value="">Todos os modelos</option>
+            <option th:each="type : ${locationTypes}" th:value="${type.name()}" th:selected="${selectedLocation == type.name()}" th:text="${type.label}"></option>
+        </select>
+        <button class="btn btn-primary" type="submit">
+            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-filter"></use></svg>
+            <span>Filtrar</span>
+        </button>
+        <a class="btn btn-ghost" th:if="${(q != null && !q.isBlank()) || (selectedLocation != null && !selectedLocation.isBlank())}" th:href="@{/vagas}">Limpar filtros</a>
+    </form>
+
+    <p class="jobs-count" th:unless="${#lists.isEmpty(jobs)}"
+       th:text="${#lists.size(jobs)} + (${#lists.size(jobs)} == 1 ? ' vaga encontrada' : ' vagas encontradas')">0 vagas encontradas</p>
+
+    <th:block th:if="${#lists.isEmpty(jobs)}">
+        <div th:replace="~{fragments/empty-state :: state('search', 'Nenhuma vaga encontrada com esses filtros.', 'Tente buscar por outra tecnologia, empresa ou modelo de trabalho.')}"></div>
+    </th:block>
+
+    <div class="job-grid" th:unless="${#lists.isEmpty(jobs)}">
+        <th:block th:each="job : ${jobs}">
+            <th:block th:replace="~{fragments/job-card :: card(job=${job})}"></th:block>
+        </th:block>
+    </div>
+</div>
+</html>

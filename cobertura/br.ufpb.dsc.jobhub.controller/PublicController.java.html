@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PublicController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Radar Tech</a> &gt; <a href="index.source.html" class="el_package">br.ufpb.dsc.jobhub.controller</a> &gt; <span class="el_source">PublicController.java</span></div><h1>PublicController.java</h1><pre class="source lang-java linenums">package br.ufpb.dsc.jobhub.controller;
+
+import br.ufpb.dsc.jobhub.domain.ContractType;
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.JobLocationType;
+import br.ufpb.dsc.jobhub.domain.Seniority;
+import br.ufpb.dsc.jobhub.dto.CandidateApplicationForm;
+import br.ufpb.dsc.jobhub.dto.JobPostForm;
+import br.ufpb.dsc.jobhub.service.AuditLogService;
+import br.ufpb.dsc.jobhub.service.BillingService;
+import br.ufpb.dsc.jobhub.service.JobService;
+import br.ufpb.dsc.jobhub.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+public class PublicController {
+
+    private final JobService jobService;
+    private final UserService userService;
+    private final AuditLogService auditLogService;
+    private final BillingService billingService;
+
+    public PublicController(JobService jobService, UserService userService,
+<span class="fc" id="L35">                            AuditLogService auditLogService, BillingService billingService) {</span>
+<span class="fc" id="L36">        this.jobService = jobService;</span>
+<span class="fc" id="L37">        this.userService = userService;</span>
+<span class="fc" id="L38">        this.auditLogService = auditLogService;</span>
+<span class="fc" id="L39">        this.billingService = billingService;</span>
+<span class="fc" id="L40">    }</span>
+
+    @ModelAttribute(&quot;locationTypes&quot;)
+    JobLocationType[] locationTypes() {
+<span class="fc" id="L44">        return JobLocationType.values();</span>
+    }
+
+    @ModelAttribute(&quot;seniorities&quot;)
+    Seniority[] seniorities() {
+<span class="fc" id="L49">        return Seniority.values();</span>
+    }
+
+    @ModelAttribute(&quot;contractTypes&quot;)
+    ContractType[] contractTypes() {
+<span class="fc" id="L54">        return ContractType.values();</span>
+    }
+
+    @GetMapping(&quot;/&quot;)
+    public String home(Model model) {
+<span class="fc" id="L59">        model.addAttribute(&quot;featuredJobs&quot;, jobService.featuredJobs());</span>
+<span class="fc" id="L60">        return &quot;home&quot;;</span>
+    }
+
+    @GetMapping(&quot;/vagas&quot;)
+    public String jobs(@RequestParam(defaultValue = &quot;&quot;) String q,
+                       @RequestParam(defaultValue = &quot;&quot;) String location,
+                       Model model) {
+<span class="fc" id="L67">        model.addAttribute(&quot;jobs&quot;, jobService.searchPublished(q, location));</span>
+<span class="fc" id="L68">        model.addAttribute(&quot;q&quot;, q);</span>
+<span class="fc" id="L69">        model.addAttribute(&quot;selectedLocation&quot;, location);</span>
+<span class="fc" id="L70">        return &quot;jobs/list&quot;;</span>
+    }
+
+    @GetMapping(&quot;/vagas/{id}&quot;)
+    public String jobDetails(@PathVariable Long id,
+                             @RequestParam(required = false) String applied,
+                             Model model) {
+<span class="fc" id="L77">        model.addAttribute(&quot;job&quot;, jobService.publicDetails(id));</span>
+<span class="fc" id="L78">        model.addAttribute(&quot;applicationForm&quot;, CandidateApplicationForm.empty());</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        model.addAttribute(&quot;applied&quot;, applied != null);</span>
+<span class="fc" id="L80">        return &quot;jobs/detail&quot;;</span>
+    }
+
+    @PostMapping(&quot;/vagas/{id}/candidatar&quot;)
+    public String apply(@PathVariable Long id,
+                        @Valid @ModelAttribute(&quot;applicationForm&quot;) CandidateApplicationForm form,
+                        BindingResult bindingResult,
+                        Model model,
+                        Authentication authentication,
+                        HttpServletRequest request) {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L91">            model.addAttribute(&quot;job&quot;, jobService.publicDetails(id));</span>
+<span class="fc" id="L92">            model.addAttribute(&quot;applied&quot;, false);</span>
+<span class="fc" id="L93">            return &quot;jobs/detail&quot;;</span>
+        }
+<span class="fc" id="L95">        AppUser applicantUser = userService.currentUser(authentication).orElse(null);</span>
+<span class="fc" id="L96">        var application = jobService.apply(id, form, applicantUser);</span>
+<span class="fc" id="L97">        auditLogService.log(request, authentication, &quot;APPLICATION_SUBMITTED&quot;, &quot;CANDIDATE_APPLICATION&quot;,</span>
+<span class="fc" id="L98">                application.getId(), &quot;Candidatura interna enviada.&quot;);</span>
+<span class="fc" id="L99">        return &quot;redirect:/vagas/&quot; + id + &quot;?applied=true&quot;;</span>
+    }
+
+    // ── Divulgação de vagas (requer login + assinatura ativa) ────────────────
+
+    @GetMapping(&quot;/divulgar&quot;)
+    public String publishJob(Model model, Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+<span class="fc" id="L107">        AppUser user = currentUser(authentication);</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
+<span class="fc" id="L109">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
+<span class="fc" id="L110">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+        }
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!model.containsAttribute(&quot;form&quot;)) {</span>
+<span class="fc" id="L113">            model.addAttribute(&quot;form&quot;, prefillForm(user));</span>
+        }
+<span class="fc" id="L115">        model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L116">        return &quot;jobs/post&quot;;</span>
+    }
+
+    @PostMapping(&quot;/divulgar&quot;)
+    public String createJob(@Valid @ModelAttribute(&quot;form&quot;) JobPostForm form,
+                            BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication,
+                            HttpServletRequest request,
+                            Model model) {
+<span class="fc" id="L126">        AppUser user = currentUser(authentication);</span>
+        // Dupla verificação: bloqueia mesmo acesso direto via POST
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (!billingService.hasActiveSubscription(user.getEmail())) {</span>
+<span class="fc" id="L129">            redirectAttributes.addFlashAttribute(&quot;subscriptionRequired&quot;, true);</span>
+<span class="fc" id="L130">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+        }
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        if (bindingResult.hasErrors()) {</span>
+<span class="fc" id="L133">            model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L134">            return &quot;jobs/post&quot;;</span>
+        }
+        try {
+<span class="fc" id="L137">            var job = jobService.createPending(form);</span>
+<span class="fc" id="L138">            auditLogService.log(request, authentication, &quot;PUBLIC_JOB_SUBMITTED&quot;, &quot;JOB_POSTING&quot;,</span>
+<span class="fc" id="L139">                    job.getId(), &quot;Vaga enviada pela página pública.&quot;);</span>
+<span class="fc" id="L140">        } catch (IllegalArgumentException ex) {</span>
+<span class="fc" id="L141">            bindingResult.reject(&quot;job.location&quot;, ex.getMessage());</span>
+<span class="fc" id="L142">            model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L143">            return &quot;jobs/post&quot;;</span>
+<span class="fc" id="L144">        }</span>
+<span class="fc" id="L145">        redirectAttributes.addFlashAttribute(&quot;success&quot;, true);</span>
+<span class="fc" id="L146">        return &quot;redirect:/divulgar&quot;;</span>
+    }
+
+    @GetMapping(&quot;/divulgar/assinar&quot;)
+    public String subscribe(Model model, Authentication authentication) {
+<span class="fc" id="L151">        AppUser user = currentUser(authentication);</span>
+<span class="fc" id="L152">        model.addAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L153">        model.addAttribute(&quot;subscription&quot;, billingService.findByCompanyEmail(user.getEmail()));</span>
+<span class="fc" id="L154">        return &quot;jobs/subscribe&quot;;</span>
+    }
+
+    @PostMapping(&quot;/divulgar/assinar/checkout&quot;)
+    public String subscribeCheckout(Authentication authentication,
+                                    HttpServletRequest request,
+                                    RedirectAttributes redirectAttributes) {
+<span class="fc" id="L161">        AppUser user = currentUser(authentication);</span>
+        try {
+<span class="fc" id="L163">            BillingService.CheckoutResult result = billingService.createCheckoutSessionForUser(user);</span>
+<span class="fc" id="L164">            auditLogService.log(request, user, &quot;STRIPE_CHECKOUT_STARTED&quot;, &quot;SUBSCRIPTION&quot;,</span>
+<span class="fc" id="L165">                    result.subscription().getId(), &quot;Checkout de assinatura iniciado no Stripe.&quot;);</span>
+<span class="fc" id="L166">            return &quot;redirect:&quot; + result.checkoutUrl();</span>
+<span class="fc" id="L167">        } catch (IllegalStateException ex) {</span>
+<span class="fc" id="L168">            redirectAttributes.addFlashAttribute(&quot;billingError&quot;, ex.getMessage());</span>
+<span class="fc" id="L169">            return &quot;redirect:/divulgar/assinar&quot;;</span>
+        }
+    }
+
+    @GetMapping(&quot;/divulgar/assinar/sucesso&quot;)
+    public String subscriptionSuccess(Model model) {
+<span class="fc" id="L175">        model.addAttribute(&quot;billingMessage&quot;,</span>
+                &quot;Pagamento recebido. A assinatura será liberada assim que o webhook do Stripe confirmar a cobrança.&quot;);
+<span class="fc" id="L177">        return &quot;admin/billing-success&quot;;</span>
+    }
+
+    @GetMapping(&quot;/divulgar/assinar/cancelado&quot;)
+    public String subscriptionCanceled(Model model) {
+<span class="fc" id="L182">        model.addAttribute(&quot;billingMessage&quot;, &quot;Checkout cancelado. Nenhuma assinatura foi ativada.&quot;);</span>
+<span class="fc" id="L183">        return &quot;admin/billing-canceled&quot;;</span>
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private AppUser currentUser(Authentication authentication) {
+<span class="fc" id="L189">        return userService.currentUser(authentication).orElseThrow();</span>
+    }
+
+    private JobPostForm prefillForm(AppUser user) {
+<span class="fc" id="L193">        return new JobPostForm(</span>
+<span class="fc" id="L194">                &quot;&quot;, user.getName(), user.getEmail(),</span>
+                br.ufpb.dsc.jobhub.domain.JobLocationType.REMOTE, &quot;&quot;,
+                br.ufpb.dsc.jobhub.domain.Seniority.JUNIOR,
+                br.ufpb.dsc.jobhub.domain.ContractType.CLT,
+                &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
