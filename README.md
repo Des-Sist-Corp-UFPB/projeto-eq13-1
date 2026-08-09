@@ -32,10 +32,17 @@ O frontend usa um design system próprio em azul-marinho e turquesa, com bastant
 
 - home com oportunidades em destaque;
 - listagem pública com pesquisa e filtros;
+- curadoria de oportunidades com data e link de candidatura verificáveis;
 - detalhes e contador de visualizações;
 - vagas remotas, híbridas e presenciais na Paraíba;
 - candidatura interna, associada à conta quando o candidato está autenticado;
 - divulgação de vagas mediante assinatura ativa.
+
+### Curadoria de vagas
+
+O catálogo público foi atualizado pela migration `V13__refresh_verified_tech_jobs_august.sql` com oportunidades de tecnologia publicadas entre **03/08/2026 e 07/08/2026**. A seleção combina anúncios públicos do LinkedIn e da Remotar com páginas de candidatura das empresas em Gupy, InHire, Recrutei, Sólides e Zoho Recruit.
+
+Cada item mantém o link original, a data da fonte e uma descrição resumida. Links sem data confirmável, vagas repetidas e anúncios indisponíveis são descartados. As oportunidades anteriores não são apagadas: ficam arquivadas, preservando histórico, candidaturas e auditoria. A atualização registra `JOB_CATALOG_ARCHIVED` e `JOB_CURATED` em `audit_log`.
 
 ### Conta e perfil profissional
 

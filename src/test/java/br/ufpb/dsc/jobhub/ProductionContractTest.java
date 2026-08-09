@@ -33,6 +33,9 @@ class ProductionContractTest {
 
         assertThat(layout)
                 .contains("Radar Tech")
+                .contains("rel=\"icon\"")
+                .contains("rel=\"apple-touch-icon\"")
+                .contains("radartech-logo-transparent.png")
                 .contains("/css/app.css")
                 .contains("type=\"module\"")
                 .contains("umami.dsc.rodrigor.com/script.js")
@@ -67,5 +70,23 @@ class ProductionContractTest {
         assertThat(resources.resolve(Path.of("static", "images", "radartech-logo-dark.png"))).exists();
         assertThat(resources.resolve(Path.of("static", "images", "radartech-hero-office.webp"))).exists();
         assertThat(resources.resolve(Path.of("static", "images", "radartech-hero-office-mobile.webp"))).exists();
+    }
+
+    @Test
+    void curatedCatalogKeepsOnlyVerifiedAugustWindowPublishedAndAudited() throws IOException {
+        String migration = Files.readString(Path.of(
+                "src", "main", "resources", "db", "migration", "V13__refresh_verified_tech_jobs_august.sql"));
+
+        assertThat(migration)
+                .contains("2026-08-03")
+                .contains("2026-08-08")
+                .contains("status = 'ARCHIVED'")
+                .contains("'PUBLISHED'")
+                .contains("linkedin.com/jobs/view")
+                .contains("gupy.io/job")
+                .contains("inhire.app/vagas")
+                .contains("JOB_CATALOG_ARCHIVED")
+                .contains("JOB_CURATED");
+        assertThat(migration.split("https://", -1).length - 1).isGreaterThanOrEqualTo(20);
     }
 }
