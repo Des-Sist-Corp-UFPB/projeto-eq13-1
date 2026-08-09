@@ -200,6 +200,52 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(value = "/minha-conta/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String updatePhoto(@RequestParam(required = false) MultipartFile photo,
+                              @RequestParam(defaultValue = "50") int positionX,
+                              @RequestParam(defaultValue = "50") int positionY,
+                              Authentication authentication,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        try {
+            boolean fileUpdated = profileService.updatePhoto(user, photo, positionX, positionY);
+            auditLogService.log(request, user, "PROFILE_PHOTO_UPDATED", "APP_USER", user.getId(),
+                    fileUpdated ? "Foto do perfil e enquadramento atualizados."
+                            : "Enquadramento da foto do perfil atualizado.");
+            redirectAttributes.addFlashAttribute("profileSaved", true);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("mediaError", ex.getMessage());
+        }
+        return "redirect:/minha-conta";
+    }
+
+    @PostMapping(value = "/minha-conta/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String updateCover(@RequestParam(required = false) MultipartFile cover,
+                              @RequestParam(defaultValue = "50") int positionX,
+                              @RequestParam(defaultValue = "50") int positionY,
+                              Authentication authentication,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return "redirect:/login?error";
+        }
+        try {
+            boolean fileUpdated = profileService.updateCover(user, cover, positionX, positionY);
+            auditLogService.log(request, user, "PROFILE_COVER_UPDATED", "APP_USER", user.getId(),
+                    fileUpdated ? "Capa do perfil e enquadramento atualizados."
+                            : "Enquadramento da capa do perfil atualizado.");
+            redirectAttributes.addFlashAttribute("profileSaved", true);
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("mediaError", ex.getMessage());
+        }
+        return "redirect:/minha-conta";
+    }
+
     @PostMapping("/minha-conta/assistente")
     public String careerAssistant(@Valid @ModelAttribute("aiCareerForm") AiCareerForm form,
                                   BindingResult bindingResult,
@@ -240,6 +286,21 @@ public class AuthController {
                 .contentType(MediaType.parseMediaType(user.getPhotoContentType()))
                 .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())
                 .body(user.getPhotoContent());
+    }
+
+    @GetMapping("/minha-conta/capa")
+    public ResponseEntity<byte[]> cover(Authentication authentication) {
+        AppUser user = currentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (user.getCoverContent() == null || user.getCoverContentType() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(user.getCoverContentType()))
+                .cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate())
+                .body(user.getCoverContent());
     }
 
     @GetMapping("/minha-conta/curriculo")

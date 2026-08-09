@@ -129,6 +129,58 @@ class CandidateProfileServiceTest {
     }
 
     @Test
+    void updatesPhotoAndCoverWithUserControlledPosition() {
+        byte[] png = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0, 0, 0, 0, 0, 0, 0, 0};
+        var photo = new MockMultipartFile("photo", "foto.png", "image/png", png);
+        var cover = new MockMultipartFile("cover", "capa.png", "image/png", png);
+
+        assertThat(service.updatePhoto(user, photo, 25, 75)).isTrue();
+        assertThat(service.updateCover(user, cover, 40, 60)).isTrue();
+        assertThat(service.updatePhoto(user, null, 30, 70)).isFalse();
+        assertThat(service.updateCover(user, null, 45, 55)).isFalse();
+
+        assertThat(user.getPhotoPositionX()).isEqualTo(30);
+        assertThat(user.getPhotoPositionY()).isEqualTo(70);
+        assertThat(user.getCoverContent()).containsExactly(png);
+        assertThat(user.getCoverContentType()).isEqualTo("image/png");
+        assertThat(user.getCoverPositionX()).isEqualTo(45);
+        assertThat(user.getCoverPositionY()).isEqualTo(55);
+    }
+
+    @Test
+    void rejectsInvalidCoverFilesAndImagePositions() {
+        var wrongType = new MockMultipartFile("cover", "capa.gif", "image/gif", new byte[20]);
+        assertThatThrownBy(() -> service.updateCover(user, wrongType, 50, 50))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("JPEG, PNG ou WebP");
+
+        var oversized = new MockMultipartFile("cover", "capa.jpg", "image/jpeg",
+                new byte[(int) CandidateProfileService.MAX_COVER_SIZE + 1]);
+        assertThatThrownBy(() -> service.updateCover(user, oversized, 50, 50))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("5 MB");
+
+        var fakePng = new MockMultipartFile("cover", "capa.png", "image/png", new byte[20]);
+        assertThatThrownBy(() -> service.updateCover(user, fakePng, 50, 50))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("não corresponde");
+
+        assertThatThrownBy(() -> service.updatePhoto(user, null, -1, 50))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("entre 0 e 100");
+        assertThatThrownBy(() -> service.updateCover(user, null, 50, 101))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("entre 0 e 100");
+    }
+
+    @Test
+    void wrapsCoverReadFailureAsValidationError() throws IOException {
+        MultipartFile cover = mock(MultipartFile.class);
+        when(cover.isEmpty()).thenReturn(false);
+        when(cover.getContentType()).thenReturn("image/jpeg");
+        when(cover.getSize()).thenReturn(100L);
+        when(cover.getBytes()).thenThrow(new IOException("falha"));
+
+        assertThatThrownBy(() -> service.updateCover(user, cover, 50, 50))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("capa");
+    }
+
+    @Test
     void wrapsFileReadFailuresAsValidationErrors() throws IOException {
         MultipartFile photo = mock(MultipartFile.class);
         when(photo.isEmpty()).thenReturn(false);

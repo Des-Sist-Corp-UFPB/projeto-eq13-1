@@ -87,6 +87,31 @@ class CandidateProfileIntegrationTest {
 
         mockMvc.perform(get("/minha-conta/foto").with(authenticatedUser()))
                 .andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+
+        var directPhoto = new MockMultipartFile("photo", "perfil.png", "image/png", png);
+        mockMvc.perform(multipart("/minha-conta/foto")
+                        .file(directPhoto).with(csrf()).with(authenticatedUser())
+                        .param("positionX", "30").param("positionY", "70"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/minha-conta"));
+
+        var cover = new MockMultipartFile("cover", "capa.png", "image/png", png);
+        mockMvc.perform(multipart("/minha-conta/capa")
+                        .file(cover).with(csrf()).with(authenticatedUser())
+                        .param("positionX", "40").param("positionY", "60"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/minha-conta"));
+        mockMvc.perform(get("/minha-conta/capa").with(authenticatedUser()))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+
+        mockMvc.perform(multipart("/minha-conta/foto")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("positionX", "35").param("positionY", "65"))
+                .andExpect(status().is3xxRedirection());
+        mockMvc.perform(multipart("/minha-conta/capa")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("positionX", "45").param("positionY", "55"))
+                .andExpect(status().is3xxRedirection());
         mockMvc.perform(get("/minha-conta/curriculo").with(authenticatedUser()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/pdf"))
@@ -98,7 +123,9 @@ class CandidateProfileIntegrationTest {
         AppUser updated = userService.findByLogin(EMAIL).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Perfil Atualizado");
         assertThat(updated.getThemePreference()).isEqualTo(ThemePreference.DARK);
-        assertThat(auditLogRepository.search("PROFILE_", EMAIL, "APP_USER", null, null)).hasSizeGreaterThanOrEqualTo(4);
+        assertThat(updated.getPhotoPositionY()).isEqualTo(65);
+        assertThat(updated.getCoverPositionX()).isEqualTo(45);
+        assertThat(auditLogRepository.search("PROFILE_", EMAIL, "APP_USER", null, null)).hasSizeGreaterThanOrEqualTo(8);
     }
 
     @Test
@@ -113,6 +140,22 @@ class CandidateProfileIntegrationTest {
 
         mockMvc.perform(post("/minha-conta/tema").with(csrf()).with(authenticatedUser()).param("theme", "invalido"))
                 .andExpect(status().isBadRequest());
+
+        var invalidCover = new MockMultipartFile("cover", "capa.gif", "image/gif", new byte[20]);
+        mockMvc.perform(multipart("/minha-conta/capa")
+                        .file(invalidCover).with(csrf()).with(authenticatedUser())
+                        .param("positionX", "50").param("positionY", "50"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/minha-conta"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash()
+                        .attributeExists("mediaError"));
+
+        mockMvc.perform(multipart("/minha-conta/foto")
+                        .with(csrf()).with(authenticatedUser())
+                        .param("positionX", "101").param("positionY", "50"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash()
+                        .attributeExists("mediaError"));
     }
 
     @Test
@@ -150,6 +193,7 @@ class CandidateProfileIntegrationTest {
                 "Sem Arquivos", "sem.arquivos@example.com", "semarquivos", "senha1234"));
         var noAssets = SecurityMockMvcRequestPostProcessors.user(withoutAssets.getEmail()).roles("USER");
         mockMvc.perform(get("/minha-conta/foto").with(noAssets)).andExpect(status().isNotFound());
+        mockMvc.perform(get("/minha-conta/capa").with(noAssets)).andExpect(status().isNotFound());
         mockMvc.perform(get("/minha-conta/curriculo").with(noAssets)).andExpect(status().isNotFound());
     }
 

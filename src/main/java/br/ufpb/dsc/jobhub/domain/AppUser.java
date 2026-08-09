@@ -72,6 +72,24 @@ public class AppUser {
     @Column(length = 100)
     private String photoContentType;
 
+    @Column(nullable = false)
+    private int photoPositionX = 50;
+
+    @Column(nullable = false)
+    private int photoPositionY = 50;
+
+    @Column(columnDefinition = "bytea")
+    private byte[] coverContent;
+
+    @Column(length = 100)
+    private String coverContentType;
+
+    @Column(nullable = false)
+    private int coverPositionX = 50;
+
+    @Column(nullable = false)
+    private int coverPositionY = 50;
+
     @Column(columnDefinition = "bytea")
     private byte[] resumeContent;
 
@@ -138,6 +156,21 @@ public class AppUser {
         this.photoContentType = contentType;
     }
 
+    public void updatePhotoPosition(int positionX, int positionY) {
+        this.photoPositionX = positionX;
+        this.photoPositionY = positionY;
+    }
+
+    public void updateCover(byte[] content, String contentType) {
+        this.coverContent = content;
+        this.coverContentType = contentType;
+    }
+
+    public void updateCoverPosition(int positionX, int positionY) {
+        this.coverPositionX = positionX;
+        this.coverPositionY = positionY;
+    }
+
     public void updateResume(byte[] content, String fileName, String contentType) {
         this.resumeContent = content;
         this.resumeFileName = fileName;
@@ -160,6 +193,12 @@ public class AppUser {
     public ThemePreference getThemePreference() { return themePreference; }
     public byte[] getPhotoContent() { return photoContent; }
     public String getPhotoContentType() { return photoContentType; }
+    public int getPhotoPositionX() { return photoPositionX; }
+    public int getPhotoPositionY() { return photoPositionY; }
+    public byte[] getCoverContent() { return coverContent; }
+    public String getCoverContentType() { return coverContentType; }
+    public int getCoverPositionX() { return coverPositionX; }
+    public int getCoverPositionY() { return coverPositionY; }
     public byte[] getResumeContent() { return resumeContent; }
     public String getResumeFileName() { return resumeFileName; }
     public String getResumeContentType() { return resumeContentType; }

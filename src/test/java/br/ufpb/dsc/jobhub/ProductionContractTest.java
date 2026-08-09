@@ -31,6 +31,8 @@ class ProductionContractTest {
         String home = Files.readString(resources.resolve(Path.of("templates", "home.html")));
         String appCss = Files.readString(resources.resolve(Path.of("static", "css", "app.css")));
         String homeCss = Files.readString(resources.resolve(Path.of("static", "css", "pages", "home.css")));
+        String profile = Files.readString(resources.resolve(Path.of("templates", "auth", "profile.html")));
+        String profileMediaJs = Files.readString(resources.resolve(Path.of("static", "js", "modules", "profile-media.js")));
 
         assertThat(layout)
                 .contains("Radar Tech")
@@ -55,6 +57,16 @@ class ProductionContractTest {
                 .contains(".hero-search-field select option")
                 .contains("#c3d1dc")
                 .contains("@media (max-width: 767px)");
+        assertThat(profile)
+                .contains("data-media-open=\"photo\"")
+                .contains("data-media-open=\"cover\"")
+                .contains("/minha-conta/capa")
+                .contains("data-position-x", "data-position-y")
+                .doesNotContain("<strong data-file-name>Foto do perfil</strong>");
+        assertThat(profileMediaJs)
+                .contains("showModal")
+                .contains("objectPosition")
+                .contains("URL.createObjectURL");
         assertThat(appCss)
                 .contains("@import url('./tokens.css')")
                 .contains("@import url('./pages/home.css')")
@@ -65,6 +77,8 @@ class ProductionContractTest {
                 .contains("nextTheme")
                 .contains("Ativar tema claro")
                 .contains("Ativar tema escuro")
+                .contains("keepalive: true")
+                .contains("window.addEventListener('storage'")
                 .doesNotContain("theme-menu-panel", "data-theme-choice", "Tema automático");
 
         List<Path> templates;

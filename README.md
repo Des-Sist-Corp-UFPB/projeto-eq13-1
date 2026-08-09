@@ -21,7 +21,7 @@ O frontend usa um design system próprio em azul-marinho e turquesa, com bastant
 - hero corporativo com busca real por cargo, tecnologia, empresa e modelo de trabalho;
 - cabeçalho responsivo com menu móvel, conta, administração e publicação de vagas;
 - componentes reutilizáveis para vagas, formulários, filtros, indicadores, tabelas e estados vazios;
-- temas claro, escuro e automático, respeitando a preferência do sistema;
+- alternância direta entre temas claro e escuro, preservada em recarregamentos e sincronizada entre abas;
 - ícones SVG locais e imagens WebP otimizadas;
 - navegação por teclado, foco visível, labels e atributos ARIA;
 - CSS modular e JavaScript ES Modules, sem framework ou etapa adicional de build.
@@ -49,12 +49,12 @@ Cada item mantém o link original, a data da fonte e uma descrição resumida. L
 - cadastro e login tradicional com senha BCrypt;
 - login e cadastro automático por Google OAuth2;
 - papéis `ROLE_USER` e `ROLE_ADMIN`;
-- perfil com nome, biografia, foto e currículo PDF;
+- perfil com nome, biografia, foto reposicionável, capa personalizada e currículo PDF;
 - histórico de experiências profissionais;
-- preferência persistida de tema claro, escuro ou igual ao sistema;
+- preferência persistida de tema claro ou escuro no navegador e na conta;
 - assistente de carreira integrado ao LiteLLM.
 
-Arquivos de perfil são validados por tamanho, tipo MIME e assinatura binária. Fotos aceitas: JPEG, PNG e WebP, até 3 MB. Currículos: PDF válido, até 5 MB.
+Arquivos de perfil são validados por tamanho, tipo MIME e assinatura binária. A foto é alterada diretamente no avatar e a capa no cabeçalho do perfil, ambas com prévia e ajuste de enquadramento. Fotos aceitas: JPEG, PNG e WebP, até 3 MB; capas nos mesmos formatos, até 5 MB. Currículos: PDF válido, até 5 MB.
 
 ### Administração e governança
 
@@ -197,7 +197,7 @@ Eventos relevantes são persistidos na tabela `audit_log`, incluindo:
 - sucesso e falha de login, OAuth2 e logout;
 - solicitação e conclusão de recuperação de senha;
 - cadastro e alterações do perfil;
-- foto, currículo, experiências e preferência de tema;
+- foto, capa, enquadramento das imagens, currículo, experiências e preferência de tema;
 - uso do assistente de carreira;
 - candidaturas;
 - envio, criação e moderação de vagas;

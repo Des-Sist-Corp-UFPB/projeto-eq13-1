@@ -16,12 +16,13 @@ export function initTheme() {
             ?.setAttribute('content', currentTheme === 'dark' ? '#08111F' : '#FFFFFF');
     };
 
-    applyTheme(root.dataset.theme || 'light');
+    const storedTheme = readStoredTheme();
+    applyTheme(storedTheme || root.dataset.theme || 'light');
 
     toggle.addEventListener('click', async () => {
         const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         applyTheme(nextTheme);
-        localStorage.setItem(STORAGE_KEY, nextTheme);
+        storeTheme(nextTheme);
 
         const saveUrl = toggle.dataset.saveUrl;
         if (!saveUrl) return;
@@ -34,9 +35,38 @@ export function initTheme() {
                 method: 'POST',
                 headers,
                 body: new URLSearchParams({ theme: nextTheme }),
+                keepalive: true,
             });
         } catch (_) {
             // A preferência local continua válida quando a rede está indisponível.
         }
     });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_KEY && (event.newValue === 'dark' || event.newValue === 'light')) {
+            applyTheme(event.newValue);
+        }
+    });
+
+    window.addEventListener('pageshow', () => {
+        const savedTheme = readStoredTheme();
+        if (savedTheme) applyTheme(savedTheme);
+    });
+}
+
+function readStoredTheme() {
+    try {
+        const value = localStorage.getItem(STORAGE_KEY);
+        return value === 'dark' || value === 'light' ? value : null;
+    } catch (_) {
+        return null;
+    }
+}
+
+function storeTheme(theme) {
+    try {
+        localStorage.setItem(STORAGE_KEY, theme);
+    } catch (_) {
+        // O tema ainda permanece aplicado durante a navegação atual.
+    }
 }

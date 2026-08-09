@@ -13,8 +13,13 @@
     <script>
         (() => {
             const root = document.documentElement;
-            if (root.dataset.authenticated !== 'true') {
-                root.dataset.theme = localStorage.getItem('radartech-theme') === 'dark' ? 'dark' : 'light';
+            try {
+                const savedTheme = localStorage.getItem('radartech-theme');
+                if (savedTheme === 'dark' || savedTheme === 'light') {
+                    root.dataset.theme = savedTheme;
+                }
+            } catch (_) {
+                // Mantém a preferência fornecida pelo servidor quando o armazenamento está indisponível.
             }
         })();
     </script>
@@ -64,7 +69,10 @@
                     <div class="dropdown" id="profile-menu" th:if="${viewer != null}">
                         <button type="button" class="nav-profile" aria-haspopup="true" aria-expanded="false" aria-controls="profile-menu-panel">
                             <span class="nav-avatar">
-                                <img th:if="${viewer.photoContent != null}" th:src="@{/minha-conta/foto}" alt="">
+                                <img th:if="${viewer.photoContent != null}"
+                                     th:src="@{/minha-conta/foto(v=${viewer.updatedAt.toEpochMilli()})}"
+                                     data-positioned-media
+                                     th:attr="data-position-x=${viewer.photoPositionX},data-position-y=${viewer.photoPositionY}" alt="">
                                 <span th:unless="${viewer.photoContent != null}"
                                       th:text="${viewer.name != null && !viewer.name.isBlank() ? #strings.substring(viewer.name, 0, 1) : 'U'}">U</span>
                             </span>

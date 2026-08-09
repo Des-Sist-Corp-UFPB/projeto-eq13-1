@@ -22,6 +22,7 @@ import java.util.Set;
 public class CandidateProfileService {
 
     static final long MAX_PHOTO_SIZE = 3 * 1024 * 1024;
+    static final long MAX_COVER_SIZE = 5 * 1024 * 1024;
     static final long MAX_RESUME_SIZE = 5 * 1024 * 1024;
     private static final Set<String> PHOTO_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
@@ -42,6 +43,24 @@ public class CandidateProfileService {
         boolean resumeUpdated = storeResume(user, resume);
         userRepository.save(user);
         return new ProfileUpdateResult(photoUpdated, resumeUpdated);
+    }
+
+    @Transactional
+    public boolean updatePhoto(AppUser user, MultipartFile photo, int positionX, int positionY) {
+        validatePosition(positionX, positionY);
+        boolean fileUpdated = storePhoto(user, photo);
+        user.updatePhotoPosition(positionX, positionY);
+        userRepository.save(user);
+        return fileUpdated;
+    }
+
+    @Transactional
+    public boolean updateCover(AppUser user, MultipartFile cover, int positionX, int positionY) {
+        validatePosition(positionX, positionY);
+        boolean fileUpdated = storeCover(user, cover);
+        user.updateCoverPosition(positionX, positionY);
+        userRepository.save(user);
+        return fileUpdated;
     }
 
     @Transactional
@@ -114,6 +133,31 @@ public class CandidateProfileService {
         }
         user.updateResume(content, safeFileName(resume.getOriginalFilename()), "application/pdf");
         return true;
+    }
+
+    private boolean storeCover(AppUser user, MultipartFile cover) {
+        if (cover == null || cover.isEmpty()) {
+            return false;
+        }
+        String contentType = normalizeContentType(cover.getContentType());
+        if (!PHOTO_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("A capa deve estar em JPEG, PNG ou WebP.");
+        }
+        if (cover.getSize() > MAX_COVER_SIZE) {
+            throw new IllegalArgumentException("A capa deve ter no máximo 5 MB.");
+        }
+        byte[] content = bytes(cover, "Não foi possível processar a capa.");
+        if (!matchesImageSignature(content, contentType)) {
+            throw new IllegalArgumentException("O conteúdo da capa não corresponde ao formato informado.");
+        }
+        user.updateCover(content, contentType);
+        return true;
+    }
+
+    private void validatePosition(int positionX, int positionY) {
+        if (positionX < 0 || positionX > 100 || positionY < 0 || positionY > 100) {
+            throw new IllegalArgumentException("A posição da imagem deve estar entre 0 e 100.");
+        }
     }
 
     private byte[] bytes(MultipartFile file, String message) {

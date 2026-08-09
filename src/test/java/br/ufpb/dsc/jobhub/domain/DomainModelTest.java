@@ -22,6 +22,9 @@ class DomainModelTest {
         user.changePasswordHash("novo-hash");
         user.updateProfile("Pessoa Atualizada", "Biografia");
         user.updatePhoto(new byte[]{1, 2}, "image/png");
+        user.updatePhotoPosition(30, 70);
+        user.updateCover(new byte[]{5, 6}, "image/webp");
+        user.updateCoverPosition(45, 65);
         user.updateResume(new byte[]{3, 4}, "curriculo.pdf", "application/pdf");
         user.changeTheme(ThemePreference.DARK);
         user.onUpdate();
@@ -38,6 +41,12 @@ class DomainModelTest {
         assertThat(user.getThemePreference()).isEqualTo(ThemePreference.DARK);
         assertThat(user.getPhotoContent()).containsExactly(1, 2);
         assertThat(user.getPhotoContentType()).isEqualTo("image/png");
+        assertThat(user.getPhotoPositionX()).isEqualTo(30);
+        assertThat(user.getPhotoPositionY()).isEqualTo(70);
+        assertThat(user.getCoverContent()).containsExactly(5, 6);
+        assertThat(user.getCoverContentType()).isEqualTo("image/webp");
+        assertThat(user.getCoverPositionX()).isEqualTo(45);
+        assertThat(user.getCoverPositionY()).isEqualTo(65);
         assertThat(user.getResumeContent()).containsExactly(3, 4);
         assertThat(user.getResumeFileName()).isEqualTo("curriculo.pdf");
         assertThat(user.getResumeContentType()).isEqualTo("application/pdf");

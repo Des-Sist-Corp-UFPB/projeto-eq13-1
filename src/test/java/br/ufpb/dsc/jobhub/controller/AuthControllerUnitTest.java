@@ -62,10 +62,15 @@ class AuthControllerUnitTest {
         assertThat(controller.removeExperience(1L, authentication, request, new RedirectAttributesModelMap()))
                 .isEqualTo("redirect:/login?error");
         assertThat(controller.changeTheme("dark", authentication, request).getStatusCode().value()).isEqualTo(401);
+        assertThat(controller.updatePhoto(null, 50, 50, authentication, request,
+                new RedirectAttributesModelMap())).isEqualTo("redirect:/login?error");
+        assertThat(controller.updateCover(null, 50, 50, authentication, request,
+                new RedirectAttributesModelMap())).isEqualTo("redirect:/login?error");
         assertThat(controller.careerAssistant(new AiCareerForm("Como evoluir?"), mock(BindingResult.class),
                 authentication, request, new RedirectAttributesModelMap()))
                 .isEqualTo("redirect:/login?error");
         assertThat(controller.photo(authentication).getStatusCode().value()).isEqualTo(401);
+        assertThat(controller.cover(authentication).getStatusCode().value()).isEqualTo(401);
         assertThat(controller.resume(authentication).getStatusCode().value()).isEqualTo(401);
     }
 

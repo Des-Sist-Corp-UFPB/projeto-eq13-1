@@ -3,6 +3,7 @@ import { initNavigation } from './modules/navigation.js';
 import { initForms } from './modules/forms.js';
 import { initSearch } from './modules/search.js';
 import { initAdmin } from './modules/admin.js';
+import { initProfileMedia } from './modules/profile-media.js';
 
 // Cada módulo verifica por conta própria se os elementos que precisa
 // existem na página atual. Nenhum módulo deve lançar erro quando o
@@ -12,3 +13,4 @@ initNavigation();
 initForms();
 initSearch();
 initAdmin();
+initProfileMedia();
