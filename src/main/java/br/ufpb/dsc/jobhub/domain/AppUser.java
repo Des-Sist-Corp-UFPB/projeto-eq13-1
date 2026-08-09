@@ -72,22 +72,22 @@ public class AppUser {
     @Column(length = 100)
     private String photoContentType;
 
-    @Column(nullable = false)
+    @Column(name = "photo_position_x", nullable = false)
     private int photoPositionX = 50;
 
-    @Column(nullable = false)
+    @Column(name = "photo_position_y", nullable = false)
     private int photoPositionY = 50;
 
-    @Column(columnDefinition = "bytea")
+    @Column(name = "cover_content", columnDefinition = "bytea")
     private byte[] coverContent;
 
-    @Column(length = 100)
+    @Column(name = "cover_content_type", length = 100)
     private String coverContentType;
 
-    @Column(nullable = false)
+    @Column(name = "cover_position_x", nullable = false)
     private int coverPositionX = 50;
 
-    @Column(nullable = false)
+    @Column(name = "cover_position_y", nullable = false)
     private int coverPositionY = 50;
 
     @Column(columnDefinition = "bytea")
