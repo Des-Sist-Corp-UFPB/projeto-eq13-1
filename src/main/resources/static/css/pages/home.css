@@ -164,7 +164,8 @@
     grid-template-columns: repeat(4, 1fr);
     gap: var(--space-5);
     margin-top: var(--space-10);
-    max-width: 1040px;
+    width: min(1040px, calc(100vw - 48px));
+    max-width: none;
 }
 
 .category-card {
@@ -205,6 +206,8 @@
     color: var(--color-navy-900);
     font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-body);
+    line-height: 1.35;
+    text-wrap: balance;
 }
 
 [data-theme="dark"] .category-card-body strong {
@@ -311,6 +314,7 @@
 
     .category-grid {
         grid-template-columns: 1fr;
+        width: 100%;
     }
 
     .section-heading {
