@@ -134,6 +134,7 @@ class DomainModelTest {
     void candidateApplicationSupportsAnonymousAndAuthenticatedCandidates() {
         JobPosting job = job();
         AppUser user = user();
+        user.updateResume(new byte[]{7, 8, 9}, "perfil.pdf", "application/pdf");
         CandidateApplication anonymous = new CandidateApplication(
                 job, "Visitante", "visitante@example.com", "https://linkedin.com/in/visitante", "Olá");
         CandidateApplication authenticated = new CandidateApplication(
@@ -141,6 +142,8 @@ class DomainModelTest {
         authenticated.onCreate();
 
         assertThat(anonymous.getApplicantUser()).isNull();
+        assertThat(anonymous.hasResume()).isFalse();
+        assertThat(anonymous.getResumeContent()).isNull();
         assertThat(authenticated.getId()).isNull();
         assertThat(authenticated.getJob()).isSameAs(job);
         assertThat(authenticated.getApplicantUser()).isSameAs(user);
@@ -148,6 +151,13 @@ class DomainModelTest {
         assertThat(authenticated.getApplicantEmail()).isEqualTo("pessoa@example.com");
         assertThat(authenticated.getLinkedinUrl()).isNull();
         assertThat(authenticated.getMessage()).isEqualTo("Tenho interesse");
+        assertThat(authenticated.hasResume()).isTrue();
+        assertThat(authenticated.getResumeContent()).containsExactly(7, 8, 9);
+        assertThat(authenticated.getResumeFileName()).isEqualTo("perfil.pdf");
+        assertThat(authenticated.getResumeContentType()).isEqualTo("application/pdf");
+        byte[] detachedResume = authenticated.getResumeContent();
+        detachedResume[0] = 0;
+        assertThat(authenticated.getResumeContent()).containsExactly(7, 8, 9);
         assertThat(authenticated.getCreatedAt()).isNotNull();
     }
 

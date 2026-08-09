@@ -101,6 +101,11 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
+    public CandidateApplication findApplication(Long id) {
+        return applicationRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional(readOnly = true)
     public JobPosting findAny(Long id) {
         return jobPostingRepository.findById(id).orElseThrow();
     }

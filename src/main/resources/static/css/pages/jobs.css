@@ -119,6 +119,41 @@
     margin-bottom: var(--space-2);
 }
 
+.application-resume {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .875rem;
+    border: 1px solid color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+}
+
+.application-resume > .icon {
+    flex: 0 0 auto;
+    color: var(--color-success);
+}
+
+.application-resume div,
+.application-resume small {
+    display: grid;
+    gap: .15rem;
+}
+
+.application-resume span,
+.application-resume small {
+    color: var(--color-text-muted);
+}
+
+.application-resume--missing {
+    border-color: var(--color-border);
+    background: var(--color-surface-secondary);
+}
+
+.application-resume--missing > .icon {
+    color: var(--color-text-muted);
+}
+
 .related-jobs {
     padding: var(--space-5);
 }

@@ -5,6 +5,10 @@ import br.ufpb.dsc.jobhub.domain.JobLocationType;
 import br.ufpb.dsc.jobhub.domain.JobStatus;
 import br.ufpb.dsc.jobhub.domain.ContractType;
 import br.ufpb.dsc.jobhub.domain.Seniority;
+import br.ufpb.dsc.jobhub.domain.AppUser;
+import br.ufpb.dsc.jobhub.domain.AuthProvider;
+import br.ufpb.dsc.jobhub.domain.CandidateApplication;
+import br.ufpb.dsc.jobhub.domain.UserRole;
 import br.ufpb.dsc.jobhub.repository.CandidateApplicationRepository;
 import br.ufpb.dsc.jobhub.repository.AppUserRepository;
 import br.ufpb.dsc.jobhub.repository.JobPostingRepository;
@@ -24,6 +28,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -252,17 +257,52 @@ class PublicAndSecurityIntegrationTest {
     void internalApplicationCanBeSubmitted() throws Exception {
         JobPosting job = jobPostingRepository.searchPublished("", null).get(0);
         long before = applicationRepository.count();
+        AppUser candidate = new AppUser("Maria Silva", "maria.curriculo@example.com", "maria.curriculo",
+                "hash", UserRole.ROLE_USER, AuthProvider.LOCAL);
+        candidate.updateResume("%PDF-1.7 curriculo".getBytes(), "curriculo-maria.pdf", "application/pdf");
+        userRepository.save(candidate);
 
         mockMvc.perform(post("/vagas/{id}/candidatar", job.getId())
+                        .with(user(candidate.getEmail()).roles("USER"))
                         .with(csrf())
                         .param("applicantName", "Maria Silva")
-                        .param("applicantEmail", "maria@example.com")
+                        .param("applicantEmail", candidate.getEmail())
                         .param("linkedinUrl", "https://linkedin.com/in/maria")
                         .param("message", "Tenho interesse na vaga."))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/vagas/" + job.getId() + "?applied=true"));
 
         assertThat(applicationRepository.count()).isEqualTo(before + 1);
+        CandidateApplication application = applicationRepository.findAllByOrderByCreatedAtDesc().get(0);
+        assertThat(application.getApplicantUser().getId()).isEqualTo(candidate.getId());
+        assertThat(application.getResumeContent()).isEqualTo("%PDF-1.7 curriculo".getBytes());
+
+        mockMvc.perform(get("/admin/candidaturas/{id}/curriculo", application.getId())
+                        .with(user("admin@radartech.local").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("curriculo-maria.pdf")))
+                .andExpect(content().bytes("%PDF-1.7 curriculo".getBytes()));
+
+        mockMvc.perform(get("/admin/candidaturas/{id}/curriculo", application.getId())
+                        .with(user(candidate.getEmail()).roles("USER")))
+                .andExpect(status().isForbidden());
+
+        CandidateApplication withoutResume = applicationRepository.save(new CandidateApplication(
+                job, "Sem Currículo", "sem.curriculo@example.com", null, "Mensagem"));
+        mockMvc.perform(get("/admin/candidaturas/{id}/curriculo", withoutResume.getId())
+                        .with(user("admin@radartech.local").roles("ADMIN")))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/vagas/{id}/candidatar", job.getId())
+                        .with(csrf())
+                        .param("applicantName", "Visitante sem currículo")
+                        .param("applicantEmail", "visitante.sem.curriculo@example.com")
+                        .param("linkedinUrl", "")
+                        .param("message", "Candidatura como visitante."))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/vagas/" + job.getId() + "?applied=true"));
     }
 
     @Test

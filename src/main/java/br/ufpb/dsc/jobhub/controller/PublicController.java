@@ -73,10 +73,12 @@ public class PublicController {
     @GetMapping("/vagas/{id}")
     public String jobDetails(@PathVariable Long id,
                              @RequestParam(required = false) String applied,
+                             Authentication authentication,
                              Model model) {
         model.addAttribute("job", jobService.publicDetails(id));
         model.addAttribute("relatedJobs", jobService.relatedJobs(id));
         model.addAttribute("applicationForm", CandidateApplicationForm.empty());
+        model.addAttribute("applicantUser", userService.currentUser(authentication).orElse(null));
         model.addAttribute("applied", applied != null);
         return "jobs/detail";
     }
@@ -91,13 +93,16 @@ public class PublicController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("job", jobService.publicDetails(id));
             model.addAttribute("relatedJobs", jobService.relatedJobs(id));
+            model.addAttribute("applicantUser", userService.currentUser(authentication).orElse(null));
             model.addAttribute("applied", false);
             return "jobs/detail";
         }
         AppUser applicantUser = userService.currentUser(authentication).orElse(null);
         var application = jobService.apply(id, form, applicantUser);
         auditLogService.log(request, authentication, "APPLICATION_SUBMITTED", "CANDIDATE_APPLICATION",
-                application.getId(), "Candidatura interna enviada.");
+                application.getId(), application.hasResume()
+                        ? "Candidatura interna enviada com currículo do perfil."
+                        : "Candidatura interna enviada sem currículo.");
         return "redirect:/vagas/" + id + "?applied=true";
     }
 

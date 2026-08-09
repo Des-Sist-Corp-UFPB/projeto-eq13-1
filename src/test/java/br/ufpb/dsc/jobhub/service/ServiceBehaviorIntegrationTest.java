@@ -237,6 +237,7 @@ class ServiceBehaviorIntegrationTest {
 
         var application = jobService.apply(published.getId(), applicationForm);
         assertThat(application.getApplicantName()).isEqualTo("Candidato QA");
+        assertThat(jobService.findApplication(application.getId()).getId()).isEqualTo(application.getId());
         assertThat(jobService.relatedJobs(published.getId()))
                 .isNotEmpty()
                 .hasSizeLessThanOrEqualTo(4)

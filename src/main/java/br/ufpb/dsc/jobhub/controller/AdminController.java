@@ -14,6 +14,11 @@ import br.ufpb.dsc.jobhub.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Controller
@@ -151,6 +157,25 @@ public class AdminController {
     public String applications(Model model) {
         model.addAttribute("applications", jobService.allApplications());
         return "admin/applications";
+    }
+
+    @GetMapping("/candidaturas/{id}/curriculo")
+    public ResponseEntity<byte[]> applicationResume(@PathVariable Long id,
+                                                     Authentication authentication,
+                                                     HttpServletRequest request) {
+        var application = jobService.findApplication(id);
+        if (!application.hasResume()) {
+            return ResponseEntity.notFound().build();
+        }
+        auditLogService.log(request, authentication, "APPLICATION_RESUME_VIEWED", "CANDIDATE_APPLICATION",
+                application.getId(), "Currículo da candidatura consultado pelo administrador.");
+        String fileName = Optional.ofNullable(application.getResumeFileName()).orElse("curriculo.pdf");
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline().filename(fileName, StandardCharsets.UTF_8).build().toString())
+                .body(application.getResumeContent());
     }
 
     @GetMapping("/auditoria")

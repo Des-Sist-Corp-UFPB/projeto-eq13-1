@@ -10,7 +10,7 @@ O sistema foi projetado em torno de três jornadas:
 
 - **Candidatos** pesquisam vagas, criam conta, personalizam o perfil, registram experiências, enviam currículo em PDF, candidatam-se e usam um assistente de carreira.
 - **Empresas e divulgadores** autenticados contratam um plano pelo Stripe e enviam oportunidades para moderação.
-- **Administradores** acompanham indicadores, moderam vagas, consultam candidaturas, usuários e a trilha de auditoria.
+- **Administradores** acompanham indicadores, moderam vagas, consultam candidaturas com os currículos anexados, usuários e a trilha de auditoria.
 
 Isso transforma o Radar Tech em uma plataforma de recrutamento e curadoria completa. Autenticação, autorização por papéis, pagamentos, IA, auditoria persistente, armazenamento de perfil, observabilidade e análise de uso fazem parte do fluxo do produto.
 

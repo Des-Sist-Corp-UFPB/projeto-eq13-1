@@ -54,6 +54,29 @@
                     <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-check"></use></svg>
                     <span>Candidatura registrada. Boa sorte!</span>
                 </div>
+                <div class="application-resume u-mb-4" th:if="${applicantUser != null && applicantUser.resumeContent != null}">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-file-text"></use></svg>
+                    <div>
+                        <strong>Currículo do perfil</strong>
+                        <span th:text="${applicantUser.resumeFileName}">curriculo.pdf</span>
+                        <small>Será anexado automaticamente a esta candidatura.</small>
+                    </div>
+                </div>
+                <div class="application-resume application-resume--missing u-mb-4"
+                     th:if="${applicantUser != null && applicantUser.resumeContent == null}">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-file-text"></use></svg>
+                    <div>
+                        <strong>Currículo ainda não cadastrado</strong>
+                        <small><a th:href="@{/minha-conta}">Adicione um PDF ao seu perfil</a> para anexá-lo automaticamente.</small>
+                    </div>
+                </div>
+                <div class="application-resume application-resume--missing u-mb-4" th:if="${applicantUser == null}">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-file-text"></use></svg>
+                    <div>
+                        <strong>Quer enviar seu currículo?</strong>
+                        <small><a th:href="@{/login}">Entre na sua conta</a> e use o PDF salvo no perfil.</small>
+                    </div>
+                </div>
                 <form class="js-loading-submit" th:action="@{/vagas/{id}/candidatar(id=${job.id})}" th:object="${applicationForm}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="form-field">

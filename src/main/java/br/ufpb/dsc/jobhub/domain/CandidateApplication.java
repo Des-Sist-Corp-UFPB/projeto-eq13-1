@@ -44,6 +44,15 @@ public class CandidateApplication {
     @Column(columnDefinition = "text")
     private String message;
 
+    @Column(name = "resume_content", columnDefinition = "bytea")
+    private byte[] resumeContent;
+
+    @Column(name = "resume_file_name", length = 255)
+    private String resumeFileName;
+
+    @Column(name = "resume_content_type", length = 100)
+    private String resumeContentType;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -61,6 +70,16 @@ public class CandidateApplication {
         this.applicantEmail = applicantEmail;
         this.linkedinUrl = linkedinUrl;
         this.message = message;
+        attachResumeFrom(applicantUser);
+    }
+
+    public void attachResumeFrom(AppUser user) {
+        if (user == null || user.getResumeContent() == null) {
+            return;
+        }
+        this.resumeContent = user.getResumeContent().clone();
+        this.resumeFileName = user.getResumeFileName();
+        this.resumeContentType = user.getResumeContentType();
     }
 
     @PrePersist
@@ -75,5 +94,9 @@ public class CandidateApplication {
     public String getApplicantEmail() { return applicantEmail; }
     public String getLinkedinUrl() { return linkedinUrl; }
     public String getMessage() { return message; }
+    public byte[] getResumeContent() { return resumeContent == null ? null : resumeContent.clone(); }
+    public String getResumeFileName() { return resumeFileName; }
+    public String getResumeContentType() { return resumeContentType; }
+    public boolean hasResume() { return resumeContent != null && resumeContent.length > 0; }
     public Instant getCreatedAt() { return createdAt; }
 }

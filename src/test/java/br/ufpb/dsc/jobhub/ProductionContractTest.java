@@ -154,4 +154,17 @@ class ProductionContractTest {
                 .contains("PASSWORD_RESET_TTL_MINUTES");
         assertThat(login).contains("/esqueci-senha", "Esqueceu sua senha?");
     }
+
+    @Test
+    void applicationsPersistAndExposeProfileResumeToAdmins() throws IOException {
+        Path resources = Path.of("src", "main", "resources");
+        String migration = Files.readString(resources.resolve(Path.of(
+                "db", "migration", "V16__add_resume_snapshot_to_candidate_application.sql")));
+        String detail = Files.readString(resources.resolve(Path.of("templates", "jobs", "detail.html")));
+        String applications = Files.readString(resources.resolve(Path.of("templates", "admin", "applications.html")));
+
+        assertThat(migration).contains("resume_content bytea", "resume_file_name", "resume_content_type");
+        assertThat(detail).contains("Será anexado automaticamente", "Adicione um PDF ao seu perfil");
+        assertThat(applications).contains("Ver currículo", "/admin/candidaturas/{id}/curriculo");
+    }
 }

@@ -13,7 +13,7 @@
     <div class="table-wrap">
         <table class="data-table">
             <thead>
-            <tr><th>Candidato</th><th>Conta</th><th>Vaga</th><th>Contato</th><th>Mensagem</th></tr>
+            <tr><th>Candidato</th><th>Conta</th><th>Vaga</th><th>Contato</th><th>Mensagem</th><th>Currículo</th></tr>
             </thead>
             <tbody>
             <tr th:each="candidateApplication : ${applications}">
@@ -28,6 +28,12 @@
                     <a th:if="${candidateApplication.linkedinUrl != null && !candidateApplication.linkedinUrl.isBlank()}" th:href="${candidateApplication.linkedinUrl}" target="_blank" rel="noopener">Perfil</a>
                 </td>
                 <td th:text="${candidateApplication.message}">Mensagem</td>
+                <td>
+                    <a class="btn btn-outline btn-small" th:if="${candidateApplication.hasResume()}"
+                       th:href="@{/admin/candidaturas/{id}/curriculo(id=${candidateApplication.id})}"
+                       target="_blank" rel="noopener">Ver currículo</a>
+                    <span class="u-muted u-text-small" th:unless="${candidateApplication.hasResume()}">Não anexado</span>
+                </td>
             </tr>
             </tbody>
         </table>
