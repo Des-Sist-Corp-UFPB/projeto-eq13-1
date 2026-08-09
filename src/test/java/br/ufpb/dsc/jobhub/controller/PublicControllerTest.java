@@ -142,8 +142,8 @@ class PublicControllerTest {
 
         ExtendedModelMap success = new ExtendedModelMap();
         ExtendedModelMap canceled = new ExtendedModelMap();
-        assertThat(controller.subscriptionSuccess(success)).isEqualTo("admin/billing-success");
-        assertThat(success.get("billingMessage").toString()).contains("webhook");
+        assertThat(controller.subscriptionSuccess(null, null, request, success)).isEqualTo("admin/billing-success");
+        assertThat(success.get("billingMessage").toString()).contains("ativa");
         assertThat(controller.subscriptionCanceled(canceled)).isEqualTo("admin/billing-canceled");
         assertThat(canceled.get("billingMessage").toString()).contains("cancelado");
     }
