@@ -56,9 +56,11 @@ class ProductionContractTest {
             templates = paths.filter(path -> path.toString().endsWith(".html")).toList();
         }
         for (Path template : templates) {
-            assertThat(Files.readString(template))
+            String templateContent = Files.readString(template);
+            assertThat(templateContent)
                     .as("template %s", template)
-                    .doesNotContain("RadarTech PB", "JobHub PB", "style=");
+                    .doesNotContain("RadarTech PB", "JobHub PB", "style=")
+                    .doesNotContainPattern("(?s)<[^>]+th:(?:if|unless)=\"[^\"]+\"[^>]+th:replace=");
         }
 
         assertThat(resources.resolve(Path.of("static", "images", "radartech-logo-transparent.png"))).exists();

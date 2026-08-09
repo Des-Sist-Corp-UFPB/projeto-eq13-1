@@ -32,7 +32,8 @@
             </tbody>
         </table>
     </div>
-    <div th:if="${#lists.isEmpty(applications)}" class="u-mt-6"
-         th:replace="~{fragments/empty-state :: state('file-text', 'Nenhuma candidatura recebida ainda.', 'Quando alguém se candidatar a uma vaga interna, ela aparecerá aqui.')}"></div>
+    <div th:if="${#lists.isEmpty(applications)}" class="u-mt-6">
+        <div th:replace="~{fragments/empty-state :: state('file-text', 'Nenhuma candidatura recebida ainda.', 'Quando alguém se candidatar a uma vaga interna, ela aparecerá aqui.')}"></div>
+    </div>
 </div>
 </html>

@@ -37,8 +37,9 @@
     <p class="jobs-count" th:unless="${#lists.isEmpty(jobs)}"
        th:text="${#lists.size(jobs)} + (${#lists.size(jobs)} == 1 ? ' vaga encontrada' : ' vagas encontradas')">0 vagas encontradas</p>
 
-    <div th:if="${#lists.isEmpty(jobs)}"
-         th:replace="~{fragments/empty-state :: state('search', 'Nenhuma vaga encontrada com esses filtros.', 'Tente buscar por outra tecnologia, empresa ou modelo de trabalho.')}"></div>
+    <th:block th:if="${#lists.isEmpty(jobs)}">
+        <div th:replace="~{fragments/empty-state :: state('search', 'Nenhuma vaga encontrada com esses filtros.', 'Tente buscar por outra tecnologia, empresa ou modelo de trabalho.')}"></div>
+    </th:block>
 
     <div class="job-grid" th:unless="${#lists.isEmpty(jobs)}">
         <th:block th:each="job : ${jobs}">

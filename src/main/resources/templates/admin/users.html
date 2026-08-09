@@ -27,7 +27,8 @@
             </tbody>
         </table>
     </div>
-    <div th:if="${#lists.isEmpty(users)}" class="u-mt-6"
-         th:replace="~{fragments/empty-state :: state('user', 'Nenhum usuário cadastrado.', 'Novas contas aparecerão aqui assim que forem criadas.')}"></div>
+    <div th:if="${#lists.isEmpty(users)}" class="u-mt-6">
+        <div th:replace="~{fragments/empty-state :: state('user', 'Nenhum usuário cadastrado.', 'Novas contas aparecerão aqui assim que forem criadas.')}"></div>
+    </div>
 </div>
 </html>

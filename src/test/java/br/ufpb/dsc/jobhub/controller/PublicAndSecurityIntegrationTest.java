@@ -73,7 +73,12 @@ class PublicAndSecurityIntegrationTest {
 
     @Test
     void publicPagesShouldBeAccessibleWithoutLogin() throws Exception {
-        mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("home"));
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("home"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Pessoa Desenvolvedora Full Stack Junior")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("Nenhuma vaga publicada ainda."))));
         mockMvc.perform(get("/vagas")).andExpect(status().isOk()).andExpect(view().name("jobs/list"));
         mockMvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("auth/login"));
         mockMvc.perform(get("/cadastro"))

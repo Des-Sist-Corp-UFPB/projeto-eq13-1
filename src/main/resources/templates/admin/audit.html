@@ -37,7 +37,8 @@
             </tbody>
         </table>
     </div>
-    <div th:if="${#lists.isEmpty(logs)}" class="u-mt-6"
-         th:replace="~{fragments/empty-state :: state('shield', 'Nenhum evento encontrado.', 'Ajuste os filtros para ver outros eventos de auditoria.')}"></div>
+    <div th:if="${#lists.isEmpty(logs)}" class="u-mt-6">
+        <div th:replace="~{fragments/empty-state :: state('shield', 'Nenhum evento encontrado.', 'Ajuste os filtros para ver outros eventos de auditoria.')}"></div>
+    </div>
 </div>
 </html>

@@ -85,7 +85,8 @@
             </tbody>
         </table>
     </div>
-    <div th:if="${#lists.isEmpty(jobs)}" class="u-mt-6"
-         th:replace="~{fragments/empty-state :: state('briefcase', 'Nenhuma vaga encontrada.', 'Ajuste os filtros ou crie uma nova vaga.')}"></div>
+    <div th:if="${#lists.isEmpty(jobs)}" class="u-mt-6">
+        <div th:replace="~{fragments/empty-state :: state('briefcase', 'Nenhuma vaga encontrada.', 'Ajuste os filtros ou crie uma nova vaga.')}"></div>
+    </div>
 </div>
 </html>
