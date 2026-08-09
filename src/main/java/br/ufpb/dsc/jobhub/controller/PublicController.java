@@ -75,6 +75,7 @@ public class PublicController {
                              @RequestParam(required = false) String applied,
                              Model model) {
         model.addAttribute("job", jobService.publicDetails(id));
+        model.addAttribute("relatedJobs", jobService.relatedJobs(id));
         model.addAttribute("applicationForm", CandidateApplicationForm.empty());
         model.addAttribute("applied", applied != null);
         return "jobs/detail";
@@ -89,6 +90,7 @@ public class PublicController {
                         HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("job", jobService.publicDetails(id));
+            model.addAttribute("relatedJobs", jobService.relatedJobs(id));
             model.addAttribute("applied", false);
             return "jobs/detail";
         }

@@ -188,7 +188,10 @@ class PublicAndSecurityIntegrationTest {
 
         mockMvc.perform(get("/vagas/{id}", job.getId()))
                 .andExpect(status().isOk())
-                .andExpect(view().name("jobs/detail"));
+                .andExpect(view().name("jobs/detail"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Outras oportunidades")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("Abrir vaga original"))));
 
         mockMvc.perform(get("/vagas/{id}", job.getId()).param("applied", "true"))
                 .andExpect(status().isOk())

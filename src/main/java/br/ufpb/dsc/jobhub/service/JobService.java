@@ -32,6 +32,13 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
+    public List<JobPosting> relatedJobs(Long currentJobId) {
+        return jobPostingRepository.findTop4ByStatusAndIdNotOrderByCreatedAtDesc(
+                JobStatus.PUBLISHED, currentJobId
+        );
+    }
+
+    @Transactional(readOnly = true)
     public List<JobPosting> searchPublished(String keyword, String location) {
         return jobPostingRepository.searchPublished(normalize(keyword), parseLocation(location));
     }

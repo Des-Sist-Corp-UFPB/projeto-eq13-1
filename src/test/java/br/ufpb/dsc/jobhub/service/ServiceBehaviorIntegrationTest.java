@@ -237,6 +237,11 @@ class ServiceBehaviorIntegrationTest {
 
         var application = jobService.apply(published.getId(), applicationForm);
         assertThat(application.getApplicantName()).isEqualTo("Candidato QA");
+        assertThat(jobService.relatedJobs(published.getId()))
+                .isNotEmpty()
+                .hasSizeLessThanOrEqualTo(4)
+                .allMatch(job -> !job.getId().equals(published.getId()))
+                .allMatch(job -> job.getStatus() == JobStatus.PUBLISHED);
         assertThatThrownBy(() -> jobService.publicDetails(-1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Vaga");

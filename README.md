@@ -34,6 +34,7 @@ O frontend usa um design system próprio em azul-marinho e turquesa, com bastant
 - listagem pública com pesquisa e filtros;
 - curadoria de oportunidades com data e link de candidatura verificáveis;
 - detalhes e contador de visualizações;
+- sugestões laterais de outras vagas publicadas, com navegação interna pelo Radar Tech;
 - vagas remotas, híbridas e presenciais na Paraíba;
 - candidatura interna, associada à conta quando o candidato está autenticado;
 - divulgação de vagas mediante assinatura ativa.

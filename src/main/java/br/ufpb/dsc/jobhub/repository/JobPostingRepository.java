@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     List<JobPosting> findTop6ByStatusOrderByCreatedAtDesc(JobStatus status);
+    List<JobPosting> findTop4ByStatusAndIdNotOrderByCreatedAtDesc(JobStatus status, Long id);
     List<JobPosting> findAllByOrderByCreatedAtDesc();
     Optional<JobPosting> findByIdAndStatus(Long id, JobStatus status);
     long countByStatus(JobStatus status);

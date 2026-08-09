@@ -48,13 +48,6 @@
         </article>
 
         <aside class="job-sidebar">
-            <div class="card" th:if="${job.applyUrl != null && !job.applyUrl.isBlank()}">
-                <span class="badge badge-success u-mb-4">Link público</span>
-                <h2>Candidatura externa</h2>
-                <p class="u-muted u-text-small u-mb-4">Esta vaga foi curada a partir de uma fonte pública. A candidatura oficial acontece no site da empresa ou plataforma parceira.</p>
-                <a class="btn btn-success btn-full" th:href="${job.applyUrl}" target="_blank" rel="noopener">Abrir vaga original</a>
-            </div>
-
             <div class="card" th:if="${job.applyUrl == null || job.applyUrl.isBlank()}">
                 <h2>Candidatar-se</h2>
                 <div class="alert alert-success u-mb-4" th:if="${applied}">
@@ -84,6 +77,38 @@
                     <button class="btn btn-success btn-full" type="submit">Enviar candidatura</button>
                 </form>
             </div>
+
+            <section class="card related-jobs" aria-labelledby="related-jobs-title">
+                <div class="related-jobs__heading">
+                    <div>
+                        <span class="eyebrow">Continue explorando</span>
+                        <h2 id="related-jobs-title">Outras oportunidades</h2>
+                    </div>
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#icon-briefcase"></use></svg>
+                </div>
+
+                <div class="related-jobs__list" th:if="${relatedJobs != null && !relatedJobs.isEmpty()}">
+                    <a class="related-job" th:each="relatedJob : ${relatedJobs}"
+                       th:href="@{/vagas/{id}(id=${relatedJob.id})}">
+                        <span class="related-job__avatar" aria-hidden="true"
+                              th:text="${relatedJob.company != null && !relatedJob.company.isBlank() ? #strings.substring(relatedJob.company, 0, 1) : 'R'}">R</span>
+                        <span class="related-job__content">
+                            <strong th:text="${relatedJob.title}">Título da vaga</strong>
+                            <span class="related-job__company" th:text="${relatedJob.company}">Empresa</span>
+                            <span class="related-job__badges">
+                                <span class="badge badge-teal" th:text="${relatedJob.locationType.label}">Remota</span>
+                                <span class="badge badge-navy" th:text="${relatedJob.seniority.label}">Júnior</span>
+                            </span>
+                        </span>
+                        <svg class="icon related-job__arrow" aria-hidden="true"><use href="/images/icons.svg#icon-arrow-up-right"></use></svg>
+                    </a>
+                </div>
+
+                <div class="related-jobs__empty" th:if="${relatedJobs == null || relatedJobs.isEmpty()}">
+                    <p>Novas oportunidades serão publicadas em breve.</p>
+                    <a class="btn btn-outline btn-full" th:href="@{/vagas}">Ver todas as vagas</a>
+                </div>
+            </section>
         </aside>
     </div>
 </div>

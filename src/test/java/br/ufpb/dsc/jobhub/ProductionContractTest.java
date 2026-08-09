@@ -31,6 +31,8 @@ class ProductionContractTest {
         String home = Files.readString(resources.resolve(Path.of("templates", "home.html")));
         String appCss = Files.readString(resources.resolve(Path.of("static", "css", "app.css")));
         String homeCss = Files.readString(resources.resolve(Path.of("static", "css", "pages", "home.css")));
+        String jobsCss = Files.readString(resources.resolve(Path.of("static", "css", "pages", "jobs.css")));
+        String jobDetail = Files.readString(resources.resolve(Path.of("templates", "jobs", "detail.html")));
         String profile = Files.readString(resources.resolve(Path.of("templates", "auth", "profile.html")));
         String profileMediaJs = Files.readString(resources.resolve(Path.of("static", "js", "modules", "profile-media.js")));
 
@@ -57,6 +59,15 @@ class ProductionContractTest {
                 .contains(".hero-search-field select option")
                 .contains("#c3d1dc")
                 .contains("@media (max-width: 767px)");
+        assertThat(jobDetail)
+                .contains("Outras oportunidades")
+                .contains("th:each=\"relatedJob : ${relatedJobs}\"")
+                .contains("@{/vagas/{id}(id=${relatedJob.id})}")
+                .doesNotContain("Abrir vaga original", "<h2>Candidatura externa</h2>");
+        assertThat(jobsCss)
+                .contains(".related-jobs__list")
+                .contains(".related-job:hover")
+                .contains(".related-job:focus-visible");
         assertThat(profile)
                 .contains("data-media-open=\"photo\"")
                 .contains("data-media-open=\"cover\"")
