@@ -90,3 +90,15 @@
 .auth-footer-link a:hover {
     color: var(--color-teal-500);
 }
+
+.auth-help-link {
+    align-self: flex-end;
+    margin-top: calc(var(--space-1) * -1);
+    color: var(--color-teal-600);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.auth-help-link:hover {
+    color: var(--color-teal-500);
+}

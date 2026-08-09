@@ -35,6 +35,8 @@ app:
   admin:
     username: ${ADMIN_USERNAME:admin}
     password: ${ADMIN_PASSWORD:}
+  password-reset:
+    public-url: ${APP_PUBLIC_URL:https://eq13.dsc.rodrigor.com}
 
 logging:
   level:

@@ -86,6 +86,13 @@ class PublicAndSecurityIntegrationTest {
                 .andExpect(view().name("auth/register"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("/oauth2/authorization/google")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Cadastrar com Google")));
+        mockMvc.perform(get("/esqueci-senha"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/forgot-password"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Enviar link de recuperação")));
+        mockMvc.perform(get("/redefinir-senha"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/reset-password"));
     }
 
     @Test

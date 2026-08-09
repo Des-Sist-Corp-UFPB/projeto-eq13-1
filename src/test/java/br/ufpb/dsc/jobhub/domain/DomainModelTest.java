@@ -160,6 +160,27 @@ class DomainModelTest {
         assertThat(log.getCreatedAt()).isNotNull();
     }
 
+    @Test
+    void passwordResetTokenTracksExpiryAndSingleUseWithoutStoringRawToken() {
+        AppUser user = user();
+        Instant expiry = Instant.now().plusSeconds(600);
+        PasswordResetToken token = new PasswordResetToken(user, "a".repeat(64), expiry);
+        token.onCreate();
+
+        assertThat(token.getId()).isNull();
+        assertThat(token.getUser()).isSameAs(user);
+        assertThat(token.getTokenHash()).hasSize(64);
+        assertThat(token.getExpiresAt()).isEqualTo(expiry);
+        assertThat(token.getCreatedAt()).isNotNull();
+        assertThat(token.isUsable(Instant.now())).isTrue();
+        token.markUsed(Instant.now());
+        assertThat(token.getUsedAt()).isNotNull();
+        assertThat(token.isUsable(Instant.now())).isFalse();
+
+        PasswordResetToken empty = new PasswordResetToken();
+        assertThat(empty.getUser()).isNull();
+    }
+
     private AppUser user() {
         return new AppUser("Pessoa", "pessoa@example.com", "pessoa", "hash",
                 UserRole.ROLE_USER, AuthProvider.LOCAL);

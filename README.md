@@ -101,6 +101,27 @@ Tecnologias principais:
 
 Acesse `/login` e informe usuário ou e-mail e senha. Novos usuários podem usar `/cadastro`. As senhas nunca são armazenadas em texto puro: o sistema usa BCrypt.
 
+### Recuperação de senha
+
+O link **Esqueceu sua senha?** abre `/esqueci-senha`. O sistema responde de forma genérica para não revelar quais e-mails possuem conta. Para endereços cadastrados, é criado um token aleatório de uso único, armazenado no banco somente como hash SHA-256 e válido por 30 minutos. A nova senha é gravada com BCrypt e todos os tokens ativos do usuário são invalidados.
+
+O envio utiliza SMTP pelo Spring Mail. Configure no ambiente de produção:
+
+```text
+PASSWORD_RESET_EMAIL_ENABLED=true
+APP_PUBLIC_URL=https://eq13.dsc.rodrigor.com
+MAIL_HOST=<servidor-smtp>
+MAIL_PORT=587
+MAIL_USERNAME=<usuario-smtp>
+MAIL_PASSWORD=<senha-smtp>
+MAIL_FROM=<remetente-verificado>
+MAIL_SMTP_AUTH=true
+MAIL_STARTTLS_ENABLE=true
+PASSWORD_RESET_TTL_MINUTES=30
+```
+
+Sem essas variáveis, o restante da aplicação continua funcionando, mas nenhum link é enviado. Solicitações e redefinições concluídas geram os eventos `PASSWORD_RESET_REQUESTED` e `PASSWORD_RESET_COMPLETED` na auditoria.
+
 No ambiente de desenvolvimento existe um administrador inicial:
 
 ```text
@@ -174,6 +195,7 @@ Quando a integração está indisponível, a falha é tratada e apresentada ao u
 Eventos relevantes são persistidos na tabela `audit_log`, incluindo:
 
 - sucesso e falha de login, OAuth2 e logout;
+- solicitação e conclusão de recuperação de senha;
 - cadastro e alterações do perfil;
 - foto, currículo, experiências e preferência de tema;
 - uso do assistente de carreira;
@@ -277,6 +299,13 @@ ADMIN_PASSWORD=<senha-admin>
 GOOGLE_CLIENT_ID=<google-client-id>
 GOOGLE_CLIENT_SECRET=<google-client-secret>
 GOOGLE_REDIRECT_URI=https://eq13.dsc.rodrigor.com/login/oauth2/code/google
+PASSWORD_RESET_EMAIL_ENABLED=true
+APP_PUBLIC_URL=https://eq13.dsc.rodrigor.com
+MAIL_HOST=<servidor-smtp>
+MAIL_PORT=587
+MAIL_USERNAME=<usuario-smtp>
+MAIL_PASSWORD=<senha-smtp>
+MAIL_FROM=<remetente-verificado>
 STRIPE_SECRET_KEY=<stripe-secret-key>
 STRIPE_WEBHOOK_SECRET=<stripe-webhook-signing-secret>
 STRIPE_MONTHLY_PRICE_ID=<stripe-monthly-price-id>
@@ -336,6 +365,8 @@ Essas evidências são exercitadas pela suíte automatizada e pelo workflow de d
 | `/vagas/{id}` | público | detalhes e candidatura |
 | `/login` | público | login tradicional ou Google |
 | `/cadastro` | público | criação de conta |
+| `/esqueci-senha` | público | solicitação segura de recuperação |
+| `/redefinir-senha` | público + token | definição de nova senha |
 | `/minha-conta` | autenticado | perfil profissional e IA |
 | `/divulgar` | autenticado + assinatura | envio de vaga |
 | `/admin` | `ROLE_ADMIN` | dashboard |

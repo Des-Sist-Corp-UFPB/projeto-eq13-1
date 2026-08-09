@@ -20,6 +20,7 @@ class ProductionContractTest {
         assertThat(dockerfile).contains("ENV SPRING_PROFILES_ACTIVE=prod");
         assertThat(productionConfig)
                 .contains("https://eq13.dsc.rodrigor.com/login/oauth2/code/google")
+                .contains("APP_PUBLIC_URL:https://eq13.dsc.rodrigor.com")
                 .contains("forward-headers-strategy: framework");
     }
 
@@ -51,6 +52,8 @@ class ProductionContractTest {
         assertThat(homeCss)
                 .contains("radartech-hero-office.webp")
                 .contains("[data-theme=\"dark\"] .hero")
+                .contains(".hero-search-field select option")
+                .contains("#c3d1dc")
                 .contains("@media (max-width: 767px)");
         assertThat(appCss)
                 .contains("@import url('./tokens.css')")
@@ -98,5 +101,27 @@ class ProductionContractTest {
                 .contains("JOB_CATALOG_ARCHIVED")
                 .contains("JOB_CURATED");
         assertThat(migration.split("https://", -1).length - 1).isGreaterThanOrEqualTo(20);
+    }
+
+    @Test
+    void passwordResetUsesHashedExpiringTokensAndExternalMailConfiguration() throws IOException {
+        Path resources = Path.of("src", "main", "resources");
+        String migration = Files.readString(resources.resolve(Path.of(
+                "db", "migration", "V14__create_password_reset_tokens.sql")));
+        String application = Files.readString(resources.resolve("application.yml"));
+        String login = Files.readString(resources.resolve(Path.of("templates", "auth", "login.html")));
+
+        assertThat(migration)
+                .contains("password_reset_token")
+                .contains("token_hash varchar(64)")
+                .contains("expires_at timestamptz")
+                .contains("used_at timestamptz")
+                .contains("references app_user(id)");
+        assertThat(application)
+                .contains("PASSWORD_RESET_EMAIL_ENABLED")
+                .contains("MAIL_HOST")
+                .contains("MAIL_PASSWORD")
+                .contains("PASSWORD_RESET_TTL_MINUTES");
+        assertThat(login).contains("/esqueci-senha", "Esqueceu sua senha?");
     }
 }

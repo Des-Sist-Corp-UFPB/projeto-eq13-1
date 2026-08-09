@@ -111,6 +111,25 @@
     min-width: 0;
 }
 
+.hero-search-field input::placeholder {
+    color: #52657a;
+    font-weight: var(--font-weight-medium);
+    opacity: 1;
+}
+
+[data-theme="dark"] .hero-search-field input::placeholder {
+    color: #c3d1dc;
+}
+
+.hero-search-field select {
+    color-scheme: light;
+}
+
+.hero-search-field select option {
+    background: #ffffff;
+    color: #0b132b;
+}
+
 .hero-search-field input:focus-visible,
 .hero-search-field select:focus-visible {
     box-shadow: none;

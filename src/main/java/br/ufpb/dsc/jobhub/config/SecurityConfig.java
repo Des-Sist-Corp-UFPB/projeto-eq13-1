@@ -38,7 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/vagas", "/vagas/**", "/ping", "/webhooks/stripe",
                                 "/css/**", "/js/**", "/images/**", "/actuator/health").permitAll()
                         .requestMatchers("/divulgar", "/divulgar/**").authenticated()
-                        .requestMatchers("/login", "/cadastro", "/admin/login", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/login", "/cadastro", "/esqueci-senha", "/redefinir-senha",
+                                "/admin/login", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/minha-conta/**").authenticated()
                         .anyRequest().permitAll()
