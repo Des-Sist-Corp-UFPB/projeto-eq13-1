@@ -4,6 +4,10 @@ O Radar Tech é uma plataforma de oportunidades de tecnologia que conecta candid
 
 A aplicação está disponível em [https://eq13.dsc.rodrigor.com](https://eq13.dsc.rodrigor.com).
 
+## Apresentação do Radar Tech
+
+Assista à apresentação do projeto: [Vídeo de apresentação do Radar Tech](https://drive.google.com/file/d/1IWvFHQ62R8cogHEVkb3j2afCXS3nOIQ-/view?usp=sharing).
+
 ## O produto
 
 O sistema foi projetado em torno de três jornadas:
