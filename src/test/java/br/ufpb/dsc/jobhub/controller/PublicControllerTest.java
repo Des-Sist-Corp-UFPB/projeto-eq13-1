@@ -148,6 +148,33 @@ class PublicControllerTest {
         assertThat(canceled.get("billingMessage").toString()).contains("cancelado");
     }
 
+    @Test
+    void subscriptionSuccessActivatesWhenSubscriptionIdAndAuthenticationPresent() {
+        when(authentication.isAuthenticated()).thenReturn(true);
+        Subscription subscription = new Subscription("Empresa", user.getEmail(), "monthly-basic");
+        when(billingService.activateAfterConfirmedPayment(42L, user.getEmail())).thenReturn(subscription);
+
+        ExtendedModelMap model = new ExtendedModelMap();
+        assertThat(controller.subscriptionSuccess(42L, authentication, request, model))
+                .isEqualTo("admin/billing-success");
+        assertThat(model.get("billingMessage").toString()).contains("ativa");
+        verify(billingService).activateAfterConfirmedPayment(42L, user.getEmail());
+        verify(auditLogService).log(request, user, "STRIPE_SUBSCRIPTION_ACTIVATED",
+                "SUBSCRIPTION", 42L, "Assinatura ativada após retorno do checkout do Stripe.");
+    }
+
+    @Test
+    void subscriptionSuccessSilentlyIgnoresActivationErrors() {
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(billingService.activateAfterConfirmedPayment(99L, user.getEmail()))
+                .thenThrow(new IllegalArgumentException("Assinatura não encontrada"));
+
+        ExtendedModelMap model = new ExtendedModelMap();
+        assertThat(controller.subscriptionSuccess(99L, authentication, request, model))
+                .isEqualTo("admin/billing-success");
+        assertThat(model.get("billingMessage").toString()).contains("ativa");
+    }
+
     private JobPostForm validForm() {
         return new JobPostForm("Desenvolvedor Java", "Empresa", "empresa@example.com",
                 JobLocationType.REMOTE, "", Seniority.JUNIOR, ContractType.CLT, "R$ 5.000",
